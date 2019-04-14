@@ -11,6 +11,8 @@ import eventsConfig from '../config/events.json';
 import ratesConfig from '../config/rates.json';
 import collectionsConfig from '../config/collections.json';
 import customFieldsConfig from '../config/customFields.json';
+import inputProcessorConfig from '../config/InputProcessor.json';
+
 
 /**
  * Get data from config files
@@ -64,6 +66,8 @@ export const getConfig = (key, defaultValue = null) => {
       case 'collections': configCache = configCache.set('collections', Immutable.fromJS(collectionsConfig));
         break;
       case 'customFields': configCache = configCache.set('customFields', Immutable.fromJS(customFieldsConfig));
+        break;
+      case 'inputProcessor': configCache = configCache.set('inputProcessor', Immutable.fromJS(inputProcessorConfig));
         break;
       default: console.log(`Config caregory not exists ${path}`);
     }
