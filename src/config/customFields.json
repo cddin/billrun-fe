@@ -15,7 +15,6 @@
     "title": "Boolean",
     "unique": false,
     "mandatory": false,
-    "searchable": false,
     "multiple": false,
     "selectOptions": false
   }, {
