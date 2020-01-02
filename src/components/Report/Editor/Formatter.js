@@ -97,7 +97,7 @@ class Formatter extends Component {
         <Col sm={1} className="text-center">
           <DragHandle />
         </Col>
-        <Col sm={3}>
+        <Col sm={4}>
           <Field
             fieldType="select"
             clearable={false}
@@ -125,9 +125,9 @@ class Formatter extends Component {
             config={selectedOp}
           />
         </Col>
-        <Col sm={2} className="actions">
+        <Col sm={1} className="actions">
           <Button onClick={this.onRemove} bsSize="small" className="pull-left" disabled={disabled}>
-            <i className="fa fa-trash-o danger-red" />&nbsp;Remove
+            <i className="fa fa-trash-o danger-red" />
           </Button>
         </Col>
       </FormGroup>

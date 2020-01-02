@@ -145,8 +145,9 @@ class BalanceEventCondition extends Component {
 
   getGroupNamesOptions = () =>
     this.props.groupsOptions
-    .filter(this.filterRelevantGroups)
-    .map(group => ({ value: group, label: group })).toArray();
+      .filter(this.filterRelevantGroups)
+      .map(group => ({ value: group, label: group }))
+      .toArray();
 
   getGroupUnit = group => this.props.groupsData.getIn([group, 'unit'], '');
   getGroupActivityType = group => getGroupUsaget(this.props.groupsData.get(group, Immutable.Map()));

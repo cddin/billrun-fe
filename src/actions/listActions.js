@@ -1,5 +1,12 @@
+import Immutable from 'immutable';
 import { apiBillRun, apiBillRunErrorHandler, apiBillRunSuccessHandler } from '../common/Api';
+import { getEntitesQuery } from '../common/ApiQueries';
 import { startProgressIndicator } from './progressIndicatorActions';
+import {
+  getConfig,
+  toImmutableList,
+} from '@/common/Util';
+
 
 export const actions = {
   GOT_LIST: 'GOT_LIST',
@@ -73,3 +80,29 @@ export const getList = (collection, params) => dispatch =>
 
 export const pushToList = (collection, params) => dispatch =>
   dispatch(fetchToList(collection, params));
+
+export const getEntitiesOptions = (entities = []) => dispatch => {
+  entities.forEach((entity) => {
+    const uniqueFields = toImmutableList(getConfig(['systemItems', entity, 'uniqueField'], ''));
+    const query = Immutable.Map().withMutations((fieldsWithMutations) => {
+      fieldsWithMutations.set('_id', 0);
+      fieldsWithMutations.set('description', 1);
+      uniqueFields.forEach((uniqueField) => {
+        fieldsWithMutations.set(uniqueField, 1);
+      });
+      if (entity === 'service') {
+        fieldsWithMutations.set('quantitative', 1);
+      }
+    });
+    const entitiesName = getConfig(['systemItems', entity, 'itemsType'], '');
+    const collection = getConfig(['systemItems', entity, 'collection'], '');
+    dispatch(getList(`available_${entitiesName}`, getEntitesQuery(collection, query)));
+  });
+}
+
+export const clearEntitiesOptions = (entities = []) => dispatch => {
+  entities.forEach((entity) => {
+    const entitiesName = getConfig(['systemItems', entity, 'itemsType'], '');
+    dispatch(clearList(`available_${entitiesName}`));
+  });
+}

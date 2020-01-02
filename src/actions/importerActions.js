@@ -20,4 +20,4 @@ export const updateImporterValue = (path, value) => updateEntityField('importer'
 
 export const deleteImporterValue = path => deleteEntityField('importer', path);
 
-export const sendImport = (collection, items) => importEntities(collection, items);
+export const sendImport = (collection, items, operation) => importEntities(collection, items, operation);

@@ -53,11 +53,14 @@ export default function (state = defaultState, action) {
     case actions.GOT_SETTINGS:
       return state.withMutations((stateWithMutations) => {
         settings.forEach((setting) => {
-          const data = setting.data.details;
-          if (setting.name === 'taxation') {
-            data.vat *= 100;
+          let data = Immutable.fromJS(setting.data.details);
+          if (setting.name === 'taxation' && data.get('vat', '') !== '') {
+            data = data.set('vat', data.get('vat', '') * 100);
           }
-          stateWithMutations.setIn(setting.name.split('.'), Immutable.fromJS(data));
+          if (setting.name === 'taxation.vat' && data !== '') {
+            data *= 100;
+          }
+          stateWithMutations.setIn(setting.name.split('.'), data);
         });
       });
 

@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 import Immutable from 'immutable';
 import { connect } from 'react-redux';
 import { sentenceCase } from 'change-case';
-import { Form, FormGroup, ControlLabel, Col, Row, Panel, Checkbox, HelpBlock } from 'react-bootstrap';
+import { Form, FormGroup, ControlLabel, Col, Row, Panel, HelpBlock } from 'react-bootstrap';
 import Help from '../Help';
 import Field from '@/components/Field';
 import { CreateButton } from '@/components/Elements';
 import ProductPrice from './components/ProductPrice';
 import { ProductDescription } from '@/language/FieldDescriptions';
-import EntityFields from '../Entity/EntityFields';
+import { EntityFields } from '../Entity';
 import UsageTypesSelector from '../UsageTypes/UsageTypesSelector';
 import PlaysSelector from '../Plays/PlaysSelector';
 import {
@@ -115,11 +115,6 @@ class Product extends Component {
       this.props.onFieldUpdate(rangeUnitsPath, unit);
       this.props.onFieldUpdate(intervalUnitsPath, unit);
     });
-  }
-
-  onChangeVatable = (e) => {
-    const { checked } = e.target;
-    this.props.onFieldUpdate(['vatable'], checked);
   }
 
   onChangePricingMethod = (e) => {
@@ -229,7 +224,6 @@ class Product extends Component {
     const { errors } = this.state;
     const { product, usaget, mode, ratingParams } = this.props;
     const unit = this.getUnit();
-    const vatable = (product.get('vatable', true) === true);
     const pricingMethod = product.get('pricing_method', '');
     const editable = (mode !== 'view');
 
@@ -248,6 +242,7 @@ class Product extends Component {
               <FormGroup>
                 <Col componentClass={ControlLabel} sm={3} lg={2}>
                   { getFieldName('description', getFieldNameType('service'), sentenceCase('title'))}
+                  <span className="danger-red"> *</span>
                   <Help contents={ProductDescription.description} />
                 </Col>
                 <Col sm={8} lg={9}>
@@ -258,7 +253,9 @@ class Product extends Component {
               { ['clone', 'create'].includes(mode) &&
                 <FormGroup validationState={errors.name.length > 0 ? 'error' : null} >
                   <Col componentClass={ControlLabel} sm={3} lg={2}>
-                    { getFieldName('key', getFieldNameType('service'), sentenceCase('key'))}<Help contents={ProductDescription.key} />
+                    { getFieldName('key', getFieldNameType('service'), sentenceCase('key'))}
+                    <span className="danger-red"> *</span>
+                    <Help contents={ProductDescription.key} />
                   </Col>
                   <Col sm={8} lg={9}>
                     <Field onChange={this.onChangeName} value={product.get('key', '')} disabled={!['clone', 'create'].includes(mode)} editable={editable} />
@@ -294,7 +291,10 @@ class Product extends Component {
               }
 
               <FormGroup>
-                <Col componentClass={ControlLabel} sm={3} lg={2}>Unit Type</Col>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  { getFieldName('usage_type', getFieldNameType('product'), 'Unit Type')}
+                  <span className="danger-red"> *</span>
+                </Col>
                 <Col sm={8} lg={9}>
                   { editable && ['clone', 'create'].includes(mode)
                     ? (
@@ -308,7 +308,9 @@ class Product extends Component {
                     : (
                       <div>
                         <Col sm={3} style={{ paddingTop: 7 }}>{usaget}</Col>
-                        <Col sm={4} componentClass={ControlLabel} className="pr0 pl0">Units of Measure</Col>
+                        <Col sm={4} componentClass={ControlLabel} className="pr0 pl0">
+                          Units of Measure
+                        </Col>
                         <Col sm={5} className="pr0">
                           <UsageTypesSelector
                             usaget={usaget}
@@ -316,7 +318,7 @@ class Product extends Component {
                             onChangeUsaget={this.onChangeUsaget}
                             onChangeUnit={this.onChangeUnit}
                             showSelectTypes={false}
-                            enabled={mode !== 'view'}
+                            editable={mode !== 'view'}
                           />
                         </Col>
                       </div>)
@@ -339,9 +341,9 @@ class Product extends Component {
               <FormGroup>
                 <Col sm={12}>
                   { editable
-                    ? [(
-                      <Col sm={3} key="pricing-method-1">
-                        <div className="inline">
+                    ? (
+                      <>
+                        <div className="inline mr10">
                           <Field
                             fieldType="radio"
                             name="pricing-method"
@@ -350,13 +352,12 @@ class Product extends Component {
                             checked={pricingMethod === 'tiered'}
                             onChange={this.onChangePricingMethod}
                             label="Tiered pricing"
+                            className="inline"
                           />
+                          &nbsp;
+                          <Help contents={ProductDescription.tieredPricing} />
                         </div>
-                        &nbsp;<Help contents={ProductDescription.tieredPricing} />
-                      </Col>
-                    ),
-                    (
-                      <Col sm={3} key="pricing-method-2">
+
                         <div className="inline">
                           <Field
                             fieldType="radio"
@@ -366,11 +367,13 @@ class Product extends Component {
                             checked={pricingMethod === 'volume'}
                             onChange={this.onChangePricingMethod}
                             label="Volume pricing"
+                            className="inline"
                           />
+                          &nbsp;
+                          <Help contents={ProductDescription.volumePricing} />
                         </div>
-                        &nbsp;<Help contents={ProductDescription.volumePricing} />
-                      </Col>
-                    )]
+                      </>
+                    )
                     : (
                       <div className="non-editble-field">
                         { pricingMethod === 'tiered'
@@ -383,28 +386,10 @@ class Product extends Component {
                 </Col>
               </FormGroup>
 
-              { this.renderPrices() }
-              { editable && <CreateButton onClick={this.onProductRateAdd} label="Add New" />}
-              <Col lg={12} md={12}>
-                <FormGroup>
-                  { editable
-                    ? (
-                      <Checkbox checked={vatable} onChange={this.onChangeVatable}>
-                        This product is taxable
-                      </Checkbox>
-                    )
-                    :
-                    (
-                      <div className="non-editable-field">
-                        { vatable
-                          ? 'This product is taxable'
-                          : 'This product is not taxable'
-                        }
-                      </div>
-                    )
-                }
-                </FormGroup>
+              <Col sm={12}>
+                { this.renderPrices() }
               </Col>
+              { editable && <CreateButton onClick={this.onProductRateAdd} label="Add New" />}
             </Panel>
 
           </Form>

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Immutable from 'immutable';
-import { Button, FormGroup, Col, Row, ControlLabel, HelpBlock } from 'react-bootstrap';
+import { Button, FormGroup, Col, ControlLabel, HelpBlock } from 'react-bootstrap';
 import Field from '@/components/Field';
 import { getConfig } from '@/common/Util';
 
@@ -108,14 +108,18 @@ export default class PlanPrice extends Component {
     const editable = (mode !== 'view');
 
     return (
-      <Row style={{ marginBottom: 10 }}>
-        <Col lg={1} md={1} className="text-center">
-          { isFirst && <ControlLabel style={{ marginBottom: 5 }}>Period</ControlLabel>}
-          <p style={{ marginTop: editable ? 9 : 5 }}>{ index + 1 }</p>
+      <Col sm={12} className="form-inner-edit-row mb0">
+        <Col sm={2} className="text-center">
+          { isFirst && (
+            <ControlLabel className="mb5">Period</ControlLabel>
+          )}
+          <p className="non-editable-field mb0">{ index + 1 }</p>
         </Col>
-        <Col lg={4} md={4} style={{ paddingRight: 0 }}>
-          <FormGroup validationState={cycleError.length ? 'error' : null} style={{ margin: 0 }}>
-            { isFirst && <ControlLabel style={{ marginBottom: 5 }}>Cycles</ControlLabel>}
+        <Col sm={3} className="pr0">
+          <FormGroup validationState={cycleError.length ? 'error' : null} className="ml0 mr0">
+            { isFirst && (
+              <ControlLabel className="mb5">Cycles</ControlLabel>
+            )}
             { (to === planCycleUnlimitedValue)
               ? <Field value={cycle} disabled={true} editable={editable} />
               : <Field value={cycle} onChange={this.onCycleUpdateEvent} fieldType="number" min={0} editable={editable} />
@@ -124,25 +128,31 @@ export default class PlanPrice extends Component {
           </FormGroup>
         </Col>
 
-        <Col lg={4} md={4} style={{ paddingRight: 0 }}>
-          <FormGroup validationState={priceError.length ? 'error' : null} style={{ margin: 0 }}>
-            { isFirst && <ControlLabel style={{ marginBottom: 5 }}>Price</ControlLabel>}
+        <Col sm={3} className="pr0">
+          <FormGroup validationState={priceError.length ? 'error' : null} className="ml0 mr0">
+            { isFirst && (
+              <ControlLabel className="mb5">Price</ControlLabel>
+            )}
             <Field onChange={this.onPlanPriceUpdate} value={price} editable={editable} />
             { priceError.length > 0 && <HelpBlock>{priceError}.</HelpBlock>}
           </FormGroup>
         </Col>
 
-        <Col lg={3} md={3} sm={3} xs={3}>
+        <Col sm={4}>
           { showRemoveButton && editable &&
-            <FormGroup style={{ margin: 0 }}>
-              { isFirst && <ControlLabel style={{ marginBottom: 5 }}>&nbsp;</ControlLabel>}
-              <div style={{ width: '100%', height: 39 }}>
-                <Button onClick={this.onPlanTariffRemove} bsSize="small" className="pull-left" ><i className="fa fa-trash-o danger-red" />&nbsp;Remove</Button>
+            <FormGroup className="actions ml0 mr0">
+              { isFirst && (
+                <ControlLabel className="mb5">&nbsp;</ControlLabel>
+              )}
+              <div className="text-left">
+                <Button onClick={this.onPlanTariffRemove} bsSize="small">
+                  <i className="fa fa-trash-o danger-red" />
+                </Button>
               </div>
             </FormGroup>
           }
         </Col>
-      </Row>
+      </Col>
     );
   }
 }

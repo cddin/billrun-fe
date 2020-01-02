@@ -551,7 +551,7 @@ class InputProcessor extends Component {
     const { stepIndex, steps } = this.state;
     const ipSteps = steps
       .sortBy((step => step.idx))
-      .map((step, key) => ({title: step.label}))
+      .map(step => ({title: step.label}))
       .toList()
       .toArray();
     return (

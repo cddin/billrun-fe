@@ -8,7 +8,7 @@ import { Form, FormGroup, ControlLabel, HelpBlock, Col, InputGroup, DropdownButt
 import { ServiceDescription } from '../../language/FieldDescriptions';
 import Help from '../Help';
 import Field from '@/components/Field';
-import EntityFields from '../Entity/EntityFields';
+import { EntityFields } from '../Entity';
 import PlaysSelector from '../Plays/PlaysSelector';
 import {
   getConfig,
@@ -135,6 +135,7 @@ export default class ServiceDetails extends Component {
         <FormGroup>
           <Col componentClass={ControlLabel} sm={3} lg={2}>
             { getFieldName('description', getFieldNameType('service'), sentenceCase('title'))}
+            <span className="danger-red"> *</span>
             <Help contents={ServiceDescription.description} />
           </Col>
           <Col sm={8} lg={9}>
@@ -146,6 +147,7 @@ export default class ServiceDetails extends Component {
           <FormGroup validationState={errors.name.length > 0 ? 'error' : null} >
             <Col componentClass={ControlLabel} sm={3} lg={2}>
               { getFieldName('name', getFieldNameType('service'), sentenceCase('key'))}
+              <span className="danger-red"> *</span>
               <Help contents={ServiceDescription.name} />
             </Col>
             <Col sm={8} lg={9}>
@@ -158,6 +160,7 @@ export default class ServiceDetails extends Component {
         <FormGroup>
           <Col componentClass={ControlLabel} sm={3} lg={2}>
             { getFieldName('price', getFieldNameType('service'), sentenceCase('price'))}
+            <span className="danger-red"> *</span>
           </Col>
           <Col sm={4}>
             <Field value={item.getIn(['price', 0, 'price'], '')} onChange={this.onChangePrice} fieldType="price" editable={editable} />
@@ -171,7 +174,7 @@ export default class ServiceDetails extends Component {
               <span className="danger-red"> *</span>
             </Col>
             <Col sm={8} lg={9}>
-              <span style={{ display: 'inline-block', marginRight: 20 }}>
+              <span className="inline mr10">
                 <Field
                   fieldType="radio"
                   onChange={this.onChangeServicePeriodType}
@@ -186,7 +189,7 @@ export default class ServiceDetails extends Component {
                   checked={isByCycles}
                 />
               </span>
-              <span style={{ display: 'inline-block' }}>
+              <span className="inline">
                 <Field
                   fieldType="radio"
                   onChange={this.onChangeServicePeriodType}

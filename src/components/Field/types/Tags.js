@@ -4,7 +4,15 @@ import TagsInput from 'react-tagsinput';
 
 const Tags = (props) => {
   const { editable, value, disabled, placeholder, onChange, inputProps, onlyUnique, ...otherProps } = props;
-
+  const valueArr = Array.isArray(value) ? value : [value];
+  if (!editable) {
+    const displayValue = valueArr.join(', ');
+    return (
+      <div className="non-editable-field">
+        {displayValue}
+      </div>
+    );
+  }
   const renderTag = (args) => {
     const { tag, key, disabled: allowRemove, onRemove, classNameRemove, getTagDisplayValue, ...other } = args;
     const remove = () => { onRemove(key); };
@@ -16,13 +24,11 @@ const Tags = (props) => {
       </span>
     );
   };
-
   const placeholderText = (disabled) ? '' : placeholder;
   const defautlInputProps = {
     placeholder: placeholderText,
   };
   const tagInputProps = Object.assign(defautlInputProps, inputProps);
-  const valueArr = Array.isArray(value) ? value : [value];
   return (
     <TagsInput
       {...otherProps}

@@ -134,14 +134,30 @@ export const apiBillRunErrorHandler = (error, defaultMessage = 'Error, please tr
     } else {
       try {
         errorMessage = error.error[0].error.data.message;
+        if (typeof errorMessage !== 'string') {
+          throw new Error();
+        }
       } catch (e1) {
         try {
           errorMessage = error.error[0].error.message;
+          if (typeof errorMessage !== 'string') {
+            throw new Error();
+          }
         } catch (e2) {
           try {
             errorMessage = error.error.error[0].error.message;
+            if (typeof errorMessage !== 'string') {
+              throw new Error();
+            }
           } catch (e3) {
-            errorMessage = defaultMessage;
+            try {
+              errorMessage = error.error[0].error.desc;
+              if (typeof errorMessage !== 'string') {
+                throw new Error();
+              }
+            } catch (e4) {
+              errorMessage = defaultMessage;
+            }
           }
         }
       }

@@ -1,8 +1,10 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import Immutable from 'immutable';
+import moment from 'moment';
 import { InputGroup } from 'react-bootstrap';
 import Field from '../';
+import { getConfig } from '@/common/Util';
 
 class Range extends PureComponent {
 
@@ -46,11 +48,39 @@ class Range extends PureComponent {
     const { inputProps: { fieldType = 'text' } } = this.props;
     switch (fieldType) {
       case 'date':
+        const apiDateTimeFormat = getConfig('apiDateTimeFormat', 'YYYY-MM-DD[T]HH:mm:ss.SSS[Z]');
+        return (moment.isMoment(e) && e.isValid()) ? e.format(apiDateTimeFormat) : '';
       case 'select':
         return e;
       default:
         return e.target.value;
     }
+  }
+
+  setValue = (value) => {
+    const { inputProps: { fieldType = 'text' } } = this.props;
+    switch (fieldType) {
+      case 'date':
+        return (value === '') ? null : moment(value);
+      default:
+        return value;
+    }
+  }
+
+  replaceValues = (properties, valueFrom, valueTo) => {
+    const values = Object.values(properties);
+    if (values.includes('@valueFrom@') || values.includes('@valueTo@')) {
+      return Immutable.fromJS(properties).map((value, key) => {
+        if (value === '@valueFrom@') {
+          return valueFrom;
+        }
+        if (value === '@valueTo@') {
+          return valueTo;
+        }
+        return value;
+      }).toJS()
+    }
+    return properties;
   }
 
   render() {
@@ -60,16 +90,40 @@ class Range extends PureComponent {
       placeholder,
       editable,
       compact,
+      inputFromProps = {},
+      inputToProps = {},
       inputProps: { fieldType = 'text' },
       ...otherProps
     } = this.props;
-    const valueFrom = Immutable.Map.isMap(value) ? value.get('from', '') : '';
-    const valueTo = Immutable.Map.isMap(value) ? value.get('to', '') : '';
+    const valueFrom = this.setValue(Immutable.Map.isMap(value) ? value.get('from', '') : '');
+    const valueTo = this.setValue(Immutable.Map.isMap(value) ? value.get('to', '') : '');
     const placeholderFrom = typeof placeholder['from'] !== 'undefined' ? placeholder.from : '';
     const placeholderTo = typeof placeholder['to'] !== 'undefined' ? placeholder.to : '';
+    const inputFromPropsReplaced = this.replaceValues(inputFromProps, valueFrom, valueTo);
+    const inputToPropsReplaced = this.replaceValues(inputToProps, valueFrom, valueTo);
+
     if (!editable) {
       return (
-        <span className="non-editable-field">{`${valueFrom} - ${valueTo}`}</span>
+        <span className="non-editable-field">
+          <Field
+            {...otherProps}
+            {...inputFromPropsReplaced}
+            fieldType={fieldType}
+            value={valueFrom}
+            placeholder={placeholderFrom}
+            editable={false}
+            className="inline"
+          />
+          &nbsp;-&nbsp;
+          <Field
+            {...otherProps}
+            {...inputToPropsReplaced}
+            fieldType={fieldType}
+            value={valueTo}
+            editable={false}
+            className="inline"
+          />
+        </span>
       );
     }
     return (
@@ -79,6 +133,7 @@ class Range extends PureComponent {
         )}
         <Field
           {...otherProps}
+          {...inputFromPropsReplaced}
           fieldType={fieldType}
           value={valueFrom}
           onChange={this.onChangeFrom}
@@ -92,6 +147,7 @@ class Range extends PureComponent {
         )}
         <Field
           {...otherProps}
+          {...inputToPropsReplaced}
           fieldType={fieldType}
           value={valueTo}
           onChange={this.onChangeTo}

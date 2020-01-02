@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import Immutable from 'immutable';
-import { sentenceCase } from 'change-case';
-import { FormGroup, Col, ControlLabel, InputGroup, Button } from 'react-bootstrap';
-import Field from '@/components/Field';
+import { FormGroup, Col, ControlLabel, InputGroup, Button, HelpBlock } from 'react-bootstrap';
+import Field from '../Field';
+import Help from '../Help';
+import { getConfig, formatSelectOptions } from '@/common/Util';
 
 
 class EntityField extends Component {
@@ -12,6 +14,20 @@ class EntityField extends Component {
     entity: PropTypes.instanceOf(Immutable.Map),
     field: PropTypes.instanceOf(Immutable.Map),
     editable: PropTypes.bool,
+    disabled: PropTypes.bool,
+    error: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.bool,
+    ]),
+    onlyInput: PropTypes.bool,
+    isFieldTags: PropTypes.bool,
+    isFieldSelect: PropTypes.bool,
+    isFieldBoolean: PropTypes.bool,
+    isFieldRanges: PropTypes.bool,
+    isFieldDate: PropTypes.bool,
+    isFieldDateRange: PropTypes.bool,
+    isRemoveField: PropTypes.bool,
+    fieldPath: PropTypes.array,
     onChange: PropTypes.func,
   };
 
@@ -19,16 +35,17 @@ class EntityField extends Component {
     entity: Immutable.Map(),
     field: Immutable.Map(),
     editable: true,
+    disabled: false,
+    onlyInput: false,
+    isFieldTags: false,
+    isFieldSelect: false,
+    isFieldBoolean: false,
+    isFieldRanges: false,
+    isFieldDate: false,
+    isFieldDateRange: false,
+    fieldPath: [],
+    error: '',
     onChange: () => {},
-  }
-
-  state = {
-    isFieldTags: this.props.field.get('multiple', false) && !this.props.field.get('select_list', false),
-    isFieldSelect: this.props.field.get('select_list', false),
-    isFieldBoolean: this.props.field.get('type', '') === 'boolean',
-    isFieldRanges: this.props.field.get('type', '') === 'ranges',
-    fieldPath: this.props.field.get('field_name', '').split('.'),
-    isRemoveField: ['params'].includes(this.props.field.get('field_name', '').split('.')[0]),
   }
 
   componentDidMount() {
@@ -36,9 +53,8 @@ class EntityField extends Component {
   }
 
   initDefaultValues = () => {
-    const { fieldPath } = this.state;
-    const { field, entity } = this.props;
-    if (entity.getIn(fieldPath, null) === null) {
+    const { field, entity, fieldPath } = this.props;
+    if ([null, undefined].includes(entity.getIn(fieldPath, null))) {
       const noDefaultValueVal = this.getNoDefaultValueVal();
       const defaultValue = field.get('default_value', noDefaultValueVal);
       if (defaultValue !== null) {
@@ -48,14 +64,15 @@ class EntityField extends Component {
   }
 
   getNoDefaultValueVal = (byConfig = true) => {
-    const { field } = this.props;
-    const { isFieldBoolean, isFieldTags, isFieldSelect, isFieldRanges } = this.state;
+    const {
+      field, isFieldBoolean, isFieldTags, isFieldSelect, isFieldRanges, isFieldDateRange,
+    } = this.props;
     if (isFieldBoolean) {
       return false;
     }
-    if (isFieldRanges) {
-      // const defaultRangValue = Immutable.Map({ from: '', to: '' });
-      // return Immutable.List([defaultRangValue]);
+    if (isFieldRanges || isFieldDateRange) {
+      // const defaultRangeValue = Immutable.Map({ from: '', to: '' });
+      // return Immutable.List([defaultRangeValue]);
       return Immutable.List();
     }
     if (!byConfig) {
@@ -72,24 +89,22 @@ class EntityField extends Component {
     return data.split(new RegExp(separators.join('|'))).map(d => d.trim());
   }
 
-  getFieldOptios = field => field
-    .get('select_options', '')
-    .split(',')
-    .filter(option => option !== '')
-    .map(option => ({
-      value: option,
-      label: sentenceCase(option),
-    }));
+  getFieldOptios = (field) => {
+    const options = field.get('select_options', '');
+    const nonFormatedOptions = (typeof options === 'string')
+      ? options.split(',').filter(option => option !== '')
+      : options;
+    return nonFormatedOptions.map(formatSelectOptions);
+  }
 
   onChange = (e) => {
-    const { fieldPath } = this.state;
+    const { fieldPath } = this.props;
     const { value } = e.target;
     this.props.onChange(fieldPath, value);
   }
 
   onChangeSelect = (val) => {
-    const { field } = this.props;
-    const { fieldPath } = this.state;
+    const { field, fieldPath } = this.props;
     const multi = field.get('multiple', false);
     if (multi) {
       this.props.onChange(fieldPath, val.split(','));
@@ -98,19 +113,35 @@ class EntityField extends Component {
     }
   }
 
+  onChangeDate = (date) => {
+    const { fieldPath } = this.props;
+    const apiDateTimeFormat = getConfig('apiDateTimeFormat', 'YYYY-MM-DD[T]HH:mm:ss.SSS[Z]');
+    const value = (moment.isMoment(date) && date.isValid()) ? date.format(apiDateTimeFormat) : '';
+    this.props.onChange(fieldPath, value);
+  }
+
   onChangeRange = (val) => {
-    const { fieldPath } = this.state;
+    const { fieldPath } = this.props;
     this.props.onChange(fieldPath, val);
   }
 
   onChangeTags = (val) => {
-    const { fieldPath } = this.state;
+    const { fieldPath } = this.props;
     this.props.onChange(fieldPath, val);
   }
 
   getFieldValue = () => {
-    const { fieldPath, isFieldTags, isFieldBoolean, isFieldRanges } = this.state;
-    const { entity, editable } = this.props;
+    const {
+      entity, editable, fieldPath, isFieldTags, isFieldBoolean, isFieldRanges, isFieldDate, isFieldDateRange,
+    } = this.props;
+    if (isFieldDate) {
+      const value = entity.getIn(fieldPath, '');
+      return ([undefined, null, ''].includes(value)) ? undefined : moment(value);
+    }
+    if (isFieldDateRange) {
+      const value = entity.getIn(fieldPath, undefined);
+      return ([undefined, null, ''].includes(value)) ? undefined : value;
+    }
     if (isFieldRanges) {
       return entity.getIn(fieldPath, undefined);
       // return entity.getIn(fieldPath, { from: '', to: '' });
@@ -127,8 +158,7 @@ class EntityField extends Component {
   }
 
   onClickRemoveInput = () => {
-    const { entity } = this.props;
-    const { fieldPath } = this.state;
+    const { entity, fieldPath } = this.props;
     if (fieldPath.length > 1) {
       const lastElement = fieldPath.splice(fieldPath.length - 1, 1);
       const withoutField = entity.getIn(fieldPath).delete(...lastElement);
@@ -136,20 +166,35 @@ class EntityField extends Component {
     }
   }
 
-  renderRemovableField = input => (
-    <InputGroup>
-      {input}
-      <InputGroup.Button>
-        <Button onClick={this.onClickRemoveInput}>
-          <i className="fa fa-fw fa-trash-o danger-red" />
-        </Button>
-      </InputGroup.Button>
-    </InputGroup>
-  );
+  renderRemovableField = (input) => {
+    const { field } = this.props;
+    return (
+      <InputGroup>
+        {input}
+        <InputGroup.Button>
+          <Button onClick={this.onClickRemoveInput}>
+            <i
+              className="fa fa-fw fa-trash-o danger-red"
+              title={`Remove ${field.get('title', field.get('field_name', ''))} field`}
+            />
+          </Button>
+        </InputGroup.Button>
+      </InputGroup>
+    );
+  }
 
   renderField = () => {
-    const { editable, field } = this.props;
-    const { isFieldTags, isFieldSelect, isFieldBoolean, isFieldRanges } = this.state;
+    const {
+      editable,
+      field,
+      disabled,
+      isFieldTags,
+      isFieldSelect,
+      isFieldBoolean,
+      isFieldRanges,
+      isFieldDate,
+      isFieldDateRange
+    } = this.props;
     const value = this.getFieldValue();
     if (isFieldRanges) {
       const multi = field.get('multiple', false);
@@ -161,13 +206,50 @@ class EntityField extends Component {
           multi={multi}
           editable={editable}
           label={field.get('title', field.get('field_name', ''))}
+          disabled={disabled}
         />
       );
     }
     if (isFieldBoolean) {
       const checkboxStyle = { height: 29, marginTop: 8 };
       return (
-        <Field onChange={this.onChange} value={value} fieldType="checkbox" editable={editable} style={checkboxStyle} />
+        <Field
+          fieldType="checkbox"
+          onChange={this.onChange}
+          value={value}
+          editable={editable}
+          style={checkboxStyle}
+          disabled={disabled}
+        />
+      );
+    }
+    if (isFieldDateRange) {
+      const multi = field.get('multiple', false);
+      return (
+          <Field
+            fieldType="ranges"
+            onChange={this.onChangeRange}
+            value={value}
+            multi={multi}
+            editable={editable}
+            label={field.get('title', field.get('field_name', ''))}
+            disabled={disabled}
+            inputProps={{fieldType: 'date', isClearable: true}}
+            inputFromProps={{selectsStart: true, endDate:'@valueTo@'}}
+            inputToProps={{selectsEnd: true, startDate: '@valueFrom@', endDate: '@valueTo@', minDate: '@valueFrom@'}}
+          />
+      );
+    }
+    if (isFieldDate) {
+      const mandatory = field.get('mandatory', false);
+      return (
+        <Field
+          fieldType="date"
+          value={value}
+          onChange={this.onChangeDate}
+          editable={editable}
+          isClearable={!mandatory}
+        />
       );
     }
     if (isFieldSelect && editable) {
@@ -180,34 +262,56 @@ class EntityField extends Component {
           value={value}
           onChange={this.onChangeSelect}
           options={options}
+          disabled={disabled}
         />
       );
     }
     if (isFieldTags && editable) {
       return (
-        <Field fieldType="tags" value={value} onChange={this.onChangeTags} addOnPaste pasteSplit={this.pasteSplit} />
+        <Field
+          fieldType="tags"
+          value={value}
+          onChange={this.onChangeTags}
+          addOnPaste
+          pasteSplit={this.pasteSplit}
+          disabled={disabled}
+        />
       );
     }
     const fieldType = field.get('type', '') === '' ? 'text' : field.get('type', '');
     return (
-      <Field fieldType={fieldType} onChange={this.onChange} value={value} editable={editable} />
+      <Field
+        fieldType={fieldType}
+        onChange={this.onChange}
+        value={value}
+        editable={editable}
+        disabled={disabled}
+        preffix={field.get('preffix')}
+        suffix={field.get('suffix')}
+      />
     );
   }
 
   render() {
-    const { field, editable } = this.props;
-    const { isRemoveField } = this.state;
-    const fieldName = field.get('field_name', '');
+    const { field, editable, error, onlyInput, isRemoveField } = this.props;
     const fieldInput = this.renderField();
-
+    if (onlyInput) {
+      return fieldInput;
+    }
+    const fieldName = field.get('field_name', '');
+    const help = field.get('help', '');
+    const description = field.get('description', '');
     return (
-      <FormGroup controlId={fieldName}>
+      <FormGroup controlId={fieldName} validationState={error ? 'error' : null}>
         <Col componentClass={ControlLabel} sm={3} lg={2}>
           { field.get('title', fieldName) }
           { field.get('mandatory', false) && (<span className="danger-red"> *</span>)}
+          { description !== '' && (<Help contents={description} />) }
         </Col>
         <Col sm={8} lg={9}>
-          { isRemoveField && editable ? this.renderRemovableField(fieldInput) : fieldInput }
+          { isRemoveField && editable && !field.get('mandatory', false) ? this.renderRemovableField(fieldInput) : fieldInput }
+          { error && (<HelpBlock><small>{error}</small></HelpBlock>)}
+          { help !== '' && (<HelpBlock><small>{help}</small></HelpBlock>)}
         </Col>
       </FormGroup>
     );

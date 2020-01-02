@@ -6,6 +6,7 @@ import { Panel, Tabs, Tab } from 'react-bootstrap';
 import Immutable from 'immutable';
 import moment from 'moment';
 import PlanTab from './PlanTab';
+import { EntityTaxDetails } from '@/components/Tax';
 import { EntityRevisionDetails } from '../Entity';
 import PlanProductsPriceTab from './PlanProductsPriceTab';
 import PlanIncludesTab from './PlanIncludesTab';
@@ -58,6 +59,8 @@ class PlanSetup extends Component {
     activeTab: 1,
   };
 
+  static entityName = 'plan';
+
   state = {
     activeTab: parseInt(this.props.activeTab),
     progress: false,
@@ -70,7 +73,7 @@ class PlanSetup extends Component {
   componentDidMount() {
     const { mode } = this.props;
     if (['clone', 'create'].includes(mode)) {
-      const pageTitle = buildPageTitle(mode, 'plan');
+      const pageTitle = buildPageTitle(mode, PlanSetup.entityName);
       this.props.dispatch(setPageTitle(pageTitle));
     }
     this.initDefaultValues();
@@ -81,7 +84,7 @@ class PlanSetup extends Component {
     const { item, itemId, mode } = nextProps;
     const { item: oldItem, itemId: oldItemId, mode: oldMode } = this.props;
     if (mode !== oldMode || getItemId(item) !== getItemId(oldItem)) {
-      const pageTitle = buildPageTitle(mode, 'plan', item);
+      const pageTitle = buildPageTitle(mode, PlanSetup.entityName, item);
       this.props.dispatch(setPageTitle(pageTitle));
     }
     if (itemId !== oldItemId || (mode !== oldMode && mode === 'clone')) {
@@ -112,8 +115,14 @@ class PlanSetup extends Component {
       this.props.dispatch(setClonePlan());
       this.handleSelectTab(1);
     }
-    if (item.get('prorated', null) === null) {
-      this.props.dispatch(onPlanFieldUpdate(['prorated'], true));
+    if (item.get('prorated_start', null) === null) {
+      this.props.dispatch(onPlanFieldUpdate(['prorated_start'], true));
+    }
+    if (item.get('prorated_end', null) === null) {
+      this.props.dispatch(onPlanFieldUpdate(['prorated_end'], true));
+    }
+    if (item.get('prorated_termination', null) === null) {
+      this.props.dispatch(onPlanFieldUpdate(['prorated_termination'], true));
     }
   }
 
@@ -203,7 +212,7 @@ class PlanSetup extends Component {
     if (itemWasChanged) {
       this.clearItemsList(); // refetch items list because item was (changed in / added to) list
     }
-    const listUrl = getConfig(['systemItems', 'plan', 'itemsType'], '');
+    const listUrl = getConfig(['systemItems', PlanSetup.entityName, 'itemsType'], '');
     this.props.router.push(`/${listUrl}`);
   }
 
@@ -291,6 +300,18 @@ class PlanSetup extends Component {
             </Panel>
           </Tab>
 
+          <Tab title="Tax" eventKey={5}>
+            <Panel style={{ borderTop: 'none' }}>
+              <EntityTaxDetails
+                tax={item.get('tax')}
+                mode={mode}
+                itemName={PlanSetup.entityName}
+                onFieldUpdate={this.onChangeFieldValue}
+                onFieldRemove={this.onRemoveFieldValue}
+              />
+            </Panel>
+          </Tab>
+
         </Tabs>
         <ActionButtons
           onClickCancel={this.handleBack}
@@ -306,10 +327,10 @@ class PlanSetup extends Component {
 
 
 const mapStateToProps = (state, props) => ({
-  itemId: idSelector(state, props, 'plan'),
-  item: itemSelector(state, props, 'plan'),
-  mode: modeSelector(state, props, 'plan'),
-  activeTab: tabSelector(state, props, 'plan'),
-  revisions: revisionsSelector(state, props, 'plan'),
+  itemId: idSelector(state, props, PlanSetup.entityName),
+  item: itemSelector(state, props, PlanSetup.entityName),
+  mode: modeSelector(state, props, PlanSetup.entityName),
+  activeTab: tabSelector(state, props, PlanSetup.entityName),
+  revisions: revisionsSelector(state, props, PlanSetup.entityName),
 });
 export default withRouter(connect(mapStateToProps)(PlanSetup));

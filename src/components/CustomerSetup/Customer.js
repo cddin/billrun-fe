@@ -9,7 +9,7 @@ import getSymbolFromCurrency from 'currency-symbol-map';
 import classNames from 'classnames';
 import OfflinePayment from '../Payments/OfflinePayment';
 import CyclesSelector from '../Cycle/CyclesSelector';
-import EntityFields from '../Entity/EntityFields';
+import { EntityFields } from '../Entity';
 import Credit from '../Credit/Credit';
 import { ConfirmModal, Actions } from '@/components/Elements';
 import { currencySelector, paymentGatewaysSelector } from '@/selectors/settingsSelector';
@@ -72,17 +72,8 @@ class Customer extends Component {
   }
 
   onRemovePaymentGateway = () => {
-    this.onChangeCustomField(['payment_gateway', 'active'], Immutable.Map());
+    this.props.onChange(['payment_gateway', 'active'], Immutable.Map());
   }
-
-  onChangeCustomField = (fieldPath, value) => {
-    const e = { target: { id: fieldPath, value } };
-    this.props.onChange(e);
-  };
-
-  onRemoveCustomField = (fieldPath) => {
-    this.props.onRemoveField(fieldPath);
-  };
 
   renderPaymentGatewayLabel = () => {
     const { customer, supportedGateways } = this.props;
@@ -337,8 +328,8 @@ class Customer extends Component {
           <EntityFields
             entityName={['subscribers', 'account']}
             entity={customer}
-            onChangeField={this.onChangeCustomField}
-            onRemoveField={this.onRemoveCustomField}
+            onChangeField={this.props.onChange}
+            onRemoveField={this.props.onRemoveField}
           />
           { (action !== 'create') && this.renderChangePaymentGateway() }
           { (action !== 'create') && this.renderOfflinePaymentsButton() }

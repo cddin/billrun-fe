@@ -131,7 +131,6 @@ class PrepaidPlanSetup extends Component {
       this.props.dispatch(onPlanFieldUpdate(['price', 0, 'price'], 0));
       this.props.dispatch(onPlanFieldUpdate(['upfront'], true));
       this.props.dispatch(onPlanFieldUpdate(['recurrence'], Immutable.Map({ unit: 1, periodicity: 'month' })));
-      this.props.dispatch(onPlanFieldUpdate(['prorated'], false)); // this is a temp hack, because prepaid plans should not have prorated field. needs to be fixed in BE
       this.props.dispatch(onPlanFieldUpdate(['tax'], Immutable.Map({ service_code: ' ', product_code: ' ', safe_harbor_override_pct: ' ' }))); // this is a temp hack, because prepaid plans should not have tax fields. needs to be fixed in BE
     }
     if (mode === 'clone') {

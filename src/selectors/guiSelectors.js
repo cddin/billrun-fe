@@ -94,3 +94,14 @@ export const permissionsSelector = createSelector(
       return acc;
     }, Immutable.Map())
 );
+
+const getPagesFlags = state => state.guiState.page.get('flag');
+export const pageFlagSelector = createSelector(
+  getPagesFlags,
+  (state, props, page) => page,
+  (state, props, page, flag) => flag,
+  (flags = Immutable.Map(), page = '', flag = null) => {
+    const path = (flag !== null) ? [page, flag] : [page];
+    return flags.getIn(path, undefined);
+  },
+);

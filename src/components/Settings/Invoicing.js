@@ -1,97 +1,111 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import Immutable from 'immutable';
 import { Form, FormGroup, Col, ControlLabel, HelpBlock } from 'react-bootstrap';
 import Field from '@/components/Field';
 import { SettingsDescription } from '../../language/FieldDescriptions';
 
-export default class Invoicing extends Component {
 
-  static propTypes = {
-    onChange: PropTypes.func.isRequired,
-    data: PropTypes.instanceOf(Immutable.Map),
-  };
+const Invoicing = ({ data, chargingDayOptions, onChange }) => {
 
-  onChange = (e) => {
-    const { id, value } = e.target;
-    this.props.onChange('billrun', id, value);
+  const onChangeValue = (key, value) => {
+    onChange('billrun', key, value);
   }
 
-  onToggleDetailedInvoices = (e) => {
+  const onChangeChargingDay = (value) => {
+    onChangeValue('charging_day', value);
+  }
+
+  const onToggleDetailedInvoices = (e) => {
     const { value } = e.target;
-    this.props.onChange('billrun', 'detailed_invoices', value);
+    onChangeValue('detailed_invoices', value);
   }
 
-  onToggleEmailAfterConfirmation = (e) => {
+  const onToggleEmailAfterConfirmation = (e) => {
     const { value } = e.target;
-    this.props.onChange('billrun', 'email_after_confirmation', value);
+    onChangeValue('email_after_confirmation', value);
   }
 
-  onToggleGeneratePdf = (e) => {
+  const onToggleGeneratePdf = (e) => {
     const { value } = e.target;
-    this.props.onChange('billrun', 'generate_pdf', value);
+    onChangeValue('generate_pdf', value);
+    if (value === false) {
+      onChangeValue('email_after_confirmation', false);
+      onChangeValue('detailed_invoices', false);
+    }
   }
 
-  renderOption = (value, key) => <option value={value} key={key}>{value}</option>;
-
-  render() {
-    const { data } = this.props;
-    const checkboxStyle = { marginTop: 10 };
-    const billingDayOptions = [...Array(28)].map((_, i) => this.renderOption((i + 1), i));
-
-    return (
-      <div className="Invoicing">
-        <Form horizontal>
-          <FormGroup controlId="charging_day" key="charging_day">
-            <Col componentClass={ControlLabel} sm={2}>
-              Charging Day
-            </Col>
-            <Col sm={6}>
-              <select id="charging_day" name="charging_day" value={data.get('charging_day', '')} onChange={this.onChange} className="form-control">
-                {[
-                  <option value="" key="select_charging_day">Select charging day...</option>,
-                  ...billingDayOptions,
-                ]}
-              </select>
-            </Col>
-          </FormGroup>
-          <FormGroup>
-            <Col sm={10} smOffset={2} style={checkboxStyle}>
-              <Field
-                fieldType="checkbox"
-                label="Billing cycle generates PDF invoices"
-                value={data.get('generate_pdf', true)}
-                onChange={this.onToggleGeneratePdf}
-              />
-            </Col>
-          </FormGroup>
-          <FormGroup>
-            <Col sm={10} smOffset={2} style={checkboxStyle}>
-              <Field
-                fieldType="checkbox"
-                label="Detailed Invoices"
-                value={data.get('detailed_invoices', false)}
-                onChange={this.onToggleDetailedInvoices}
-                disabled={!data.get('generate_pdf', true)}
-              />
-            </Col>
-          </FormGroup>
-          <FormGroup>
-            <Col sm={10} smOffset={2} style={checkboxStyle}>
-              <Field
-                fieldType="checkbox"
-                label="Send invoices to customers by email"
-                value={data.get('email_after_confirmation', false)}
-                onChange={this.onToggleEmailAfterConfirmation}
-                disabled={!data.get('generate_pdf', true)}
-              />
-            <HelpBlock style={{ marginLeft: 20, marginTop: 0 }}>
-              {SettingsDescription.email_after_confirmation}
-            </HelpBlock>
-            </Col>
-          </FormGroup>
-        </Form>
-      </div>
-    );
-  }
+  return (
+    <div className="Invoicing">
+      <Form horizontal>
+        <FormGroup controlId="charging_day" key="charging_day">
+          <Col componentClass={ControlLabel} sm={2}>
+            Charging Day
+          </Col>
+          <Col sm={6}>
+            <Field
+              fieldType="select"
+              value={data.get('charging_day', '')}
+              onChange={onChangeChargingDay}
+              options={chargingDayOptions}
+              placeholder="Select charging day..."
+            />
+          </Col>
+        </FormGroup>
+        <FormGroup>
+          <Col sm={10} smOffset={2} className="mt10">
+            <Field
+              fieldType="checkbox"
+              label="Billing cycle generates PDF invoices"
+              value={data.get('generate_pdf', true)}
+              onChange={onToggleGeneratePdf}
+            />
+          </Col>
+        </FormGroup>
+        <FormGroup>
+          <Col sm={10} smOffset={2} className="mt10">
+            <Field
+              fieldType="checkbox"
+              label="Detailed Invoices"
+              value={data.get('detailed_invoices', false)}
+              onChange={onToggleDetailedInvoices}
+              disabled={!data.get('generate_pdf', true)}
+            />
+          </Col>
+        </FormGroup>
+        <FormGroup>
+          <Col sm={10} smOffset={2} className="mt10">
+            <Field
+              fieldType="checkbox"
+              label="Send invoices to customers by email"
+              value={data.get('email_after_confirmation', false)}
+              onChange={onToggleEmailAfterConfirmation}
+              disabled={!data.get('generate_pdf', true)}
+            />
+          <HelpBlock style={{ marginLeft: 20, marginTop: 0 }}>
+            {SettingsDescription.email_after_confirmation}
+          </HelpBlock>
+          </Col>
+        </FormGroup>
+      </Form>
+    </div>
+  );
 }
+
+Invoicing.defaultProps = {
+  data: Immutable.Map(),
+  chargingDayOptions: [...Array(28)].map((_, i) => ({value: i + 1, label: i + 1}))
+};
+
+Invoicing.propTypes = {
+  data: PropTypes.instanceOf(Immutable.Map),
+  chargingDayOptions: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.string,
+      label: PropTypes.string,
+    }),
+  ),
+  onChange: PropTypes.func.isRequired,
+};
+
+export default Invoicing;

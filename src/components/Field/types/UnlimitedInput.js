@@ -53,7 +53,11 @@ export default class UnlimitedInput extends Component {
     const { unlimitedLabel, disabled, editable, suffix } = this.props;
 
     if (!editable) {
-      return (<div className="non-editable-field">{ unlimited ? unlimitedLabel : unlimitedLabel }</div>);
+      return (
+        <div className="non-editable-field">
+          { unlimited ? unlimitedLabel : unlimitedLabel }
+        </div>
+      );
     }
 
     return (

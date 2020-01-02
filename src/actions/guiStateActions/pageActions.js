@@ -5,6 +5,8 @@ export const ONBOARDING_TOGGLE = 'TOGGLE_BOARDING';
 export const ONBOARDING_SET_STEP = 'SET_ON_BOARDING_STEP';
 export const ONBOARDING_SET_STATE = 'SET_ON_BOARDING_STATE';
 
+export const SET_PAGE_FLAG = 'SET_PAGE_FLAG';
+
 export const CONFIRM_SHOW = 'CONFIRM_SHOW';
 export const CONFIRM_HIDE = 'CONFIRM_HIDE';
 
@@ -118,4 +120,11 @@ export const updateFormModalItemField = (path, value) => ({
 export const removeFormModalItemField = path => ({
   type: EDIT_FORM_DELETE_ITEM_FIELD,
   path,
+});
+
+export const setPageFlag = (page, flag = null, value = null) => ({
+  type: SET_PAGE_FLAG,
+  page,
+  flag,
+  value,
 });

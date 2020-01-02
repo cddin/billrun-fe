@@ -21,7 +21,7 @@ class Ranges extends PureComponent {
 
   static defaultProps = {
     id: undefined,
-    value: Immutable.List([]),
+    value: Immutable.List(),
     label: '',
     inputProps: {},
     multi: false,
@@ -73,7 +73,7 @@ class Ranges extends PureComponent {
           {value.map((rangeValue, index) => (
             <span key={`range_${id}_${index}`}>
               {index > 0 && ", "}
-              <Range value={rangeValue} editable={false} />
+              <Range {...otherProps} value={rangeValue} editable={false} />
             </span>
           ))}
         </span>
@@ -87,7 +87,7 @@ class Ranges extends PureComponent {
         this.onRemove(index);
       };
       return (
-        <FormGroup key={`range_${id}_${index}`} className="rangesField form-inner-edit-row">
+        <FormGroup key={`range_${id}_${index}`} className="rangesField form-inner-edit-row mr0 ml0">
           <InputGroup style={{ width: '100%' }}>
             <Range
               {...otherProps}

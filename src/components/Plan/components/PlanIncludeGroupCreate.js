@@ -351,7 +351,7 @@ class PlanIncludeGroupCreate extends Component {
     const existingProductsKeys = usedProducts.push(...products);
     const setIncludesTitle = monetaryBased
       ? `Total ${getSymbolFromCurrency(currency)} included`
-      : `${getUnitLabel(propertyTypes, usageTypesData, usages.get(0, ''), unit)} includes (${this.getUsagesLabel()})`;
+      : <>{getUnitLabel(propertyTypes, usageTypesData, usages.get(0, ''), unit)} includes<br /> ({this.getUsagesLabel()})</>;
 
     switch (stepIndex) {
 
@@ -429,7 +429,7 @@ class PlanIncludeGroupCreate extends Component {
       case steps.get('SetIncludes', { index: -1 }).index:
         return ([
           <FormGroup validationState={error.length > 0 ? 'error' : null} key={`${usages.get(0, '')}_includes`} className="mb10">
-            <Col componentClass={ControlLabel} sm={4}>
+            <Col componentClass={ControlLabel} sm={3}>
               {setIncludesTitle}
             </Col>
             <Col sm={7}>
@@ -470,8 +470,9 @@ class PlanIncludeGroupCreate extends Component {
             {monetaryBased
               ? <Col componentClass={ControlLabel} sm={3}>Products</Col>
               : <Col componentClass={ControlLabel} sm={3} style={{ paddingTop: 2 }}>
-                Products of type/s <br />{this.getUsagesLabel()}
-                <Help contents={GroupsInclude.products} />
+                Products of type/s <Help contents={GroupsInclude.products} />
+                <br />
+                ({this.getUsagesLabel()})
               </Col>
             }
             <Col sm={8}>
@@ -512,7 +513,7 @@ class PlanIncludeGroupCreate extends Component {
     return (
       <div>
         <CreateButton onClick={this.handleToggleBoby} type="Group" label="Create New" />
-        <Modal show={open} keyboard={false}>
+        <Modal show={open} keyboard={false} bsSize="large">
 
           <Modal.Header closeButton onHide={this.handleCancel}>
             <Modal.Title>

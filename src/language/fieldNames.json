@@ -95,6 +95,12 @@
   },
   "event": {
     "type": "Event Type",
+    "event_type": "Event Type",
+    "extra_params.aid": "Customer ID",
+    "extra_params.sid": "Subscriber ID",
+    "based_on": "Condition Trigger",
+    "before": "Balance Before",
+    "after": "Balance After",
     "notify_time": "Notify Time",
     "creation_time": "Creation Time",
     "value": "Value",
@@ -123,9 +129,77 @@
     "upfront": "Charging Mode"
   },
   "product": {
+    "usage_type_value" : "Usage Type",
+    "usage_type_unit": "Usage Type Unit",
+    "pricing_method": "Pricing Method",
     "description": "Title",
-    "key": "Key"
+    "key": "Key",
+    "usage_type": "Unit Type",
+    "price_from": "Pricing From",
+    "price_to": "Pricing To",
+    "price_value": "Price Per Interval",
+    "price_interval": "Pricing Interval",
+    "price_plan": "Plan Price Override"
+  },
+  "import": {
+    "manual_mapping": "Map Manually CSV colums to entity field",
+    "predefined_mapping": "Use file with predefined structure",
+    "permanentchange": "Update",
+    "rates.percentage": "Plan Price Override by Percentage"
+  },
+  "foreign": {
+    "account_subscribers": "Customer Members"
+  },
+  "discount": {
+    "description": "Title",
+    "key": "Key",
+    "priority": "Priority",
+    "type": "Type",
+    "cycles": "Cycles",
+    "select_plans": "Select Plans",
+    "select_services": "Select Services",
+    "discount_overall_limit": "Discount Overall Limit",
+    "type_monetary": "Monetary",
+    "type_percentage": "Percentage",
+    "min_subscribers": "Min Subscribers",
+    "max_subscribers": "Max Subscribers",
+    "proration": "Prorated",
+    "proration_inherited": "Inherited",
+    "proration_no": "No",
+    "matched_services": "Matched Services",
+    "monthly_fees": "Plans and included services",
+    "matched_plans": "Matched Plans",
+    "panel_plan_discount": "Plans Discount Values",
+    "panel_service_discount": "Services Discount Values"
+  },
+  "charge": {
+    "description": "Title",
+    "key": "Key",
+    "priority": "Priority",
+    "type": "Type",
+    "cycles": "Cycles",
+    "select_plans": "Select Plans",
+    "select_services": "Select Services",
+    "discount_overall_limit": "Charge Overall Limit",
+    "type_monetary": "Monetary",
+    "type_percentage": "Percentage",
+    "min_subscribers": "Min Subscribers",
+    "max_subscribers": "Max Subscribers",
+    "proration": "Prorated",
+    "proration_inherited": "Inherited",
+    "proration_no": "No",
+    "matched_services": "Matched Services",
+    "monthly_fees": "Plans and included services",
+    "matched_plans": "Matched Plans",
+    "panel_plan_discount": "Plans Charge Values",
+    "panel_service_discount": "Services Charge Values",
+    "charge_values": "Charge Values",
+    "subject_general": "General",
+    "percentage_subject_not_compatible": "is not compatible with  General Charge."
   },
   "aid": "Customer ID",
-  "sid": "Subscriber ID"
+  "sid": "Subscriber ID",
+  "from": "From",
+  "to": "To",
+  "effective_date": "Effective Date"
 }

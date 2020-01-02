@@ -9,21 +9,27 @@ export default class GatewayParamsModal extends Component {
     this.state = {
       gateway: {
         params: {},
-        receiver: {},
+        transactions: {},
+        denials: {},
         export: {},
       },
-      connections: [],
+      transactionsConnections: [],
+      denialsConnections: [],
       activeTab: 1,
-      connection: {},
+      transactionsConnection: {},
+      denialsConnection: {},
     };
   }
 
   componentWillReceiveProps(nextProps) {
     const { gateway, settings } = nextProps;
     if (gateway) {
-      const currentConnection = gateway.getIn(['receiver', 'connections', 0]) === undefined ? {} :
-        gateway.getIn(['receiver', 'connections', 0]).toJS();
-      return this.setState({ connection: currentConnection, gateway: gateway.toJS()});
+      const currentTransactionsConnection = gateway.getIn(['transactions', 'receiver', 'connections', 0]) === undefined ? {} :
+        gateway.getIn(['transactions', 'receiver', 'connections', 0]).toJS();
+      const currentDenialsConnection = gateway.getIn(['denials', 'receiver', 'connections', 0]) === undefined ? {} :
+        gateway.getIn(['denials', 'receiver', 'connections', 0]).toJS();
+
+      return this.setState({ transactionsConnection: currentTransactionsConnection, denialsConnection: currentDenialsConnection, gateway: gateway.toJS()});
     }
     return this.setState({gateway: {name: settings.get('name'), params: {}}});
   }
@@ -36,6 +42,7 @@ export default class GatewayParamsModal extends Component {
   onChangeParamValue = (e) => {
     const { id, value } = e.target;
     const { gateway } = this.state;
+
     this.setState({gateway: Object.assign({}, gateway, {
       params: Object.assign({}, gateway.params, {
 	[id]: value
@@ -43,21 +50,40 @@ export default class GatewayParamsModal extends Component {
     })});
   };
 
-  onChangeReceiverValue = (e) => {
+  onChangeTransactionsReceiverValue = (e) => {
     const { id, value } = e.target;
-    const { gateway, connections, connection } = this.state;
+    const { gateway, transactionsConnections, transactionsConnection } = this.state;
 
-    connection[id] = value;
-    if (connections.length > 0) {
-      connections[0][id] = value;
+    transactionsConnection[id] = value;
+    if (transactionsConnections.length > 0) {
+      transactionsConnections[0][id] = value;
     } else {
-      connections.push(connection);
+      transactionsConnections.push(transactionsConnection);
     }
 
-    this.setState({ connection,
+    this.setState({ transactionsConnection,
       gateway: Object.assign({}, gateway, {
-        receiver: Object.assign({}, gateway.receiver, {
-          connections,
+        transactions: Object.assign({}, gateway.transactions, {
+          receiver: {connections: transactionsConnections},
+        }),
+      }) });
+  };
+
+  onChangeDenialsReceiverValue = (e) => {
+    const { id, value } = e.target;
+    const { gateway, denialsConnections, denialsConnection } = this.state;
+
+    denialsConnection[id] = value;
+    if (denialsConnections.length > 0) {
+      denialsConnections[0][id] = value;
+    } else {
+      denialsConnections.push(denialsConnection);
+    }
+
+    this.setState({ denialsConnection,
+      gateway: Object.assign({}, gateway, {
+        denials: Object.assign({}, gateway.denials, {
+          receiver: {connections: denialsConnections},
         }),
       }) });
   };
@@ -92,9 +118,12 @@ export default class GatewayParamsModal extends Component {
     const { settings } = this.props;
     const { gateway, activeTab } = this.state;
     const exportValue = gateway.export !== undefined ? gateway.export : [];
-    const receiverValue = gateway.receiver !== undefined ? gateway.receiver : [];
-    const connections = receiverValue.connections !== undefined ? receiverValue.connections : [];
-    const connection = connections[0] !== undefined ? connections[0] : [];
+    const transactionsReceiverValue = gateway.transactions.receiver !== undefined ? gateway.transactions.receiver : [];
+    const transactionsConnections = transactionsReceiverValue.connections !== undefined ? transactionsReceiverValue.connections : [];
+    const transactionsConnection = transactionsConnections[0] !== undefined ? transactionsConnections[0] : [];
+    const denialsReceiverValue = gateway.denials.receiver !== undefined ? gateway.denials.receiver : [];
+    const denialsConnections = denialsReceiverValue.connections !== undefined ? denialsReceiverValue.connections : [];
+    const denialsConnection = denialsConnections[0] !== undefined ? denialsConnections[0] : [];
 
     return (
       <Tabs activeKey={activeTab} animation={false} id="PaymentGatewayTab" onSelect={this.handleSelectTab}>
@@ -136,7 +165,7 @@ export default class GatewayParamsModal extends Component {
           </Panel>
         </Tab>
 
-        <Tab title="File Based Receiver" eventKey={3}>
+        <Tab title="Transactions Receiver" eventKey={3}>
           <Panel style={{ borderTop: 'none' }}>
             <form className="form-horizontal">
               {settings.get('receiver').keySeq().map((param, paramKey) => (
@@ -145,15 +174,35 @@ export default class GatewayParamsModal extends Component {
                   <div className="col-lg-4">
                     <input type="text"
                       id={param}
-                      onChange={this.onChangeReceiverValue}
+                      onChange={this.onChangeTransactionsReceiverValue}
                       className="form-control"
-                      value={connection[param]} />
+                      value={transactionsConnection[param]} />
                   </div>
                 </div>
               ))}
             </form>
           </Panel>
         </Tab>
+
+        <Tab title="Denials receiver" eventKey={4}>
+          <Panel style={{ borderTop: 'none' }}>
+            <form className="form-horizontal">
+              {settings.get('receiver').keySeq().map((param, paramKey) => (
+                <div className="form-group" key={paramKey}>
+                  <label className="col-lg-3 control-label">{param}</label>
+                  <div className="col-lg-4">
+                    <input type="text"
+                      id={param}
+                      onChange={this.onChangeDenialsReceiverValue}
+                      className="form-control"
+                      value={denialsConnection[param]} />
+                  </div>
+                </div>
+              ))}
+            </form>
+          </Panel>
+        </Tab>
+
       </Tabs>
     );
   }
@@ -199,7 +248,7 @@ export default class GatewayParamsModal extends Component {
 
     return (
 
-      <Modal show={show} onHide={this.onClose}>
+      <Modal show={show} onHide={this.onClose} bsSize="large">
         <Modal.Header closeButton>
           <Modal.Title>{settings.get('name')} parameters</Modal.Title>
         </Modal.Header>

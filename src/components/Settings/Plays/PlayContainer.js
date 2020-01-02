@@ -15,14 +15,14 @@ const mapStateToProps = (state, props) => ({
   showEnableAction: !props.play.get('enabled', true),
 });
 
-const mapDispatchToProps = (dispatch, { index, play, plays, onChange, ...otherProps }) => ({ // eslint-disable-line no-unused-vars
+const mapDispatchToProps = (dispatch, { index, play, plays, onChange, onRemove, ...otherProps }) => ({ // eslint-disable-line no-unused-vars
 
   onChangeDefault: () => {
     if (play.get('enabled', true)) {
       plays.forEach((p, i) => {
-        onChange('plays', [i, 'default'], false);
+        onChange([i, 'default'], false);
       });
-      onChange('plays', [index, 'default'], true);
+      onChange([index, 'default'], true);
       return dispatch(saveSettings(['plays']))
         .then(success => (success.status ? true : Promise.reject()))
         .then(() => dispatch(getSettings('plays')))
@@ -36,7 +36,7 @@ const mapDispatchToProps = (dispatch, { index, play, plays, onChange, ...otherPr
 
   onEdit: (item) => {
     const onOk = (editedItem) => {
-      onChange('plays', [index], editedItem);
+      onChange([index], editedItem);
       return dispatch(saveSettings(['plays']))
         .then(success => (success.status ? true : Promise.reject()))
         .then(() => dispatch(getSettings('plays')))
@@ -58,7 +58,7 @@ const mapDispatchToProps = (dispatch, { index, play, plays, onChange, ...otherPr
       return dispatch(showWarning('Default play can not be removed'));
     }
     const onOk = () => {
-      onChange('plays', [], plays.delete(index));
+      onRemove(index);
       return dispatch(saveSettings(['plays']))
         .then(() => dispatch(getSettings('plays')));
     };
@@ -72,7 +72,7 @@ const mapDispatchToProps = (dispatch, { index, play, plays, onChange, ...otherPr
   },
 
   onEnable: () => {
-    onChange('plays', [index, 'enabled'], true);
+    onChange([index, 'enabled'], true);
     return dispatch(saveSettings('plays'))
       .then(() => dispatch(getSettings('plays')));
   },
@@ -82,7 +82,7 @@ const mapDispatchToProps = (dispatch, { index, play, plays, onChange, ...otherPr
       return dispatch(showWarning('Default play can not be disabled'));
     }
     const onOk = () => {
-      onChange('plays', [index, 'enabled'], false);
+      onChange([index, 'enabled'], false);
       return dispatch(saveSettings(['plays']))
         .then(() => dispatch(getSettings('plays')));
     };

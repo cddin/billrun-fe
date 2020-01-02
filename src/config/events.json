@@ -1,7 +1,9 @@
 {
   "entities": {
-    "balance": { "title": "balance", "listTitle": "balances" },
-    "fraud": { "title": "fraud", "title": "fraud" }
+    "balance": { "title": "balance" },
+
+
+    "fraud": { "title": "fraud" }
   },
   "operators": {
     "fraud": {

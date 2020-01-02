@@ -1,14 +1,21 @@
 {
-	"conditions": [
-		{ "key": "$eq", "title": "Equal" },
-		{ "key": "$ne", "title": "Does Not Equal" },
-		{ "key": "$exists", "title": "Exists" },
-		{ "key": "$existsFalse", "title": "Does Not Exist" },
-		{ "key": "$lt", "title": "Is Less Than" },
-		{ "key": "$lte", "title": "Is Less Than Or Equal" },
-		{ "key": "$gt", "title": "Is Greater Than" },
-		{ "key": "$gte", "title": "Is Greater Than Or Equal" },
-		{ "key": "$in", "title": "Is Included In" },
-		{ "key": "$regex", "title": "Matches regular expression" }
-	]
+  "conditions": [
+    { "id": "$eq", "title": "Equal" },
+    { "id": "$ne", "title": "Does Not Equal" },
+    { "id": "$exists", "title": "Exists" },
+    { "id": "$existsFalse", "title": "Does Not Exist" },
+    { "id": "$lt", "title": "Is Less Than" },
+    { "id": "$lte", "title": "Is Less Than Or Equal" },
+    { "id": "$gt", "title": "Is Greater Than" },
+    { "id": "$gte", "title": "Is Greater Than Or Equal" },
+    { "id": "$in", "title": "Is Included In" },
+    { "id": "$isTrue", "title": "Is True (Boolean)" },
+    { "id": "$isFalse", "title": "Is False (Boolean)" },
+    { "id": "$regex", "title": "Matches regular expression" }
+  ],
+  "paramsConditions": [
+    { "id": "match", "title": "Equals" },
+    { "id": "equalFalse", "title": "Does Not Equal" },
+    { "id": "longestPrefix", "title": "Longest Prefix" }
+  ]
 }

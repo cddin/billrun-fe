@@ -139,7 +139,7 @@ export default class SubscriptionServicesDetails extends Component {
         };
         const style = editable ? { verticalAlign: 'middle', paddingBottom: 47, width: '30%', textAlign: 'right', paddingRight: 20 } : { verticalAlign: 'middle', textAlign: 'right', paddingRight: 20 };
         return (
-          <tr key={`byPeriod_${key}`}> {/* eslint-disable-line react/no-array-index-key */}
+          <tr key={`byPeriod_${key}`}>
             <td style={style}>
               {serviceName}
             </td>

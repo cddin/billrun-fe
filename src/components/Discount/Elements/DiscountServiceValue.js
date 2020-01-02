@@ -7,13 +7,14 @@ import getSymbolFromCurrency from 'currency-symbol-map';
 import { ModalWrapper, Actions } from '@/components/Elements';
 import Field from '@/components/Field';
 
-class ServiceDiscountValue extends Component {
+class DiscountServiceValue extends Component {
 
   static propTypes = {
     name: PropTypes.string,
     label: PropTypes.string,
-    discount: PropTypes.instanceOf(Immutable.Map),
+    service: PropTypes.instanceOf(Immutable.Map),
     isQuantitative: PropTypes.bool.isRequired,
+    isPercentaget: PropTypes.bool.isRequired,
     mode: PropTypes.string.isRequired,
     currency: PropTypes.string,
     onChange: PropTypes.func.isRequired,
@@ -22,8 +23,9 @@ class ServiceDiscountValue extends Component {
   static defaultProps = {
     name: '',
     label: '',
-    discount: Immutable.Map(),
+    service: Immutable.Map(),
     isQuantitative: false,
+    isPercentaget: false,
     currency: '',
   };
 
@@ -31,31 +33,17 @@ class ServiceDiscountValue extends Component {
     showAdvancedEdit: false,
   }
 
-  isOldStructure = () => {
-    const { name, discount } = this.props;
-    const serviceDiscoun = discount.getIn(['discount_subject', 'service', name], Immutable.Map());
-    return !Immutable.Map.isMap(serviceDiscoun);
-  }
-
-  onChangeValue = (val) => {
-    const { name, discount } = this.props;
-    if (val === null) { // delete
-      this.props.onChange(name, null);
-      return;
-    }
-    const value = isNumber(val) ? parseFloat(val) : val;
-    const serviceDiscoun = discount.getIn(['discount_subject', 'service', name], Immutable.Map());
-    const newValue = this.isOldStructure()
-      ? Immutable.Map({ value })
-      : serviceDiscoun.set('value', value);
+  onChangeValue = (e) => {
+    const { value } = e.target;
+    const { name, service } = this.props;
+    const newValue = service.set('value', value);
     this.props.onChange(name, newValue);
   }
 
   onChangeAmount = (value) => {
-    const { discount, name } = this.props;
-    const currentDiscountValue = discount.getIn(['discount_subject', 'service', name], '');
+    const { service, name } = this.props;
     if (value === null || value === '') { // delete
-      this.props.onChange(name, this.removeQuantity(currentDiscountValue));
+      this.props.onChange(name, this.removeQuantity(service));
       return;
     }
     let newAmount = isNumber(value) ? parseFloat(value) : value;
@@ -69,19 +57,11 @@ class ServiceDiscountValue extends Component {
       name: 'recurring_by_quantity',
       params: Immutable.List([newParam]),
     });
-    const newServiceValue = Immutable.Map({
-      value: '',
-      operations: Immutable.List([newOperation]),
-    });
 
-    if (this.isOldStructure()) { // No value Or Old structure
-      this.props.onChange(name, newServiceValue.set('value', currentDiscountValue));
-      return;
-    }
-    const operations = currentDiscountValue.get('operations', Immutable.List());
+    const operations = service.get('operations', Immutable.List());
     const recurringByQuantityIdx = operations.findIndex(operation => operation.get('name') === 'recurring_by_quantity');
     if (recurringByQuantityIdx === -1) { // No operations - recurring_by_quantity
-      const withNewOperation = currentDiscountValue.updateIn(
+      const withNewOperation = service.updateIn(
         ['operations'],
         Immutable.List(),
         ops => ops.push(newOperation),
@@ -92,7 +72,7 @@ class ServiceDiscountValue extends Component {
     const params = operations.getIn([recurringByQuantityIdx, 'params'], Immutable.List());
     const quantityIdx = params.findIndex(param => param.get('name', '') === 'quantity');
     if (quantityIdx === -1) { // No param - quantity
-      const withQuantity = currentDiscountValue.updateIn(
+      const withQuantity = service.updateIn(
         ['operations', recurringByQuantityIdx, 'params'],
         Immutable.List(),
         list => list.push(newParam),
@@ -100,7 +80,7 @@ class ServiceDiscountValue extends Component {
       this.props.onChange(name, withQuantity);
       return;
     }
-    const withQuantity = currentDiscountValue.updateIn(
+    const withQuantity = service.updateIn(
       ['operations', recurringByQuantityIdx, 'params', quantityIdx],
       Immutable.Map(),
       param => param.set('value', newAmount),
@@ -138,34 +118,31 @@ class ServiceDiscountValue extends Component {
     // remove params if empty
     const isParamEmpty = discountWithoutQuantity.getIn(paramsPath, Immutable.Map()).isEmpty();
     const discountWithoutParams = (recurringByQuantityIndex !== -1 && isParamEmpty)
-        ? discountWithoutQuantity.deleteIn(paramsPath)
-        : discountWithoutQuantity;
+      ? discountWithoutQuantity.deleteIn(paramsPath)
+      : discountWithoutQuantity;
     // remove recurring_by_quantity if empty
     const recurringByQuantitySize = discountWithoutParams.getIn(paramsPath, Immutable.Map()).size; // can has {name:"recurring_by_quantity"} param
     const discountWithoutRecurringByQuantity = (recurringByQuantityIndex !== -1 && recurringByQuantitySize < 2)
-        ? discountWithoutParams.deleteIn([...operationsPath, recurringByQuantityIndex])
-        : discountWithoutParams;
+      ? discountWithoutParams.deleteIn([...operationsPath, recurringByQuantityIndex])
+      : discountWithoutParams;
     // remove operations if empty
     const isOperationsEmpty = discountWithoutRecurringByQuantity
       .getIn(operationsPath, Immutable.Map())
       .isEmpty();
     const discountWithoutOperations = isOperationsEmpty
-        ? discountWithoutRecurringByQuantity.deleteIn(operationsPath)
-        : discountWithoutRecurringByQuantity;
+      ? discountWithoutRecurringByQuantity.deleteIn(operationsPath)
+      : discountWithoutRecurringByQuantity;
     return discountWithoutOperations;
   }
 
   getDiscountValue = () => {
-    const { name, discount } = this.props;
-    if (this.isOldStructure()) {
-      return discount.getIn(['discount_subject', 'service', name], '');
-    }
-    return discount.getIn(['discount_subject', 'service', name, 'value'], '');
+    const { service } = this.props;
+    return service.get('value', '');
   }
 
   getDiscountAmount = () => {
-    const { discount, name } = this.props;
-    return discount.getIn(['discount_subject', 'service', name, 'operations'], Immutable.List())
+    const { service } = this.props;
+    return service.get('operations', Immutable.List())
       .find(operation => operation.get('name') === 'recurring_by_quantity', null, Immutable.Map())
       .get('params', Immutable.List())
       .find(param => param.get('name', '') === 'quantity', null, Immutable.Map())
@@ -228,12 +205,8 @@ class ServiceDiscountValue extends Component {
   }
 
   renderSuffix = () => {
-    const { discount, currency } = this.props;
-    const isPercentaget = discount.get('discount_type', '') === 'percentage';
-    if (isPercentaget) {
-      return '%';
-    }
-    return getSymbolFromCurrency(currency);
+    const { isPercentaget, currency } = this.props;
+    return isPercentaget ? undefined : getSymbolFromCurrency(currency);
   }
 
   getActions = () => {
@@ -250,7 +223,7 @@ class ServiceDiscountValue extends Component {
   }
 
   render() {
-    const { name, label, mode, discount, isQuantitative } = this.props;
+    const { name, label, mode, service, isQuantitative, isPercentaget } = this.props;
     if (name === '') {
       return null;
     }
@@ -272,15 +245,13 @@ class ServiceDiscountValue extends Component {
             <Field
               value={value}
               onChange={this.onChangeValue}
-              label="Discount by"
-              fieldType="toggeledInput"
+              fieldType={isPercentaget ? "percentage" : "number"}
               editable={editable}
               suffix={this.renderSuffix()}
-              inputProps={{ fieldType: 'number' }}
             />
             { hasEnabledActions && (
               <InputGroup.Addon style={{ padind: 0 }}>
-                <Actions actions={actions} data={discount} />
+                <Actions actions={actions} data={service} />
               </InputGroup.Addon>
             )}
           </InputGroup>
@@ -292,4 +263,4 @@ class ServiceDiscountValue extends Component {
   }
 }
 
-export default ServiceDiscountValue;
+export default DiscountServiceValue;

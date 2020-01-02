@@ -11,6 +11,9 @@ const StepMapper = (props) => {
   const fileContent = item.get('fileContent', []) || [];
   const linkerField = item.getIn(['linker', 'field'], '') || '';
   const linkerValue = item.getIn(['linker', 'value'], '') || '';
+  const updaterField = item.getIn(['updater', 'field'], '') || '';
+  const updaterValue = item.getIn(['updater', 'value'], '') || '';
+  const operation = item.get('operation', 'create');
   const headers = fileContent[0] || [];
 
   const onChangeLinkerField = (value) => {
@@ -20,11 +23,36 @@ const StepMapper = (props) => {
       props.onDelete(['linker', 'field']);
     }
   };
+
   const onChangeLinkerValue = (value) => {
     if (value !== '') {
       props.onChange(['linker', 'value'], value);
     } else {
       props.onDelete(['linker', 'value']);
+    }
+  };
+
+  const onChangeUpdaterField = (value) => {
+    if (value !== '') {
+      props.onChange(['updater', 'field'], value);
+    } else {
+      props.onDelete(['updater', 'field']);
+    }
+  };
+
+  const onChangeUpdaterValue = (value) => {
+    if (value !== '') {
+      props.onChange(['updater', 'value'], value);
+    } else {
+      props.onDelete(['updater', 'value']);
+    }
+  };
+
+  const onChangeEffectiveDate = (value) => {
+    if (value !== '') {
+      props.onChange(['map', 'effective_date'], value);
+    } else {
+      props.onDelete(['map', 'effective_date']);
     }
   };
 
@@ -49,7 +77,13 @@ const StepMapper = (props) => {
   };
 
   const filterFields = field => // filter : only Not generated and editabe fields
-    (!field.generated && field.editable && (!field.hasOwnProperty('linker') || !field.linker));
+    (!field.generated
+      && field.show !== false
+      && field.value !== 'effective_date'
+      && field.editable
+      && (!field.hasOwnProperty('linker') || !field.linker)
+      && props.customFilterFields(field)
+    );
 
   const csvHeaders = headers
     .map((header, key) => ({
@@ -71,7 +105,7 @@ const StepMapper = (props) => {
     }
 
     return (
-      <div>
+      <Panel header="Linker" className="mb0">
         <FormGroup>
           <Col sm={3} componentClass={ControlLabel}>Link to field<span className="danger-red"> *</span></Col>
           <Col sm={9}>
@@ -96,7 +130,65 @@ const StepMapper = (props) => {
             />
           </Col>
         </FormGroup>
-      </div>
+      </Panel>
+    );
+  };
+
+  const renderUpdaters = () => {
+    const updatersOptions = fields
+      .filter(field => (field.hasOwnProperty('updater') && field.updater))
+      .map(field => ({
+        value: field.value,
+        label: field.label,
+      }));
+
+    if (updatersOptions.length === 0) {
+      return null;
+    }
+
+    return (
+      <Panel header="Updater">
+        <FormGroup>
+          <Col sm={6} componentClass={ControlLabel} className="text-left">
+            Unique field used for the update
+            <span className="danger-red"> *</span>
+            <Field
+              fieldType="select"
+              onChange={onChangeUpdaterField}
+              options={updatersOptions}
+              value={updaterField}
+              placeholder="Select field to  update by..."
+            />
+          </Col>
+          <Col sm={6} componentClass={ControlLabel} className="text-left">
+            Match unique field to CSV column
+            <span className="danger-red"> *</span>
+            <Field
+              fieldType="select"
+              onChange={onChangeUpdaterValue}
+              options={csvHeaders}
+              value={updaterValue}
+              placeholder="Select CSV field to update..."
+            />
+          </Col>
+        </FormGroup>
+        <hr className="mt0 mb10" />
+        <FormGroup className="mb0">
+          <Col sm={3} componentClass={ControlLabel}>
+            Update Revision by Effective Date
+            <span className="danger-red"> *</span>
+          </Col>
+          <Col sm={9}>
+            <Field
+              fieldType="select"
+              onChange={onChangeEffectiveDate}
+              options={csvHeaders}
+              value={item.getIn(['map', 'effective_date'], '')}
+              placeholder="Select CSV field to update..."
+            />
+          </Col>
+        </FormGroup>
+      </Panel>
     );
   };
 
@@ -104,14 +196,18 @@ const StepMapper = (props) => {
     .filter(filterFields)
     .sort(soptFields)
     .map((field) => {
-      const defaultValue = defaultFieldsValues.find(def => def.key === field.value);
+      const defaultValue = defaultFieldsValues.find((value, key) => key === field.value);
       return (
         <MapField
           key={`header_${field.value}`}
-          defaultValue={defaultValue ? defaultValue.value : undefined}
+          defaultValue={defaultValue}
           mapFrom={field}
           mapTo={item.getIn(['map', field.value], '')}
+          operation={operation}
+          entity={item.get('entity')}
           options={csvHeaders}
+          mapResult={item.get('map')}
+          multiFieldAction={item.get('multiFieldAction')}
           mapperPrefix={mapperPrefix}
           onChange={props.onChange}
           onDelete={props.onDelete}
@@ -128,16 +224,14 @@ const StepMapper = (props) => {
     }
 
     const mapfields = renderFields();
-    const linkers = renderLinkers();
+    const linkerfields = renderLinkers();
+    const updaterfields = renderUpdaters();
 
     return (
       <div>
+        { updaterfields !== null && operation === 'permanentchange' && updaterfields}
         <div>{mapfields}</div>
-        {linkers !== null && (
-          <Panel header="Linker" className="mb0">
-            {linkers}
-          </Panel>
-        )}
+        {linkerfields !== null && linkerfields }
       </div>
     );
   };
@@ -152,9 +246,10 @@ const StepMapper = (props) => {
 StepMapper.defaultProps = {
   item: Immutable.Map(),
   fields: [],
-  defaultFieldsValues: [],
+  defaultFieldsValues: Immutable.Map(),
   ignoredHeaders: [],
   mapperPrefix: '',
+  customFilterFields: () => true,
   onChange: () => {},
   onDelete: () => {},
 };
@@ -162,14 +257,10 @@ StepMapper.defaultProps = {
 StepMapper.propTypes = {
   item: PropTypes.instanceOf(Immutable.Map),
   fields: PropTypes.array,
-  defaultFieldsValues: PropTypes.arrayOf(
-    PropTypes.shape({
-      key: PropTypes.string,
-      value: PropTypes.string,
-    }),
-  ),
+  defaultFieldsValues: PropTypes.instanceOf(Immutable.Map),
   ignoredHeaders: PropTypes.array,
   mapperPrefix: PropTypes.string,
+  customFilterFields: PropTypes.func,
   onChange: PropTypes.func,
   onDelete: PropTypes.func,
 };

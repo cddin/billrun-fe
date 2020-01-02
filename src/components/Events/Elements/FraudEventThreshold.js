@@ -114,12 +114,13 @@ class FraudEventThreshold extends Component {
       ? Immutable.Map({ suffix: currency })
       : Immutable.Map();
     const isThresholdError = errors.get(`threshold_condition.${index}`, false);
+    const showUOM = eventPropertyType.size === 1 && !['aprice', 'final_charge'].includes(field);
     return (
-      <FormGroup className="form-inner-edit-row" validationState={isThresholdError ? 'error' : null}>
+      <FormGroup className="form-inner-edit-row pl0 pr0" validationState={isThresholdError ? 'error' : null}>
         <Col componentClass={ControlLabel} smHidden mdHidden lgHidden>
           Field <span className="danger-red"> *</span>
         </Col>
-        <Col sm={3}>
+        <Col sm={showUOM ? 3 : 4}>
           <Field
             id="threshold_field"
             fieldType="select"
@@ -132,7 +133,7 @@ class FraudEventThreshold extends Component {
         <Col componentClass={ControlLabel} smHidden mdHidden lgHidden>
           Operator <span className="danger-red"> *</span>
         </Col>
-        <Col sm={3}>
+        <Col sm={showUOM ? 3 : 4}>
           <Field
             id="threshold_operator"
             fieldType="select"
@@ -146,7 +147,7 @@ class FraudEventThreshold extends Component {
         <Col componentClass={ControlLabel} smHidden mdHidden lgHidden>
           Value <span className="danger-red"> *</span>
         </Col>
-        <Col sm={4}>
+        <Col sm={showUOM ? 3 : 4}>
           <ConditionValue
             field={thresholdForValue}
             config={thresholdField}
@@ -156,12 +157,12 @@ class FraudEventThreshold extends Component {
           />
         </Col>
 
-        {eventPropertyType.size === 1 && !['aprice', 'final_charge'].includes(field) && (
-          <span>
+        {showUOM && (
+          <>
             <Col componentClass={ControlLabel} smHidden mdHidden lgHidden>
               Unit of measure <span className="danger-red"> *</span>
             </Col>
-            <Col sm={2}>
+            <Col sm={3} className="pr0 pl5">
               <UsageTypesSelector
                 usaget={usaget}
                 unit={threshold.get('unit', '')}
@@ -171,10 +172,12 @@ class FraudEventThreshold extends Component {
                 showSelectTypes={false}
               />
             </Col>
-          </span>
+          </>
         )}
         { isThresholdError && (
-          <Col sm={12}><HelpBlock>{isThresholdError}</HelpBlock></Col>
+          <Col sm={12}>
+            <HelpBlock>{isThresholdError}</HelpBlock>
+          </Col>
         )}
       </FormGroup>
     );

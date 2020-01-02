@@ -3,14 +3,22 @@ import Immutable from 'immutable';
 import Plays from './Plays';
 import PlayForm from './PlayFormContainer';
 import { showFormModal, setFormModalError } from '@/actions/guiStateActions/pageActions';
-import { saveSettings, getSettings } from '@/actions/settingsActions';
+import { saveSettings, getSettings, updateSetting, removeSettingField } from '@/actions/settingsActions';
 
 
 const mapStateToProps = null; // eslint-disable-line no-unused-vars
 
 const mapDispatchToProps = (dispatch, props) => ({
 
-  onAddPlay: () => {
+  onChange: (path, value) => {
+    dispatch(updateSetting('plays', path, value));
+  },
+
+  onRemove: (index) => {
+    dispatch(removeSettingField('plays', index));
+  },
+
+  onAdd: () => {
     const { data } = props;
     const newPlay = Immutable.Map({
       name: '',
@@ -25,10 +33,11 @@ const mapDispatchToProps = (dispatch, props) => ({
       }
       if (newItem.get('default', false)) {
         data.forEach((p, index) => {
-          props.onChange('plays', [index, 'default'], false);
+          dispatch(updateSetting('plays', [index, 'default'], false));
         });
       }
-      props.onChange('plays', data.size, newItem);
+
+      dispatch(updateSetting('plays', data.size, newItem));
       return dispatch(saveSettings(['plays']))
         .then(success => (success.status ? true : Promise.reject()))
         .then(() => dispatch(getSettings('plays')))

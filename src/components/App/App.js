@@ -16,6 +16,7 @@ import { setPageTitle, systemRequirementsLoadingComplete } from '@/actions/guiSt
 import { initMainMenu } from '@/actions/guiStateActions/menuActions';
 import { getSettings, fetchFile } from '@/actions/settingsActions';
 import { onBoardingIsRunnigSelector } from '@/selectors/guiSelectors';
+import { taxationTypeSelector } from '@/selectors/settingsSelector';
 
 class App extends Component {
 
@@ -29,6 +30,7 @@ class App extends Component {
     children: PropTypes.element,
     title: PropTypes.string,
     logo: PropTypes.string,
+    taxType: PropTypes.string,
     mainMenuOverrides: PropTypes.oneOfType([
       PropTypes.instanceOf(Immutable.Iterable),
     ]),
@@ -43,6 +45,7 @@ class App extends Component {
     auth: null,
     title: '',
     logoName: '',
+    taxType: '',
     systemRequirementsLoad: false,
     isTourRunnig: false,
   };
@@ -72,7 +75,7 @@ class App extends Component {
     }
     if (auth !== true && nextProps.auth === true) { // user did success login
       // get global system settings
-      this.props.dispatch(getSettings(['pricing', 'tenant', 'menu', 'billrun', 'usage_types', 'property_types', 'plays']))
+      this.props.dispatch(getSettings(['pricing', 'tenant', 'menu', 'billrun', 'usage_types', 'property_types', 'plays', 'taxation']))
         .then(responce => ((responce) ? this.props.logoName : ''))
         .then((logoFileName) => {
           if (logoFileName && logoFileName.length > 0) {
@@ -137,7 +140,8 @@ class App extends Component {
   );
 
   renderWithLayout = () => {
-    const { title, children, routes, isTourRunnig } = this.props;
+    const { title, children, routes, isTourRunnig, taxType } = this.props;
+    const hiddenMenuItems = (taxType === 'CSI') ? ['tax'] : [];
     return (
       <div id="wrapper">
         <ProgressIndicator />
@@ -145,7 +149,7 @@ class App extends Component {
         <ReduxFormModal />
         <Alerts />
         <Tour />
-        <Navigator routes={routes} />
+        <Navigator routes={routes} hiddenItems={hiddenMenuItems}/>
         <div id="page-wrapper" className="page-wrapper">
           { isTourRunnig && <ExampleInvoice />}
           <Row>
@@ -177,6 +181,7 @@ const mapStateToProps = state => ({
   logo: state.settings.getIn(['files', 'logo']),
   logoName: state.settings.getIn(['tenant', 'logo']),
   isTourRunnig: onBoardingIsRunnigSelector(state),
+  taxType: taxationTypeSelector(state),
 });
 
 export default withRouter(connect(mapStateToProps)(App));

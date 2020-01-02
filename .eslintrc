@@ -5,7 +5,12 @@
     "browser": true,
     "node": true,
   },
+  "plugins": [
+    "react-hooks",
+  ],
   "rules": {
+    "react-hooks/rules-of-hooks": "error", // Checks rules of Hooks
+    "react-hooks/exhaustive-deps": "warn", // Checks effect dependencies
     "no-plusplus": ["warn", { "allowForLoopAfterthoughts": true }],
     "new-cap": "off",
     "react/no-array-index-key": "off",
@@ -42,7 +47,6 @@
   },
   "parser": "babel-eslint",
   "globals": {
-      "globalSetting": false,
       "CKEDITOR": false,
       "_PRODUCTION_": false,
     }

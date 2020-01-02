@@ -10,6 +10,7 @@ export default {
   planCycleUnlimitedValue: 'UNLIMITED',
   serviceCycleUnlimitedValue: 'UNLIMITED',
   productUnlimitedValue: 'UNLIMITED',
+  fieldKeyRegex: /^[A-Za-z0-9._]*$/,
   keyUppercaseRegex: /^[A-Z0-9_]+$/,
   keyUppercaseCleanRegex: /[^A-Z|0-9_]/g,
   keyRegex: /^[A-Za-z0-9_]*$/,

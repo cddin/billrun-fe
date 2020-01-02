@@ -1,3 +1,7 @@
 import Discount from './DiscountSetup';
+import DiscountPopup from './DiscountPopup';
 
-export default Discount;
+export {
+  Discount as default,
+  DiscountPopup,
+};

@@ -6,6 +6,7 @@ import Immutable from 'immutable';
 import { Tabs, Tab, Panel } from 'react-bootstrap';
 import Customer from './Customer';
 import Subscriptions from './Subscriptions';
+import CustomerAllowances from './CustomerAllowances';
 import {
   ActionButtons,
   LoadingItemPlaceholder,
@@ -16,6 +17,8 @@ import {
   getPlansKeysQuery,
   getServicesKeysWithInfoQuery,
   getPaymentGatewaysQuery,
+  getSubscriptionsWithAidQuery,
+  getAccountsQuery,
 } from '@/common/ApiQueries';
 import {
   saveSubscription,
@@ -44,6 +47,7 @@ import {
   tabSelector,
   messageSelector,
 } from '@/selectors/entitySelector';
+import { currencySelector } from '@/selectors/settingsSelector';
 import { buildPageTitle, getConfig, getItemId } from '@/common/Util';
 
 
@@ -58,8 +62,10 @@ class CustomerSetup extends Component {
     settings: PropTypes.instanceOf(Immutable.Map),
     plans: PropTypes.instanceOf(Immutable.List),
     services: PropTypes.instanceOf(Immutable.List),
+    currency: PropTypes.string,
     gateways: PropTypes.instanceOf(Immutable.List),
     defaultSubsctiptionListFields: PropTypes.array,
+    allowancesEnabled: PropTypes.bool,
     activeTab: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.number,
@@ -83,7 +89,9 @@ class CustomerSetup extends Component {
     gateways: Immutable.List(),
     plans: Immutable.List(),
     services: Immutable.List(),
+    currency: '',
     defaultSubsctiptionListFields: ['sid', 'firstname', 'lastname', 'plan', 'plan_activation', 'services', 'address'],
+    allowancesEnabled: false,
   };
 
   componentWillMount() {
@@ -104,6 +112,8 @@ class CustomerSetup extends Component {
       this.props.dispatch(getList('available_plans', getPlansKeysQuery({ name: 1, play: 1, description: 1, 'include.services': 1 })));
       this.props.dispatch(getList('available_services', getServicesKeysWithInfoQuery()));
     }
+    this.props.dispatch(getList('available_subscriptions', getSubscriptionsWithAidQuery()));
+    this.props.dispatch(getList('available_accounts', getAccountsQuery()));
   }
 
   componentWillReceiveProps(nextProps) {
@@ -150,9 +160,8 @@ class CustomerSetup extends Component {
     }
   }
 
-  onChangeCustomerField = (e) => {
-    const { value, id } = e.target;
-    this.props.dispatch(updateCustomerField(id, value));
+  onChangeCustomerField = (path, value) => {
+    this.props.dispatch(updateCustomerField(path, value));
   }
 
   onRemoveCustomerField = (path) => {
@@ -251,12 +260,14 @@ class CustomerSetup extends Component {
       settings,
       plans,
       services,
+      currency,
       gateways,
       mode,
       aid,
       activeTab,
+      allowancesEnabled,
     } = this.props;
-    const showActionButtons = (activeTab === 1);
+    const showActionButtons = [1, 5].includes(activeTab);
 
     if (mode === 'loading') {
       return (<LoadingItemPlaceholder onClick={this.handleBack} />);
@@ -316,6 +327,17 @@ class CustomerSetup extends Component {
                   </Panel>
                 </Tab>
               }
+              {allowancesEnabled && (
+                <Tab title="Allowances" eventKey={5}>
+                  <Panel style={{ borderTop: 'none' }}>
+                    <CustomerAllowances
+                      customer={customer}
+                      currency={currency}
+                      onChange={this.onChangeCustomerField}
+                    />
+                  </Panel>
+                </Tab>
+              )}
             </Tabs>
           </div>
         </div>
@@ -336,9 +358,11 @@ const mapStateToProps = (state, props) => ({
   activeTab: tabSelector(state, props),
   aid: state.entity.getIn(['customer', 'aid']) || undefined,
   settings: state.settings.get('subscribers') || undefined,
+  allowancesEnabled: state.settings.getIn(['billrun', 'allowances', 'enabled']) || undefined,
   plans: state.list.get('available_plans') || undefined,
   services: state.list.get('available_services') || undefined,
   gateways: state.list.get('available_gateways') || undefined,
+  currency: currencySelector(state, props) || undefined,
   message: messageSelector(state, props),
 });
 

@@ -36,7 +36,7 @@ class Segments extends Component {
     const fieldName = (segment.getIn(['field', 'name']) === undefined) ? '' : segment.getIn(['field', 'name']);
 
     return (
-      <div className="form-group row form-inner-edit-row">
+      <div className="form-group row form-inner-edit-row mr0 ml0">
         <div className="col-sm-6">
           <Field
             fieldType="select"

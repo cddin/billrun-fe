@@ -8,6 +8,7 @@ import { Panel, Tabs, Tab } from 'react-bootstrap';
 import ServiceDetails from './ServiceDetails';
 import PlanIncludesTab from '../Plan/PlanIncludesTab';
 import PlanProductsPriceTab from '../Plan/PlanProductsPriceTab';
+import { EntityTaxDetails } from '@/components/Tax';
 import { EntityRevisionDetails } from '../Entity';
 import { ActionButtons, LoadingItemPlaceholder } from '@/components/Elements';
 import {
@@ -52,6 +53,8 @@ class ServiceSetup extends Component {
     revisions: Immutable.List(),
     activeTab: 1,
   };
+
+  static entityName = 'service';
 
   state = {
     activeTab: parseInt(this.props.activeTab),
@@ -178,7 +181,7 @@ class ServiceSetup extends Component {
     if (itemWasChanged) {
       this.clearItemsList(); // refetch items list because item was (changed in / added to) list
     }
-    const listUrl = getConfig(['systemItems', 'service', 'itemsType'], '');
+    const listUrl = getConfig(['systemItems', ServiceSetup.entityName, 'itemsType'], '');
     this.props.router.push(`/${listUrl}`);
   }
 
@@ -203,7 +206,7 @@ class ServiceSetup extends Component {
       <div className="ServiceSetup">
         <Panel>
           <EntityRevisionDetails
-            itemName="service"
+            itemName={ServiceSetup.entityName}
             revisions={revisions}
             item={item}
             mode={mode}
@@ -231,7 +234,7 @@ class ServiceSetup extends Component {
           <Tab title="Override Product Price" eventKey={2}>
             <Panel style={{ borderTop: 'none' }}>
               <PlanProductsPriceTab
-                itemName="service"
+                itemName={ServiceSetup.entityName}
                 mode={mode}
                 planRates={planRates}
                 onChangeFieldValue={this.onUpdateItem}
@@ -248,8 +251,20 @@ class ServiceSetup extends Component {
                 onGroupAdd={this.onGroupAdd}
                 onGroupRemove={this.onGroupRemove}
                 mode={mode}
-                type={'service'}
+                type={ServiceSetup.entityName}
                 plays={plays.join(',')}
+              />
+            </Panel>
+          </Tab>
+
+          <Tab title="Tax" eventKey={4}>
+            <Panel style={{ borderTop: 'none' }}>
+              <EntityTaxDetails
+                tax={item.get('tax')}
+                mode={mode}
+                itemName={ServiceSetup.entityName}
+                onFieldUpdate={this.onUpdateItem}
+                onFieldRemove={this.onRemoveFieldValue}
               />
             </Panel>
           </Tab>

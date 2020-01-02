@@ -7,6 +7,7 @@ import { Tabs, Tab, Panel } from 'react-bootstrap';
 import DateTime from './DateTime';
 import Currency from './Currency';
 import Invoicing from './Invoicing';
+//import Allowances from './Allowances';
 import Plays from './Plays/PlaysContainer';
 import Tax from './Tax';
 import Tenant from './Tenant';
@@ -17,6 +18,8 @@ import System from './System';
 import { ActionButtons } from '@/components/Elements';
 import { getSettings, updateSetting, saveSettings, fetchFile, getCurrencies } from '@/actions/settingsActions';
 import { prossessMenuTree, combineMenuOverrides, initMainMenu } from '@/actions/guiStateActions/menuActions';
+import { getList, clearList } from '@/actions/listActions';
+import { getEntitesQuery } from '@/common/ApiQueries';
 import { tabSelector } from '@/selectors/entitySelector';
 import {
   inputProssesorCsiOptionsSelector,
@@ -54,25 +57,49 @@ class Settings extends Component {
 
   state = {
     currencyOptions: [],
+    changeCategories: Immutable.Set(),
     // playsBeforeSave: Immutable.List(),
   };
 
   componentWillMount() {
-    this.props.dispatch(getSettings(['pricing', 'billrun', 'tenant', 'shared_secret', 'menu', 'taxation', 'file_types', 'system', 'plays']));
+    const settingsToFetch = [
+      'pricing',
+      'billrun',
+      'tenant',
+      'shared_secret',
+      'menu',
+      'taxation',
+      'file_types',
+      'system',
+      'plays'
+    ];
+    this.props.dispatch(getSettings(settingsToFetch));
     this.props.dispatch(getCurrencies()).then(this.initCurrencyOptions);
+    this.props.dispatch(getList('available_taxRates', getEntitesQuery('taxes', { key: 1, description: 1 })));
+  }
+
+  componentWillUnmount() {
+    const { changeCategories } = this.state;
+    if (!changeCategories.isEmpty()) {
+      this.props.dispatch(getSettings(changeCategories.toArray()));
+    }
+    this.props.dispatch(clearList('available_taxRates'));
   }
 
   initCurrencyOptions = (response) => {
     if (response.status) {
-      const currencyOptions = Immutable.fromJS(response.data).map(currency => ({
-        label: `${currency.get('code', '')} - ${currency.get('name', '')} ${currency.get('symbol', '')}`,
-        value: currency.get('code', ''),
-      })).toArray();
+      const currencyOptions = Immutable.fromJS(response.data)
+        .map(currency => ({
+          label: `${currency.get('code', '')} - ${currency.get('name', '')} ${currency.get('symbol', '')}`,
+          value: currency.get('code', ''),
+        }))
+        .toArray();
       this.setState({ currencyOptions });
     }
   }
 
   onChangeFieldValue = (category, id, value) => {
+    this.setState((prevState) => ({ changeCategories: prevState.changeCategories.add(category) }));
     this.props.dispatch(updateSetting(category, id, value));
   }
 
@@ -94,37 +121,9 @@ class Settings extends Component {
   }
 
   onSave = () => {
-    const { settings } = this.props;
-    const categoryToSave = [];
-    // save 'BillRun'
-    if (settings.has('billrun')) {
-      categoryToSave.push('billrun');
-    }
-    // save 'pricing'
-    if (settings.has('pricing')) {
-      categoryToSave.push('pricing');
-    }
-    // save 'tenant'
-    if (settings.has('tenant')) {
-      categoryToSave.push('tenant');
-    }
-    // save 'Menu'
-    if (settings.has('menu')) {
-      categoryToSave.push('menu');
-    }
-    if (settings.has('taxation')) {
-      categoryToSave.push('taxation');
-    }
-    if (settings.has('usage_types')) {
-      categoryToSave.push('usage_types');
-    }
-    if (settings.has('entity_config')) {
-      categoryToSave.push('usage_types');
-    }
-    if (settings.has('system')) {
-      categoryToSave.push('system');
-    }
-    if (categoryToSave.length) {
+    const { changeCategories } = this.state;
+    if (!changeCategories.isEmpty()) {
+      const categoryToSave = changeCategories.toArray();
       this.props.dispatch(saveSettings(categoryToSave))
         .then((response) => {
           this.afterSave(response, categoryToSave);
@@ -138,6 +137,7 @@ class Settings extends Component {
       // Reload Menu
       const mainMenuOverrides = settings.getIn(['menu', 'main'], Immutable.Map());
       this.props.dispatch(initMainMenu(mainMenuOverrides));
+      this.setState(() => ({ changeCategories: Immutable.Set() }));
       // Update logo
       if (categoryToSave.includes('tenant') && settings.getIn(['tenant', 'logo'], '').length > 0) {
         localStorage.removeItem('logo');
@@ -156,11 +156,11 @@ class Settings extends Component {
   }
 
   render() {
-    const { settings, activeTab, csiOptions, taxation, system, plays } = this.props;
+    const { settings, activeTab, csiOptions, rasRatesOptions, taxation, system, plays } = this.props;
     const { currencyOptions } = this.state;
 
     const currency = settings.getIn(['pricing', 'currency'], '');
-    const datetime = settings.get('billrun', Immutable.Map());
+    const billrun = settings.get('billrun', Immutable.Map());
     const sharedSecret = settings.get('shared_secret', Immutable.List());
     const tenant = settings.get('tenant', Immutable.Map());
     const mainMenuOverrides = settings.getIn(['menu', 'main'], Immutable.Map());
@@ -178,7 +178,7 @@ class Settings extends Component {
 
           <Tab title="Locale" eventKey={2}>
             <Panel style={{ borderTop: 'none' }}>
-              <DateTime onChange={this.onChangeFieldValue} data={datetime} />
+              <DateTime onChange={this.onChangeFieldValue} data={billrun} />
               <Currency
                 onChange={this.onChangeFieldValue}
                 data={currency}
@@ -189,7 +189,12 @@ class Settings extends Component {
 
           <Tab title="Tax" eventKey={3}>
             <Panel style={{ borderTop: 'none' }}>
-              <Tax data={taxation} csiOptions={csiOptions} onChange={this.onChangeFieldValue} />
+              <Tax
+                data={taxation}
+                csiOptions={csiOptions}
+                taxRateOptions={rasRatesOptions}
+                onChange={this.onChangeFieldValue}
+              />
             </Panel>
           </Tab>
 
@@ -211,13 +216,14 @@ class Settings extends Component {
 
           <Tab title="Invoicing" eventKey={6}>
             <Panel style={{ borderTop: 'none' }}>
-              <Invoicing onChange={this.onChangeFieldValue} data={datetime} />
+              <Invoicing onChange={this.onChangeFieldValue} data={billrun} />
+              {/*<Allowances onChange={this.onChangeFieldValue} data={billrun} />*/}
             </Panel>
           </Tab>
 
           <Tab title="Plays" eventKey={7}>
             <Panel style={{ borderTop: 'none' }}>
-              <Plays onChange={this.onChangeFieldValue} data={plays} />
+              <Plays data={plays} />
             </Panel>
           </Tab>
 
@@ -238,7 +244,7 @@ class Settings extends Component {
         <ActionButtons
           onClickSave={this.onSave}
           hideCancel={true}
-          hideSave={[5, 7].includes(activeTab)}
+          hideSave={[5, 7, 8].includes(activeTab)}
         />
 
       </div>
@@ -253,5 +259,6 @@ const mapStateToProps = (state, props) => ({
   taxation: taxationSelector(state, props),
   system: systemSettingsSelector(state, props),
   plays: playsSettingsSelector(state, props),
+  rasRatesOptions: state.list.get('available_taxRates'),
 });
 export default withRouter(connect(mapStateToProps)(Settings));

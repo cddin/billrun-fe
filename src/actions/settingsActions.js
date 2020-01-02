@@ -127,9 +127,9 @@ export const saveSettings = (categories = [], messages = {}) => (dispatch, getSt
     .catch(error => dispatch(apiBillRunErrorHandler(error, errorMessage)));
 };
 
-export const getSettings = (categories = []) => (dispatch) => {
+export const getSettings = (categories = [], data = {}) => (dispatch) => {
   const categoriesToSave = Array.isArray(categories) ? categories : [categories];
-  const queries = categoriesToSave.map(category => getSettingsQuery(category));
+  const queries = categoriesToSave.map(category => getSettingsQuery(category, data));
   return apiBillRun(queries)
     .then((success) => {
       dispatch(gotSettings(success.data));

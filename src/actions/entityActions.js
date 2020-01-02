@@ -1,8 +1,8 @@
 import moment from 'moment';
 import Immutable from 'immutable';
 import { upperCaseFirst } from 'change-case';
-import { apiBillRun, apiBillRunErrorHandler, apiBillRunSuccessHandler } from '../common/Api';
-import { getEntityByIdQuery, apiEntityQuery } from '../common/ApiQueries';
+import { apiBillRun, apiBillRunErrorHandler, apiBillRunSuccessHandler, buildRequestUrl } from '../common/Api';
+import { getEntityByIdQuery, apiEntityQuery, getEntityCSVQuery, getEntitesQuery } from '../common/ApiQueries';
 import { getItemDateValue, getConfig, getItemId } from '@/common/Util';
 import { startProgressIndicator } from './progressIndicatorActions';
 
@@ -97,8 +97,19 @@ const buildRequestData = (item, action) => {
 
     case 'import': {
       const formData = new FormData();
-      formData.append('update', JSON.stringify(item));
+      if (item.has('files')) {
+        item.get('files', []).forEach((file, i) => {
+          formData.append(`files[${i}]`, file, file.name)
+        });
+      }
+      formData.append('update', JSON.stringify(item.delete('files')));
       return formData;
+    }
+
+    case 'export': {
+      return item
+        .reduce((acc, data, key) => acc.push({[key]: JSON.stringify(data)}), Immutable.List())
+        .toArray()
     }
 
     case 'update': {
@@ -174,13 +185,23 @@ export const saveEntity = (collection, item, action) => (dispatch) => {
     .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error saving Entity')));
 };
 
-export const importEntities = (collection, items) => (dispatch) => {
+export const importEntities = (collection, items, operation) => (dispatch) => {
   dispatch(startProgressIndicator());
   const body = requestDataBuilder(collection, items, 'import');
+  body.append('operation', operation);
   const query = apiEntityQuery(collection, 'import', body);
   return apiBillRun(query, { timeOutMessage: apiTimeOutMessage })
     .then(success => dispatch(apiBillRunSuccessHandler(success)))
-    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error saving Entities')));
+    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error importing Entities')));
+};
+
+export const exportEntities = (entityType, params) => (dispatch) => {
+  const collection = getConfig(['systemItems', entityType, 'collection'], entityType);
+  const data = requestDataBuilder(collection, params, 'export');
+  const apiQuery = getEntityCSVQuery(collection, data);
+  const url = buildRequestUrl(apiQuery);
+  window.open(url)
+  return true;
 };
 
 const fetchEntity = (collection, query) => (dispatch) => {
@@ -226,3 +247,28 @@ export const reopenEntity = (collection, item, from) => (dispatch) => {
   });
   return dispatch(saveEntity(collection, itemToReopen, 'reopen'));
 };
+
+export const validateMandatoryField = (value, fieldConfig) => {
+  if (fieldConfig.get('mandatory', false)) {
+    switch (fieldConfig.get('type', false)) {
+      default: {
+        if (['', null, undefined].includes(value)) {
+          return `${fieldConfig.get('title', fieldConfig.get('field_name', ''))} field is required.`;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+export const entitySearchByQuery = (collection, query, project, sort, options) => dispatch => {
+  const searchQuery = getEntitesQuery(collection, project, query, sort, options);
+  return apiBillRun(searchQuery, { timeOutMessage: apiTimeOutMessage })
+    .then((success) => {
+      if (success && success.data && success.data[0] && success.data[0].data && success.data[0].data.details) {
+        return success.data[0].data.details;
+      }
+      throw new Error();
+    })
+    .catch(error => false);
+}

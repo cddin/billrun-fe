@@ -5,7 +5,7 @@ const Price = ({ onChange, id, value, editable, disabled }) => {
     ? <input type="number" step="any" id={id} className="form-control" min="0" value={value} onChange={onChange} disabled={disabled}/>
     : <span>{parseFloat(value, 10)}</span>;
   return (
-    <div>{ input }</div>
+    <div className="non-editable-field">{ input }</div>
   );
 }
 

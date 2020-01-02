@@ -94,7 +94,7 @@ class Formatters extends Component {
           { !formatRows.isEmpty() ? (
             <FormGroup className="form-inner-edit-row">
               <Col sm={1}>&nbsp;</Col>
-              <Col sm={3}><label htmlFor="field_field">Field</label></Col>
+              <Col sm={4}><label htmlFor="field_field">Field</label></Col>
               <Col sm={3}><label htmlFor="operator_field">Type / Operator</label></Col>
               <Col sm={3}><label htmlFor="value_field">Format / Value</label></Col>
             </FormGroup>

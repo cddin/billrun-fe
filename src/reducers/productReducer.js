@@ -14,9 +14,7 @@ import { getConfig } from '@/common/Util';
 const PRODUCT_UNLIMITED = getConfig('productUnlimitedValue', 'UNLIMITED');
 const defaultState = Immutable.Map({
   key: '',
-  code: '',
   description: '',
-  vatable: true,
   pricing_method: 'tiered',
 });
 const DefaultRate = Immutable.Record({

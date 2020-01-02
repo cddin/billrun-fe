@@ -1,6 +1,7 @@
 /* React-tags */
 .react-tagsinput {
   padding-top: 4px;
+
 }
 .react-tagsinput-input {
   margin-bottom: 4px;
@@ -23,7 +24,71 @@
 .react-tagsinput-remove {
   padding-right: 6px;
 }
+
 .form-group.has-error .react-tagsinput {
   border-color: red;
 }
+
+/* Overide fied inside tags */
+.Field.field-number.react-tagsinput-input {
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+
+  input {
+    border: none;
+    height: 28px;
+    box-shadow: none;
+    padding: 4px 2px;
+    margin-bottom: 5px;
+  }
+
+  &:hover,
+  &:active,
+  &:focus {
+    input {
+      box-shadow: none;
+    }
+  }
+}
+
+.Field.field-percentage.react-tagsinput-input {
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+  // min-width: 120px;
+  vertical-align: middle;
+
+  .input-group-addon {
+    display: none;
+    padding: 0 5px;
+    font-size: 50%;
+    border: none;
+  }
+
+  .input-group {
+    margin-bottom: 2px;
+    margin-top: 2px;
+  }
+
+  .input-group input {
+    border: none;
+    height: 28px;
+    box-shadow: none;
+    padding: 4px 2px;
+  }
+
+  &:hover,
+  &:active,
+  &:focus {
+    .input-group-addon {
+      display: table-cell;
+    }
+
+    .input-group input {
+      box-shadow: none;
+    }
+  }
+}
+
 /* ~React-tags */

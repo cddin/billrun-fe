@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Immutable from 'immutable';
 import { connect } from 'react-redux';
-import { Button, Col, FormGroup, InputGroup } from 'react-bootstrap';
+import { Button, Col, InputGroup } from 'react-bootstrap';
 import Field from '@/components/Field';
 import { getSettings, updateSetting, saveSettings } from '@/actions/settingsActions';
 import { usageTypesDataSelector, propertyTypeSelector } from '@/selectors/settingsSelector';
@@ -18,6 +18,7 @@ class UsageTypesSelector extends Component {
     unit: PropTypes.string,
     onChangeUsaget: PropTypes.func,
     onChangeUnit: PropTypes.func,
+    editable: PropTypes.bool,
     enabled: PropTypes.bool,
     showUnits: PropTypes.bool,
     showAddButton: PropTypes.bool,
@@ -34,6 +35,7 @@ class UsageTypesSelector extends Component {
     unit: '',
     onChangeUsaget: () => {},
     onChangeUnit: () => {},
+    editable: true,
     enabled: true,
     showUnits: true,
     showAddButton: true,
@@ -48,7 +50,17 @@ class UsageTypesSelector extends Component {
   }
 
   componentWillMount() {
-    this.props.dispatch(getSettings(['usage_types', 'property_types']));
+    const { usageTypesData, propertyTypes } = this.props;
+    const settingToFetch = [];
+    if (usageTypesData.isEmpty()) {
+      settingToFetch.push('usage_types');
+    }
+    if (propertyTypes.isEmpty()) {
+      settingToFetch.push('property_types');
+    }
+    if (settingToFetch.length > 0) {
+      this.props.dispatch(getSettings(['usage_types', 'property_types']));
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -111,17 +123,19 @@ class UsageTypesSelector extends Component {
     return uom
       .filter(unit => unit.get('unit', false) !== false || (showDisplayUnits && unit.get('convertFunction', false) !== false))
       .filter(unitFilter)
-      .map(unit => ({ value: unit.get('name', ''), label: unit.get('label', '') })).toArray();
+      .map(unit => ({ value: unit.get('name', ''), label: unit.get('label', '') }))
+      .toArray();
   }
 
   renderUsageTypeSelect = () => {
-    const { enabled, usaget, showSelectTypes } = this.props;
+    const { enabled, editable, usaget, showSelectTypes } = this.props;
     return showSelectTypes && (
       <Field
         fieldType="select"
         options={this.getAvailableUsageTypes()}
         value={usaget}
         disabled={!enabled}
+        editable={editable}
         onChange={this.onChangeUsaget}
       />
     );
@@ -134,7 +148,7 @@ class UsageTypesSelector extends Component {
   );
 
   renderUnitSelect = () => {
-    const { enabled, unit, usaget } = this.props;
+    const { enabled, editable, unit, usaget } = this.props;
     return (
       <Field
         fieldType="select"
@@ -142,31 +156,31 @@ class UsageTypesSelector extends Component {
         value={unit}
         options={this.getAvailableUnits()}
         disabled={!enabled || !usaget}
+        editable={editable}
       />);
   }
 
   renderNewUsageTypeForm = () => {
     const { propertyTypes } = this.props;
     const { currentItem } = this.state;
-    return currentItem &&
-      (<UsageTypeForm
+    return currentItem && (
+      <UsageTypeForm
         item={currentItem}
         propertyTypes={propertyTypes}
         onUpdateItem={this.onUpdateUsageType}
         onSave={this.onSaveNewUsageType}
         onCancel={this.onCancelNewUsageType}
-      />);
+      />
+    );
   };
 
   render() {
-    const { showUnits, showAddButton, showSelectTypes } = this.props;
+    const { showUnits, showAddButton, showSelectTypes, editable } = this.props;
     if (showSelectTypes) {
       return (
         <span>
-          <Col sm={7}>
-            <FormGroup className="mb0">
-              {
-                showAddButton
+          <Col sm={7} className="pr0 pl0">
+              { showAddButton && editable
                 ? (
                   <InputGroup>
                     <InputGroup.Button>
@@ -177,7 +191,6 @@ class UsageTypesSelector extends Component {
                 )
                 : this.renderUsageTypeSelect()
               }
-            </FormGroup>
           </Col>
           <Col sm={5} className="pr0">
             {showUnits && this.renderUnitSelect()}

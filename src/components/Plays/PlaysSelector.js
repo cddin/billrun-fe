@@ -22,6 +22,8 @@ class PlaysSelector extends Component {
     availablePlays: PropTypes.instanceOf(Immutable.List),
     entity: PropTypes.instanceOf(Immutable.Map).isRequired,
     editable: PropTypes.bool,
+    labelStyle: PropTypes.object,
+    fieldStyle: PropTypes.object,
     multi: PropTypes.bool,
     mandatory: PropTypes.bool,
     onChange: PropTypes.func,
@@ -30,6 +32,8 @@ class PlaysSelector extends Component {
   static defaultProps = {
     availablePlays: Immutable.List(),
     editable: true,
+    labelStyle: { sm: 3, lg: 2 },
+    fieldStyle: { sm: 8, lg: 9 },
     multi: false,
     mandatory: false,
     onChange: () => {},
@@ -94,7 +98,7 @@ class PlaysSelector extends Component {
   }
 
   render() {
-    const { availablePlays, entity, editable, multi, mandatory } = this.props;
+    const { availablePlays, entity, editable, multi, mandatory, labelStyle, fieldStyle } = this.props;
     if (!shouldUsePlays(availablePlays)) {
       return null;
     }
@@ -102,11 +106,11 @@ class PlaysSelector extends Component {
     const playValue = this.playsValueToList(entity.get('play', '')).join(',');
     return (
       <FormGroup key="play">
-        <Col componentClass={ControlLabel} sm={3} lg={2}>
+        <Col componentClass={ControlLabel} sm={labelStyle.sm} lg={labelStyle.lg}>
           {label}
           { mandatory && (<span className="danger-red"> *</span>)}
         </Col>
-        <Col sm={8} lg={9}>
+        <Col sm={fieldStyle.sm} lg={fieldStyle.lg}>
           <Field
             fieldType="select"
             options={getPlayOptions(availablePlays)}
@@ -127,4 +131,5 @@ class PlaysSelector extends Component {
 const mapStateToProps = (state, props) => ({
   availablePlays: availablePlaysSettingsSelector(state, props),
 });
+
 export default connect(mapStateToProps)(PlaysSelector);

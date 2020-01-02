@@ -28,29 +28,46 @@ const selectCyclesOptions = (options) => {
   }));
 };
 
-const getServicesOptions = state => state.list.get('available_services', null);
+const getAccountsOptions = state => state.list.get('available_accounts', null);
 
-const selectServicesOptions = (options) => {
+const selectAccountsOptions = (options) => {
   if (options === null) {
     return undefined;
   }
-  return options.map(option => Immutable.Map({
-    label: `${option.get('description', '')} (${option.get('name', '')})`,
-    value: option.get('name', ''),
-  }));
-};
+  return options.map(option => {
+    let name = '';
+    name += option.get('firstname', '').trim() !== '' ? option.get('firstname', '').trim() : '';
+    name += option.get('lastname', '').trim() !== '' ? ` ${option.get('lastname', '').trim()}` : '';
+    return Immutable.Map({
+      title: name.trim(),
+      aid: option.get('aid', ''),
+    })
+  });
+}
+
+const getServicesOptions = state => state.list.get('available_services', null);
+
+const getTaxesOptions = state => state.list.get('available_taxRates', null);
 
 const getProductsOptions = state => state.list.get('all_rates', null);
 
 const getOptionsByListName = (state, props, listName = '') => state.list.get(listName, null);
 
-const selectProductsOptions = (options) => {
+const getEntitiesOptions = (state, props, entities = []) =>
+  Immutable.Map().withMutations((optionsWithMutations) => {
+    entities.forEach((entity) => {
+      const entitiesName = getConfig(['systemItems', entity, 'itemsType'], '');
+      optionsWithMutations.set(entity, state.list.get(`available_${entitiesName}`, Immutable.List()));
+  });
+});
+
+const formatSelectOptions = (options, key) => {
   if (options === null) {
     return undefined;
   }
   return options.map(option => Immutable.Map({
-    label: `${option.get('description', '')} (${option.get('key', '')})`,
-    value: option.get('key', ''),
+    label: `${option.get('description', '')} (${option.get(key, '')})`,
+    value: option.get(key, ''),
   }));
 };
 
@@ -65,7 +82,6 @@ const selectEntityTypesOptions = (options) => {
   if (options === null) {
     return undefined;
   }
-
   return options.map(type => ({
     key: type.get('name', ''),
     val: sentenceCase(type.get('name', '')),
@@ -73,16 +89,6 @@ const selectEntityTypesOptions = (options) => {
 };
 
 const getPlansOptions = state => state.list.get('available_plans', null);
-
-const selectPlansOptions = (options) => {
-  if (options === null) {
-    return undefined;
-  }
-  return options.map(option => Immutable.Map({
-    label: `${option.get('description', '')} (${option.get('name', '')})`,
-    value: option.get('name', ''),
-  }));
-};
 
 const selectPlayTypeOptions = (options) => {
   if (options === null) {
@@ -149,6 +155,11 @@ export const cyclesOptionsSelector = createSelector(
   selectCyclesOptions,
 );
 
+export const entitiesOptionsSelector = createSelector(
+  getEntitiesOptions,
+  options => options,
+);
+
 export const eventRatesSelector = createSelector(
   getEventRates,
   rates => (rates === null ? undefined : rates),
@@ -156,22 +167,37 @@ export const eventRatesSelector = createSelector(
 
 export const productsOptionsSelector = createSelector(
   getProductsOptions,
-  selectProductsOptions,
+  () => 'key',
+  formatSelectOptions,
 );
 
 export const listByNameSelector = createSelector(
   getOptionsByListName,
-  selectProductsOptions,
+  () => 'key',
+  formatSelectOptions,
+);
+
+export const accountsOptionsSelector = createSelector(
+  getAccountsOptions,
+  selectAccountsOptions,
 );
 
 export const servicesOptionsSelector = createSelector(
   getServicesOptions,
-  selectServicesOptions,
+  () => 'name',
+  formatSelectOptions,
+);
+
+export const taxesOptionsSelector = createSelector(
+  getTaxesOptions,
+  () => 'key',
+  formatSelectOptions,
 );
 
 export const plansOptionsSelector = createSelector(
   getPlansOptions,
-  selectPlansOptions,
+  () => 'name',
+  formatSelectOptions,
 );
 
 export const getPlayTypeOptions = createSelector(

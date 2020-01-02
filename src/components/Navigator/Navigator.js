@@ -27,6 +27,7 @@ class Navigator extends Component {
     userRoles: [],
     collapseSideBar: false,
     routes: [],
+    hiddenItems: [],
   };
 
   static propTypes = {
@@ -34,6 +35,7 @@ class Navigator extends Component {
       push: PropTypes.func.isRequired,
     }).isRequired,
     routes: PropTypes.array,
+    hiddenItems: PropTypes.array,
     menuItems: PropTypes.instanceOf(Immutable.Iterable),
     companyNeme: PropTypes.string,
     logo: PropTypes.string.isRequired,
@@ -128,6 +130,11 @@ class Navigator extends Component {
 
   filterEnabledMenu = menu => menu.get('show', false);
 
+  filterHiddenMenu = (menu, id) => {
+    const { hiddenItems } = this.props;
+    return !hiddenItems.includes(menu.get('id', ''));
+  };
+
   filterPermission = (menu) => {
     const { userRoles } = this.props;
     const menuRoles = menu.get('roles', Immutable.List());
@@ -151,6 +158,7 @@ class Navigator extends Component {
     const subMenus = item
       .get('subMenus', Immutable.List())
       .filter(this.filterEnabledMenu)
+      .filter(this.filterHiddenMenu)
       .filter(this.filterPermission);
     const activeSubMenus = subMenus.filter(subMenu => router.isActive(subMenu.get('route', '')));
     const isOpen = openSubMenu.includes(id);
@@ -271,6 +279,7 @@ class Navigator extends Component {
             <ul className="nav in" id="side-menu">
               { menuItems
                   .filter(this.filterEnabledMenu)
+                  .filter(this.filterHiddenMenu)
                   .filter(this.filterPermission)
                   .map(this.renderMenu)
               }

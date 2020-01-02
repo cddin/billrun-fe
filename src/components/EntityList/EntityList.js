@@ -3,9 +3,10 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import Immutable from 'immutable';
-import changeCase from 'change-case';
+import { noCase, upperCaseFirst } from 'change-case';
 import { Col, Row, Panel } from 'react-bootstrap';
 import { LoadingItemPlaceholder, Actions } from '@/components/Elements';
+import { ExporterPopup } from '@/components/Exporter';
 import List from '../List';
 import Pager from './Pager';
 import State from './State';
@@ -13,6 +14,7 @@ import Filter from './Filter';
 import StateDetails from './StateDetails';
 import {
   getList,
+  clearRevisions,
   setListSort,
   setListFilter,
   setListPage,
@@ -21,6 +23,12 @@ import {
   // clearList,
   // clearItem,
 } from '@/actions/entityListActions';
+import {
+  importTypesOptionsSelector,
+} from '@/selectors/importSelectors';
+import {
+  getSettings,
+} from '@/actions/settingsActions';
 import { getConfig } from '@/common/Util';
 
 
@@ -30,10 +38,12 @@ class EntityList extends Component {
     itemType: PropTypes.string.isRequired,
     itemsType: PropTypes.string.isRequired,
     collection: PropTypes.string.isRequired,
+    entityKey: PropTypes.string,
     api: PropTypes.string,
     items: PropTypes.instanceOf(Immutable.List),
     tableFields: PropTypes.array,
     filterFields: PropTypes.array,
+    typeSelectOptions: PropTypes.array,
     baseFilter: PropTypes.object,
     projectFields: PropTypes.object,
     page: PropTypes.number,
@@ -64,6 +74,7 @@ class EntityList extends Component {
   }
 
   static defaultProps = {
+    entityKey: undefined,
     items: null,
     api: 'uniqueget',
     page: 0,
@@ -77,6 +88,7 @@ class EntityList extends Component {
     baseFilter: {},
     tableFields: [],
     filterFields: [],
+    typeSelectOptions: [],
     projectFields: {},
     sort: Immutable.Map(),
     defaultSort: Immutable.Map(),
@@ -87,6 +99,10 @@ class EntityList extends Component {
     listActions: null,
   }
 
+  state = {
+    showExport: false,
+  }
+
   componentWillMount() {
     const { forceRefetchItems, items, sort, defaultSort, itemsType } = this.props;
     if (forceRefetchItems || items == null || items.isEmpty()) {
@@ -94,6 +110,14 @@ class EntityList extends Component {
     }
     if (sort.isEmpty() && !defaultSort.isEmpty()) {
       this.props.dispatch(setListSort(itemsType, defaultSort));
+    }
+  }
+
+  componentDidMount() {
+    const { itemsType } = this.props;
+    if (this.isImportEnabled()) {
+      const importName = `import${upperCaseFirst(itemsType)}`;
+      this.props.dispatch(getSettings('plugin_actions', { actions: [importName] }));
     }
   }
 
@@ -139,7 +163,22 @@ class EntityList extends Component {
   }
 
   onClickRefresh = () => {
+    const { collection } = this.props;
     this.fetchItems(this.props);
+    this.props.dispatch(clearRevisions(collection));
+  }
+
+  onClickImport = () => {
+    const { itemType } = this.props;
+    this.props.router.push(`/import/${itemType}`);
+  }
+
+  onClickExport = () => {
+    this.setState(() => ({ showExport: true }));
+  }
+
+  onExportFinish = () => {
+    this.setState(() => ({ showExport: false }));
   }
 
   onSort = (sort) => {
@@ -234,11 +273,46 @@ class EntityList extends Component {
   addStateColumn = fields => ([
     { id: 'state', parser: this.parserState, cssClass: 'state' },
     ...fields,
-  ])
+  ]);
+
+  isImportEnabled = () => {
+    const { itemType } = this.props;
+    if (window.import_export === true) {
+      return true;
+    }
+    return getConfig(['import', 'allowed_entities'], Immutable.List()).includes(itemType);
+  }
+
+  showImportEnabled = () => {
+    const { typeSelectOptions } = this.props;
+    return this.isImportEnabled() && typeSelectOptions.length > 0;
+  }
+
+  isExportEnabled = () => {
+    const { itemType } = this.props;
+    if (window.import_export === true) {
+      return true;
+    }
+    return getConfig(['export', 'allowed_entities'], Immutable.List()).includes(itemType);
+  }
 
   getListActions = () => {
     const { listActions } = this.props;
     const defaultActions = [{
+      type: 'export',
+      label: 'Export',
+      onClick: this.onClickExport,
+      show: this.isExportEnabled,
+      actionStyle: 'primary',
+      actionSize: 'xsmall'
+    }, {
+      type: 'import',
+      label: 'Import',
+      onClick: this.onClickImport,
+      show: this.showImportEnabled(),
+      actionStyle: 'primary',
+      actionSize: 'xsmall'
+    }, {
       type: 'refresh',
       label: 'Refresh',
       actionStyle: 'primary',
@@ -265,11 +339,27 @@ class EntityList extends Component {
     }).reverse();
   }
 
+  renderExporter = () => {
+    const { showExport } = this.state;
+    const { itemType } = this.props;
+    if (this.isExportEnabled()) {
+      return (
+        <ExporterPopup
+          entityKey={itemType}
+          show={showExport}
+          onClose={this.onExportFinish}
+        />
+      )
+    }
+    return null;
+  }
+
   renderPanelHeader = () => {
-    const { itemsType } = this.props;
+    const { itemType, itemsType } = this.props;
+    const itemsTypeName = getConfig(['systemItems', itemType, 'itemsName'], noCase(itemsType));
     return (
       <div>
-        List of all available {changeCase.noCase(itemsType)}
+        List of all available {itemsTypeName}
         <div className="pull-right">
           <Actions actions={this.getListActions()} />
         </div>
@@ -356,20 +446,41 @@ class EntityList extends Component {
           </Panel>
           { this.renderPager() }
         </Col>
+        { this.renderExporter() }
       </Row>
     );
   }
 }
 
-const mapStateToProps = (state, props) => ({
-  collection: props.collection || props.itemsType,
-  items: state.entityList.items.get(props.itemsType),
-  page: state.entityList.page.get(props.itemsType),
-  state: state.entityList.state.get(props.itemsType),
-  nextPage: state.entityList.nextPage.get(props.itemsType),
-  sort: state.entityList.sort.get(props.itemsType),
-  filter: state.entityList.filter.get(props.itemsType),
-  size: state.entityList.size.get(props.itemsType),
-  inProgress: state.progressIndicator > 0,
-});
+const mapStateToProps = (state, props) => {
+  let itemType = props.itemType;
+  let itemsType = props.itemsType;
+  let collection = props.collection || props.itemsType;
+  let showRevisionBy = props.showRevisionBy;
+  if (typeof props.entityKey !== 'undefined') {
+    const config = getConfig(['systemItems', props.entityKey], Immutable.Map());
+    itemType = config.get('itemType', itemType);
+    itemsType = config.get('itemsType', itemsType);
+    collection = config.get('collection', itemsType);
+    // Allow to disable revisions by passing FALSE
+    if (props.showRevisionBy !== false) {
+      showRevisionBy = config.get('uniqueField', props.showRevisionBy);
+    }
+  }
+  return ({
+    collection,
+    itemType,
+    itemsType,
+    showRevisionBy,
+    items: state.entityList.items.get(itemsType),
+    page: state.entityList.page.get(itemsType),
+    state: state.entityList.state.get(itemsType),
+    nextPage: state.entityList.nextPage.get(itemsType),
+    sort: state.entityList.sort.get(itemsType),
+    filter: state.entityList.filter.get(itemsType),
+    size: state.entityList.size.get(itemsType),
+    inProgress: state.progressIndicator > 0,
+    typeSelectOptions: importTypesOptionsSelector(state, props, 'importer', itemType),
+  })
+}
 export default withRouter(connect(mapStateToProps)(EntityList));

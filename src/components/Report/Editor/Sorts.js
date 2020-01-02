@@ -91,8 +91,8 @@ class Sorts extends Component {
           { !sortRows.isEmpty() ? (
             <FormGroup className="form-inner-edit-row">
               <Col sm={1} xsHidden>&nbsp;</Col>
-              <Col sm={6} xsHidden><label htmlFor="field_field">Field</label></Col>
-              <Col sm={4} xsHidden><label htmlFor="order_field">Order</label></Col>
+              <Col sm={5} xsHidden><label htmlFor="field_field">Field</label></Col>
+              <Col sm={5} xsHidden><label htmlFor="order_field">Order</label></Col>
             </FormGroup>
           ) : (
             <HelpBlock>{ReportDescription.block_sort}</HelpBlock>

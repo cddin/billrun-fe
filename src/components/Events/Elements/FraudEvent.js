@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Immutable from 'immutable';
-import { Form, FormGroup, Row, Col, Panel, Label } from 'react-bootstrap';
+import { Form, FormGroup, Col, Panel, Label } from 'react-bootstrap';
 import { CreateButton, LoadingItemPlaceholder } from '@/components/Elements';
 import {
   eventPropertyTypesSelector,
@@ -134,8 +134,8 @@ class FraudEvent extends Component {
     const disableAdd = false; // fieldsOptions.isEmpty();
     const disableCreateNewtitle = disableAdd ? 'No more filter options' : '';
     return (
-      <Row className="report-editor-conditions">
-        <Col sm={12}>
+      <div className="fraud-event-conditions">
+        <Col sm={12} className="form-inner-edit-rows">
           { !conditionsRows.isEmpty() && (
             <FormGroup className="form-inner-edit-row">
               <Col sm={4} xsHidden><label htmlFor="field_field">Filter</label></Col>
@@ -147,7 +147,7 @@ class FraudEvent extends Component {
         <Col sm={12}>
           { conditionsRows }
         </Col>
-        <Col sm={12}>
+        <Col sm={12} className="pl0 pr0">
           <CreateButton
             onClick={this.onAddCondition}
             label="Add Condition"
@@ -155,7 +155,7 @@ class FraudEvent extends Component {
             title={disableCreateNewtitle}
           />
         </Col>
-      </Row>
+      </div>
     );
   }
 

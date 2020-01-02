@@ -59,33 +59,31 @@ class SecurityForm extends Component {
       <ModalWrapper title={`${title} Secret`} show={true} onOk={this.onSave} onCancel={this.props.onCancel} labelOk="Save" >
         <Form horizontal>
           <FormGroup controlId="name" key="name">
-            <Col componentClass={ControlLabel} md={2}>
+            <Col componentClass={ControlLabel} sm={3}>
               Name
             </Col>
-            <Col sm={6}>
+            <Col sm={8}>
               <FormControl type="text" name="name" onChange={this.onChangeName} value={item.get('name', '')} />
             </Col>
           </FormGroup>
 
           <FormGroup controlId="key" key="key">
-            <Col componentClass={ControlLabel} md={2}>
+            <Col componentClass={ControlLabel} sm={3}>
               Secret Key
             </Col>
-            <Col sm={6}>
+            <Col sm={8}>
               <FormControl type="text" name="key" value={item.get('key', '')} disabled={true} />
-              <HelpBlock>
-                { action === 'create'
-                  ? 'Secret will be available after saving'
-                  : '' }
-              </HelpBlock>
+              { action === 'create' && (
+                <HelpBlock>Secret will be available after saving</HelpBlock>
+              )}
             </Col>
           </FormGroup>
 
           <FormGroup controlId="from" key="from">
-            <Col componentClass={ControlLabel} md={2}>
+            <Col componentClass={ControlLabel} sm={3}>
               Creation Date
             </Col>
-            <Col sm={6}>
+            <Col sm={8}>
               <div className="pull-left" >
                 <DatePicker
                   className="form-control"
@@ -100,10 +98,10 @@ class SecurityForm extends Component {
           </FormGroup>
 
           <FormGroup controlId="to" key="to">
-            <Col componentClass={ControlLabel} md={2}>
+            <Col componentClass={ControlLabel} sm={3}>
               Expiration Date
             </Col>
-            <Col sm={6}>
+            <Col sm={8}>
               <div className="pull-left" >
                 <DatePicker
                   className="form-control"

@@ -10,6 +10,7 @@ import {
   getProductsKeysQuery,
   getAllGroupsQuery,
   getPrepaidIncludesQuery,
+  getEntitesQuery,
  } from '../common/ApiQueries';
 import {
   actions as entityActions,
@@ -120,6 +121,9 @@ export const getFileTypesOptions = () => dispatch => dispatch(getSettings('file_
 export const getEventCodeOptions = () => dispatch => dispatch(getSettings('events'));
 
 export const getPlayTypeOptions = () => dispatch => dispatch(getSettings('plays'));
+
+export const getTaxesOptions = () =>
+  getList('available_taxRates', getEntitesQuery('taxes', { key: 1, description: 1 }));
 
 export const getGroupsOptions = () => dispatch => apiBillRun(getAllGroupsQuery())
   .then((success) => {

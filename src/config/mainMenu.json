@@ -90,6 +90,15 @@
     "order": 2,
     "parent": "postpaid"
   },
+  "charges": {
+    "title": "Conditional Charges",
+    "icon": "",
+    "route": "charges",
+    "show": true,
+    "roles": [],
+    "order": 2,
+    "parent": "postpaid"
+  },
   "customers": {
     "title": "Customers",
     "icon": "fa-users",
@@ -134,6 +143,33 @@
     "roles": [],
     "order": 7,
     "parent": "root"
+  },
+  "tax": {
+    "title": "Tax",
+    "icon": "fa-percent",
+    "route": "",
+    "show": true,
+    "roles": [],
+    "order": 7.1,
+    "parent": "root"
+  },
+  "taxes": {
+    "title": "Rates",
+    "icon": "",
+    "route": "taxes",
+    "show": true,
+    "roles": [],
+    "order": 0,
+    "parent": "tax"
+  },
+  "tax_mapping": {
+    "title": "Mapping Rules",
+    "icon": "",
+    "route": "taxes/mapping-rules",
+    "show": true,
+    "roles": [],
+    "order": 1,
+    "parent": "tax"
   },
   "templates": {
     "title": "Templates",

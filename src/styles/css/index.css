@@ -37,6 +37,11 @@ fieldset[disabled] .btn {
 .tooltip{
   z-index: 2001;
 }
+.input-min-line-height {
+  line-height: 39px;
+}
+
+/* Props */
 .clickable {
   cursor: pointer;
 }
@@ -52,6 +57,9 @@ fieldset[disabled] .btn {
 }
 .inline {
   display: inline-block;;
+}
+.withHover:hover {
+  background-color: #e5e5e5;
 }
 .one-line {
   white-space: nowrap;
@@ -72,6 +80,10 @@ fieldset[disabled] .btn {
 .pr0{ padding-right: 0!important; }
 .pb0{ padding-bottom: 0!important; }
 .pl0{ padding-left: 0!important; }
+.pt5{ padding-top: 5px!important; }
+.pr5{ padding-right: 5px!important; }
+.pb5{ padding-bottom: 5px!important; }
+.pl5{ padding-left: 5px!important; }
 .mt10{ margin-top: 10px!important; }
 .mr10{ margin-right: 10px!important; }
 .mb10{ margin-bottom: 10px!important; }
@@ -80,8 +92,19 @@ fieldset[disabled] .btn {
 .mr0{ margin-right: 0!important; }
 .mb0{ margin-bottom: 0!important; }
 .ml0{ margin-left: 0!important; }
+.mt5{ margin-top: 5px!important; }
+.mr5{ margin-right: 5px!important; }
+.mb5{ margin-bottom: 5px!important; }
+.ml5{ margin-left: 5px!important; }
 
 .full-width{ width: 100%!important; }
+
+.text-left { text-align: left !important; }
+.text-right { text-align: right !important; }
+.text-center { text-align: center !important; }
+
+.not-top-border { border-top: none!important; }
+/* ~Props */
 
 /* General colors */
 .danger-red { color: #d9534f; }
@@ -141,16 +164,12 @@ fieldset[disabled] .btn {
 }
 /* ~Custom field input */
 
-
-
-
-
 /* Mapping block */
 .separator {
-    margin-top: 0px;
-    margin-bottom: 20px;
-    border: 0;
-    border-top: 1px solid #c3c3c3;
+  margin-top: 0px;
+  margin-bottom: 20px;
+  border: 0;
+  border-top: 1px solid #c3c3c3;
 }
 
 /* Plan Edit screen*/
@@ -233,6 +252,24 @@ fieldset[disabled] .btn {
   border: 0;
   margin: 0;
 }
+.actions button.btn-sm {
+  height: 39px;
+  padding: 9px 12px;
+}
+.actions-buttons button.btn-link {
+  text-decoration: none;
+}
+.td-ellipsis{
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.td-actions {
+  width:1%;
+  white-space:nowrap;
+}
+/* ~Global page + table */
+
 /* Entity Revision */
 .entity-revision-history-popover .popover-content{
   padding: 10px 0 0 0;
@@ -399,4 +436,8 @@ ul.revision-history-list li.active .cycle {
 
 #rate-mapping .nav-tabs>li {
   min-width: 150px;
+}
+
+.CustomFieldsListRow {
+  line-height: 40px;
 }

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Immutable from 'immutable';
 import isNumber from 'is-number';
-import { Panel, Button, FormGroup, ControlLabel } from 'react-bootstrap';
+import { Col, Panel, Button, FormGroup, ControlLabel } from 'react-bootstrap';
 import Field from '@/components/Field';
 import Help from '../../Help';
 import { CreateButton } from '@/components/Elements';
@@ -156,7 +156,7 @@ export default class PlanProduct extends Component {
       <Panel header={header}>
         { editable && (
           <FormGroup className="mb0">
-            <span style={{ display: 'inline-block', marginRight: 20 }}>
+            <span className="inline mr10">
               <Field
                 fieldType="radio"
                 value="no"
@@ -166,9 +166,9 @@ export default class PlanProduct extends Component {
                 checked={!isPercentage}
               />
             </span>
-            <span style={{ display: 'inline-block' }}>
+            <span className="inline">
               <Field
-                style={{ display: 'inline-block', marginRight: 10 }}
+                className="inline mr10"
                 fieldType="radio"
                 value="percentage"
                 onChange={this.onChangeOverrideType}
@@ -210,16 +210,17 @@ export default class PlanProduct extends Component {
           </FormGroup>
         )}
         { !isPercentage && prices.map((price, i) => (
-          <ProductPrice
-            key={`${item.get('key')}_${i}`}
-            item={price}
-            index={i}
-            mode={mode}
-            count={priceCount}
-            unit={getUnitLabel(propertyTypes, usageTypes, usaget, unit)}
-            onProductEditRate={this.onProductEditRate}
-            onProductRemoveRate={this.onProductRemoveRate}
-          />
+          <Col sm={12} key={item.get('key', i)}>
+            <ProductPrice
+              item={price}
+              index={i}
+              mode={mode}
+              count={priceCount}
+              unit={getUnitLabel(propertyTypes, usageTypes, usaget, unit)}
+              onProductEditRate={this.onProductEditRate}
+              onProductRemoveRate={this.onProductRemoveRate}
+            />
+          </Col>
         ))}
         { !isPercentage && editable && (
           <FormGroup style={{ margin: 0 }}>

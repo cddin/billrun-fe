@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Immutable from 'immutable';
 import { connect } from 'react-redux';
-import { Panel, Col, Row, Button } from 'react-bootstrap';
 import List from '@/components/List';
-import { getSettings, updateSetting } from '@/actions/settingsActions';
+import { CreateButton } from '@/components/Elements';
+import { getSettings, updateSetting, saveSettings } from '@/actions/settingsActions';
 import { usageTypesDataSelector, propertyTypeSelector } from '@/selectors/settingsSelector';
 import UsageTypeForm from '../UsageTypes/UsageTypeForm';
 
@@ -58,6 +58,8 @@ class UsageTypes extends Component {
       createNew: false,
     });
     this.props.dispatch(updateSetting('usage_types', index, currentItem));
+    this.props.dispatch(saveSettings('usage_types'));
+    this.props.dispatch(getSettings('usage_types'));
   }
 
   onUpdateItem = (fieldNames, fieldValues) => {
@@ -79,17 +81,6 @@ class UsageTypes extends Component {
       index: usageTypesData.size,
     });
   }
-
-  renderPanelHeader = () => (
-    <div>
-      List of all activity types
-      <div className="pull-right">
-        <Button bsSize="xsmall" className="btn-primary" onClick={this.onClickNew}>
-          <i className="fa fa-plus" />&nbsp;Add New
-        </Button>
-      </div>
-    </div>
-  );
 
   renderList = () => {
     const { usageTypesData } = this.props;
@@ -118,13 +109,8 @@ class UsageTypes extends Component {
 
     return (
       <div>
-        <Row>
-          <Col lg={12}>
-            <Panel header={this.renderPanelHeader()}>
-              { this.renderList() }
-            </Panel>
-          </Col>
-        </Row>
+        { this.renderList() }
+        <CreateButton onClick={this.onClickNew} label="Add New" />
         {
           currentItem !== null &&
           <UsageTypeForm

@@ -121,7 +121,7 @@ export default class ProductPrice extends Component {
 
     return (
       <Row className="form-inner-edit-row">
-        <Col lg={2} md={2} sm={2} xs={5} >
+        <Col sm={2} xs={6} className="col-xs-pr5">
           <FormGroup validationState={this.state.fromError.length > 0 ? 'error' : null} style={{ margin: 0 }}>
             {isFirst && <ControlLabel>{`From ${unitLabel}`}</ControlLabel>}
             <Field value={from} disabled={true} editable={editable} />
@@ -129,7 +129,7 @@ export default class ProductPrice extends Component {
           </FormGroup>
         </Col>
 
-        <Col lg={2} md={2} sm={2} xs={5} >
+        <Col sm={2} xs={6}>
           <FormGroup validationState={this.state.toError.length > 0 ? 'error' : null} style={{ margin: 0 }}>
             { isFirst && <ControlLabel>{`To ${unitLabel}`}</ControlLabel> }
             { (to === productUnlimitedValue)
@@ -140,7 +140,7 @@ export default class ProductPrice extends Component {
           </FormGroup>
         </Col>
 
-        <Col lg={2} md={2} sm={2} xs={5} >
+        <Col sm={3} xs={6} className="col-xs-pr5">
           <FormGroup validationState={this.state.intervalError.length > 0 ? 'error' : null} style={{ margin: 0 }}>
             {isFirst && <ControlLabel>{`Interval ${unitLabel}`}</ControlLabel>}
             <Field value={item.get('interval', '')} onChange={this.onEditInterval} fieldType="number" min={0} editable={editable} />
@@ -148,7 +148,7 @@ export default class ProductPrice extends Component {
           </FormGroup>
         </Col>
 
-        <Col lg={2} md={2} sm={2} xs={5}>
+        <Col sm={3} xs={6}>
           <FormGroup validationState={this.state.priceError.length > 0 ? 'error' : null} style={{ margin: 0 }}>
             {isFirst && <ControlLabel>Price Per Interval</ControlLabel>}
             <Field value={item.get('price', '')} onChange={this.onEditPrice} fieldType="price" editable={editable} />
@@ -156,14 +156,19 @@ export default class ProductPrice extends Component {
           </FormGroup>
         </Col>
 
-        <Col lg={2} md={2} sm={2} xs={2} className="text-right actions">
-          { (index > 0 && isLast && editable)
-            ? <Button onClick={this.onRemoveItem} bsSize="small" className="pull-left"><i className="fa fa-trash-o danger-red" /> &nbsp;Remove</Button>
-            : <Col lg={2} md={2} sm={2} xs={2} className="text-right" />
-          }
+        <Col xs={2} className="text-left actions">
+          { index > 0 && isLast && editable && (
+            <Button onClick={this.onRemoveItem} bsSize="small">
+              <i className="fa fa-trash-o danger-red" /> &nbsp;Remove
+            </Button>
+          )}
         </Col>
 
-        { !isLast && <Col smHidden mdHidden lgHidden xs={12}><hr style={{ marginTop: 8, marginBottom: 8 }} /></Col> }
+        { !isLast && (
+          <Col smHidden mdHidden lgHidden xs={12}>
+            <hr style={{ marginTop: 8, marginBottom: 8 }} />
+          </Col>
+        )}
       </Row>
     );
   }

@@ -162,7 +162,9 @@ class RunCycle extends Component {
   runCycle = (rerun = false) => {
     this.props.dispatch(clearItems('billruns'));
     const { selectedCycle, generatePdf } = this.state;
-    this.props.dispatch(runBillingCycle(selectedCycle.get('billrun_key', ''), rerun, generatePdf))
+    const { cycleAdditionalData } = this.props;
+    const isGeneratePdf = (generatePdf !== null) ? generatePdf : cycleAdditionalData.get('generate_pdf', true);
+    this.props.dispatch(runBillingCycle(selectedCycle.get('billrun_key', ''), rerun, isGeneratePdf))
       .then((response) => {
         if (response.status) {
           this.refreshAfterRun = setTimeout(this.reloadCycleData, 1000);
