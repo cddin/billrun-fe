@@ -2,9 +2,9 @@
   "dynamicFieldMapping": {
     "conditions": [
       { "id": "$eq", "title": "Equal" },
-      { "id": "$ne", "title": "Not Equals" },
+      { "id": "$ne", "title": "Does not equal" },
       { "id": "$in", "title": "In" },
-      { "id": "$nin", "title": "Not In" },
+      { "id": "$nin", "title": "Not in" },
       { "id": "$regex", "title": "Regex" }
     ]
   }
