@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import Immutable from 'immutable';
-import { Row, Col } from 'react-bootstrap';
+import { getConfig, getUnitLabel } from '@/common/Util';
 import Field from '@/components/Field';
+import Immutable from 'immutable';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { Col, Row } from 'react-bootstrap';
 import Help from '../Help';
 import UsageTypesSelector from '../UsageTypes/UsageTypesSelector';
-import { getUnitLabel, getConfig } from '@/common/Util';
 
 export default class FieldsMapping extends Component {
 
@@ -705,7 +705,7 @@ export default class FieldsMapping extends Component {
                       showDisplayUnits={true}
                     />
                   </div>
-                  <div className="col-lg-2">
+                  <div className="col-lg-2 field-mapping-radio">
                     <Field
                       fieldType="radio"
                       name="dynamic-usaget-volume-type"
