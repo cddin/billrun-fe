@@ -559,7 +559,7 @@ class Importer extends Component {
   afterImport = (response) => {
     if ([1, 2].includes(response.status)) {
       const responseData = Immutable.fromJS(response.data) || Immutable.Map();
-      const result = responseData.get('imported_entities', Immutable.List());
+      const result = responseData.get('imported_entities', responseData.toList());
       if (responseData.has('created', false)) {
         this.setState({ status: 'finish' });
       } else {
