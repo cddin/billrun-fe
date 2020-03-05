@@ -51,6 +51,7 @@ class Importer extends Component {
     showPlay: PropTypes.bool,
     restartString: PropTypes.string,
     onFinish: PropTypes.func,
+    onClearItems: PropTypes.func,
     dispatch: PropTypes.func.isRequired,
   }
 
@@ -84,6 +85,7 @@ class Importer extends Component {
     typeSelectOptions: [],
     showPlay: false,
     onFinish: null,
+    onClearItems: null,
   };
 
   state = {
@@ -167,6 +169,12 @@ class Importer extends Component {
   onFinish = () => {
     if (this.props.onFinish) {
       this.props.onFinish();
+    }
+  }
+
+  onClearItems = (itemName) => {
+    if (this.props.onClearItems) {
+      this.props.onClearItems(itemName);
     }
   }
 
@@ -557,6 +565,7 @@ class Importer extends Component {
   }
 
   afterImport = (response) => {
+    const { item } = this.props;
     if ([1, 2].includes(response.status)) {
       const responseData = Immutable.fromJS(response.data) || Immutable.Map();
       const result = responseData.get('imported_entities', responseData.toList());
@@ -573,6 +582,7 @@ class Importer extends Component {
       }
       this.onChange('result', responseData);
       this.onNextStep();
+      this.onClearItems(item.get('entity', ''));
     } else {
       this.onDelete('result');
       this.setState({ status: 'create' });
