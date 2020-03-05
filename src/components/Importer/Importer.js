@@ -334,7 +334,7 @@ class Importer extends Component {
   }
 
   alterProductsData = data => Immutable.List().withMutations((fieldsWithMutations) => {
-    const { item } = this.props;
+    const { item, showPlay } = this.props;
     const operation = item.get('operation', 'create');
     const revisionDateField = (operation === 'create') ? 'from' : 'effective_date';
     const productsGrouped = Immutable.fromJS(data)
@@ -352,6 +352,9 @@ class Importer extends Component {
     productsGrouped.forEach((productKey) => {
       productKey.forEach((productKeyRevision) => {
         productKeyRevision.withMutations((productKeyRevisionWithMutations) => {
+          if (showPlay) {
+            productKeyRevisionWithMutations.set('play', item.get('play', ''));
+          }
           // Date field (from/effective_date) is reqired
           if (!productKeyRevision.has(revisionDateField)) {
             productKeyRevisionWithMutations.update('__ERRORS__', Immutable.Map(), erros =>
