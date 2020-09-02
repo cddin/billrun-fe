@@ -135,14 +135,32 @@
     "order":0,
     "parent":"cycle"
   },
-  "invoices": {
-    "title": "Invoices",
+  "account_receivables": {
+    "title": "Account Receivables",
     "icon": "fa-file-text-o",
-    "route": "invoices",
+    "route": "",
     "show": true,
     "roles": [],
     "order": 7,
     "parent": "root"
+  },
+  "invoices": {
+    "title": "Invoices",
+    "icon": "",
+    "route": "invoices",
+    "show": true,
+    "roles": [],
+    "order": 0,
+    "parent": "account_receivables"
+  },
+  "custom-payment-files": {
+    "title": "Transactions Request File",
+    "icon": "",
+    "route": "custom-payment-files",
+    "show": true,
+    "roles": [],
+    "order": 1,
+    "parent": "account_receivables"
   },
   "tax": {
     "title": "Tax",

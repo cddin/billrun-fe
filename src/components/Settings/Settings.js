@@ -7,6 +7,7 @@ import { Tabs, Tab, Panel } from 'react-bootstrap';
 import DateTime from './DateTime';
 import Currency from './Currency';
 import Invoicing from './Invoicing';
+import Plugins from './Plugins/PluginsContainer';
 //import Allowances from './Allowances';
 import Plays from './Plays/PlaysContainer';
 import Tax from './Tax';
@@ -71,6 +72,7 @@ class Settings extends Component {
       'taxation',
       'file_types',
       'system',
+      'plugins',
       'plays'
     ];
     this.props.dispatch(getSettings(settingsToFetch));
@@ -160,6 +162,7 @@ class Settings extends Component {
     const { currencyOptions } = this.state;
 
     const currency = settings.getIn(['pricing', 'currency'], '');
+    const plugins = settings.get('plugins', Immutable.List());
     const billrun = settings.get('billrun', Immutable.Map());
     const sharedSecret = settings.get('shared_secret', Immutable.List());
     const tenant = settings.get('tenant', Immutable.Map());
@@ -239,12 +242,18 @@ class Settings extends Component {
             </Panel>
           </Tab>
 
+          <Tab title="Plugins" eventKey={10}>
+            <Panel style={{ borderTop: 'none' }}>
+              <Plugins onChange={this.onChangeFieldValue} data={plugins} />
+            </Panel>
+          </Tab>
+
         </Tabs>
 
         <ActionButtons
           onClickSave={this.onSave}
           hideCancel={true}
-          hideSave={[5, 7, 8].includes(activeTab)}
+          hideSave={[5, 7, 8, 10].includes(activeTab)}
         />
 
       </div>

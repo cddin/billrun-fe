@@ -191,3 +191,24 @@ export const gitTimeOptions = (value) => {
   }
   return [];
 };
+
+export const getBalancePrepaidConditionType = (condition) => {
+  const path = condition.get('paths', Immutable.List()).first(Immutable.Map()).get('path', '');
+  if (path === 'pp_includes_external_id') {
+    return 'bucket';
+  }
+  if (path === 'connection_type') {
+    return 'is_prepaid';
+  }
+  return 'value';
+}
+
+export const getBalancePrepaidConditionIndexByType = (type, conditions) => {
+  if (type === 'bucket') {
+    return conditions.findIndex(condition => condition.get('paths', Immutable.List()).first(Immutable.Map()).get('path', '') === 'pp_includes_external_id');
+  }
+  if (type === 'is_prepaid') {
+    return conditions.findIndex(condition => condition.get('paths', Immutable.List()).first(Immutable.Map()).get('path', '') === 'connection_type');
+  }
+  return conditions.findIndex(condition => !['pp_includes_external_id', 'connection_type'].includes(condition.get('paths', Immutable.List()).first(Immutable.Map()).get('path', '')));
+}

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Immutable from 'immutable';
 
 
 /* COMPONENTS */
@@ -57,12 +58,10 @@ export default class Filter extends Component {
   buildQueryString() {
     const { string, filter_by } = this.state;
     const { base } = this.props;
-    const baseObj = Object.values(base).reduce((acc, value, field) => {
-      return Object.assign({}, acc, {
-        [field]: this.filterCond(field, value)
-      });
-    }, {});
-
+    const baseObj = Immutable
+      .fromJS(base)
+      .reduce((acc, value, field) => acc.set(field, this.filterCond(field, value)), Immutable.Map())
+      .toJS();
     if (!string.replace(/\s/gi, '')) return baseObj;
 
     const filterObj = filter_by.reduce((acc, field) => Object.assign({}, acc, {

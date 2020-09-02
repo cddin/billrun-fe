@@ -52,6 +52,14 @@ fieldset[disabled] .btn {
 .non-editable-field{
   line-height: 32px;
 }
+/* https://github.com/react-bootstrap/react-bootstrap/issues/2428#issuecomment-407800236 */
+.disabled-elements-hack {
+  cursor: not-allowed;
+}
+/* https://github.com/react-bootstrap/react-bootstrap/issues/2428#issuecomment-407800236 */
+.disabled-elements-hack .btn[disabled] {
+  pointer-events: none;
+}
 .actions button.btn-sm {
   height: 39px;
   padding: 9px 12px;
@@ -119,6 +127,7 @@ fieldset[disabled] .btn {
 .text-center { text-align: center !important; }
 
 .not-top-border { border-top: none!important; }
+.not-left-border { border-left: none!important; }
 
 .line-actions {
   z-index: 9999;
@@ -126,10 +135,18 @@ fieldset[disabled] .btn {
   right: 40px;
   margin-top: -5px;
 }
+
+.input-group-space {
+  background: #fff;
+  border-top: none;
+  border-bottom: navajowhite;
+  border-left: none;
+}
 /* ~Props */
 
 /* General colors */
 .danger-red { color: #d9534f; }
+.success-green { color: #7AC943;}
 .btn-danger .danger-red { color: #ffffff; }
 .disable-label {
   opacity: 0.3;

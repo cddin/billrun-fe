@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Immutable from 'immutable';
 import moment from 'moment';
 import classNames from 'classnames';
+import isNumber from 'is-number';
 import { titleCase } from 'change-case';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap/lib';
 import { Button } from 'react-bootstrap';
@@ -37,27 +38,35 @@ class List extends Component {
   displayByType(field, entity) {
     const path = field.id.split(".").filter(part => part !== '');
     switch (field.type) {
+      case 'percentage':
+          const value = entity.get(field.id, '');
+          return isNumber(value) ? `${parseFloat((parseFloat(value) * 100).toFixed(3))}%` : value;
       case 'date':
         return (
           <ZoneDate value={moment(entity.getIn(path, 0))} format={getConfig('dateFormat', 'DD/MM/YYYY')} />
         );
       case 'time':
-        return moment(entity.getIn(path, 0)).format(getConfig('datetimeFormat', 'DD/MM/YYYY HH:mm'));
+        return entity.hasIn(path) ? moment(entity.getIn(path, 0)).format(getConfig('datetimeFormat', 'DD/MM/YYYY HH:mm')) : '';
       case 'datetime':
-        return moment(entity.getIn(path, 0)).format(getConfig('datetimeFormat', 'DD/MM/YYYY HH:mm'));
+        return entity.hasIn(path) ? moment(entity.getIn(path, 0)).format(getConfig('datetimeFormat', 'DD/MM/YYYY HH:mm')) : '';
       case 'mongodate':
-        return moment.unix(entity.getIn([...path, 'sec'], 0)).format(getConfig('dateFormat', 'DD/MM/YYYY'));
+        return entity.hasIn([...path, 'sec']) ? moment.unix(entity.getIn([...path, 'sec'], 0)).format(getConfig('dateFormat', 'DD/MM/YYYY')) : '';
       case 'mongotime':
-        return moment.unix(entity.getIn([...path, 'sec'], 0)).format(getConfig('datetimeFormat', 'DD/MM/YYYY HH:mm'));
+        return entity.hasIn([...path, 'sec']) ? moment.unix(entity.getIn([...path, 'sec'], 0)).format(getConfig('datetimeFormat', 'DD/MM/YYYY HH:mm')) : '';
       case 'mongodatetime':
-        return moment.unix(entity.getIn([...path, 'sec'], 0)).format(getConfig('datetimeFormat', 'DD/MM/YYYY HH:mm'));
+        return entity.hasIn([...path, 'sec']) ? moment.unix(entity.getIn([...path, 'sec'], 0)).format(getConfig('datetimeFormat', 'DD/MM/YYYY HH:mm')) : '';
       case 'timestamp':
-        return moment.unix(entity.getIn(path, 0)).format(getConfig('datetimeFormat', 'DD/MM/YYYY HH:mm'));
+        return entity.hasIn(path) ? moment.unix(entity.getIn(path, 0)).format(getConfig('datetimeFormat', 'DD/MM/YYYY HH:mm')) : '';
       case 'fullDate':
-        return moment.unix(entity.getIn([...path, 'sec'])).format(getConfig('datetimeLongFormat', 'DD/MM/YYYY HH:mm:ss'));
+        return entity.hasIn([...path, 'sec']) ? moment.unix(entity.getIn([...path, 'sec'])).format(getConfig('datetimeLongFormat', 'DD/MM/YYYY HH:mm:ss')) : '';
       case 'text':
-      default:
-        return entity.getIn(path, '');
+      default: {
+        const value = entity.getIn(path, '');
+        if (Array.isArray(value) || Immutable.List.isList(value)) {
+          return value.join(', ');
+        }
+        return value;
+      }
     }
   }
 

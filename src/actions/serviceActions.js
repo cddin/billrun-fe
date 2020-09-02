@@ -94,7 +94,7 @@ const convertService = (getState, service, convertToBaseUnit, toSend) => {
       } else {
         itemWithMutations.set('balance_period', balancePeriod);
       }
-    } else { // convert item resived from server
+    } else { // convert item received from server
       const balancePeriod = convertServiceBalancePeriodToObject(itemWithMutations);
       itemWithMutations.set('balance_period', balancePeriod);
     }
@@ -134,5 +134,5 @@ export const getService = (id, setSource = false) => (dispatch, getState) => {
       }
       return dispatch(apiBillRunSuccessHandler(response));
     })
-    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retreiving Entity')));
+    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retrieving Entity')));
 };

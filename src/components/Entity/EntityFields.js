@@ -23,7 +23,7 @@ class EntityFields extends Component {
     ]).isRequired,
     fields: PropTypes.instanceOf(Immutable.List),
     errors: PropTypes.instanceOf(Immutable.Map),
-    highlightPramas: PropTypes.instanceOf(Immutable.List),
+    highlightParams: PropTypes.instanceOf(Immutable.List),
     fieldsFilter: PropTypes.func,
     editable: PropTypes.bool,
     isPlaysEnabled: PropTypes.bool,
@@ -36,7 +36,7 @@ class EntityFields extends Component {
     entity: Immutable.Map(),
     fields: Immutable.List(),
     errors: Immutable.Map(),
-    highlightPramas: null,
+    highlightParams: null,
     fieldsFilter: null,
     editable: true,
     isPlaysEnabled: false,
@@ -50,9 +50,29 @@ class EntityFields extends Component {
       this.props.dispatch(getSettings(entityName));
     }
     // fix problem when empty params object converted to array
-    if (entity.has('params') && Immutable.is(entity.get('params', Immutable.List()), Immutable.List())) {
-      this.props.onChangeField(['params'], Immutable.Map());
+    //if (entity.has('params') && Immutable.is(entity.get('params', Immutable.List()), Immutable.List())) {
+      // this.props.onChangeField(['params'], Immutable.Map());
+    //}
+    // fix problem when empty params object converted to array
+    let updated_levels = [];
+    fields.forEach(field => {
+      const levels = field.get('field_name', '').split('.');
+      levels.pop(); // remove last element from the path
+      if (levels.length) {
+        let levelsArray = [];
+        levels.forEach((level) => {
+          levelsArray.push(level);
+          const laterString = levelsArray.join('.');
+          const isAlreadyUpdated = !updated_levels.includes(laterString);
+          const isPresentInEntity = entity.hasIn(levelsArray);
+          const isWrongType = Immutable.is(entity.getIn(levelsArray, Immutable.List()), Immutable.List());
+          if (isAlreadyUpdated && isPresentInEntity && isWrongType) {
+            updated_levels.push(laterString);
+            this.props.onChangeField(levelsArray, Immutable.Map());
     }
+        });
+      }
+    })
   }
 
   componentDidUpdate(prevProps, prevState) { // eslint-disable-line no-unused-vars
@@ -67,8 +87,8 @@ class EntityFields extends Component {
       : entity.get('play', '') !== oldEntity.get('play', '');
     if (shouldResetFields) {
       fields.forEach((field) => {
-        const shoudPlayBeDisplayd = this.filterPlayFields(field);
-        if (!shoudPlayBeDisplayd) {
+        const shouldPlaysBeDisplayed = this.filterPlayFields(field);
+        if (!shouldPlaysBeDisplayed) {
           this.props.onRemoveField(field.get('field_name', '').split('.'));
         }
       });
@@ -76,28 +96,29 @@ class EntityFields extends Component {
   }
 
   getParamsOptions = () => {
-    const { fields, fieldsFilter, highlightPramas } = this.props;
+    const { fields, fieldsFilter, highlightParams } = this.props;
     const fieldFilterFunction = fieldsFilter !== null ? fieldsFilter : this.filterPrintableFields;
     return fields
       .filter(fieldFilterFunction)
       .filter(field => !this.filterParamsFields(field))
       .map(field => ({
         label: titleCase(field.get('title', '')),
-        value: field.get('field_name', '').split('.')[1],
+        value: field.get('field_name', ''),
       }))
       .sortBy(field => field.label)
       .sortBy(field =>
-        (highlightPramas !== null && highlightPramas.includes(`params.${field.value}`) ? 0 : 1)
+        (highlightParams !== null && highlightParams.includes(`params.${field.value}`) ? 0 : 1)
       )
   }
 
   onAddParam = (key) => {
-    this.props.onChangeField(['params', key], null);
+    const path = Array.isArray(key) ? key : key.split('.');
+    this.props.onChangeField(path, undefined);
   }
 
   filterPrintableFields = field => (
     field.get('display', false) !== false
-    && field.get('editable', false) !== false
+    // && field.get('editable', false) !== false
     && field.get('field_name', '') !== 'tariff_category'
     && field.get('field_name', '') !== 'play'
   );
@@ -105,7 +126,8 @@ class EntityFields extends Component {
   filterParamsFields = (field) => {
     const { entity } = this.props;
     const fieldPath = field.get('field_name', '').split('.');
-    return (!(fieldPath[0] === 'params' && !entity.hasIn(fieldPath))) || field.get('mandatory', false);
+    const isParam = fieldPath[0] === 'params' || field.get('nullable', false);
+    return (!(isParam && !entity.hasIn(fieldPath))) || field.get('mandatory', false);
   }
 
   filterPlayFields = (field) => {
@@ -121,14 +143,16 @@ class EntityFields extends Component {
   }
 
   renderField = (field, key) => {
-    const { entity, editable, onChangeField, errors } = this.props;
+    const { entity, editable, onChangeField, onRemoveField, errors } = this.props;
+    const isFieldEditable = editable && field.get('editable', false);
     return (
       <EntityField
         key={`key_${field.get('field_name', key)}`}
         field={field}
         entity={entity}
-        editable={editable}
+        editable={isFieldEditable}
         onChange={onChangeField}
+        onRemove={onRemoveField}
         error={errors.get(field.get('field_name', ''), false)}
       />
     );
@@ -145,10 +169,10 @@ class EntityFields extends Component {
   }
 
   renderAddParamButton = (options) => {
-    const { highlightPramas } = this.props;
-    const highlightAll = highlightPramas === null;
+    const { highlightParams } = this.props;
+    const highlightAll = highlightParams === null;
     const menuItems = options.map((option) => {
-      const highlight = highlightAll || highlightPramas.includes(`params.${option.value}`);
+      const highlight = highlightAll || highlightParams.includes(`params.${option.value}`);
       const menuItemClass = classNames({
         'disable-label': !highlight,
       });
@@ -168,12 +192,12 @@ class EntityFields extends Component {
 
   render() {
     const { editable } = this.props;
-    const entityfields = this.renderFields();
+    const entityFields = this.renderFields();
     const paramsOptions = this.getParamsOptions();
-    if (!entityfields.isEmpty() || !paramsOptions.isEmpty()) {
+    if (!entityFields.isEmpty() || !paramsOptions.isEmpty()) {
       return (
         <div className="EntityFields">
-          { entityfields }
+          { entityFields }
           { (!paramsOptions.isEmpty() && editable) && this.renderAddParamButton(paramsOptions) }
         </div>
       );
@@ -183,7 +207,7 @@ class EntityFields extends Component {
 }
 
 const mapStateToProps = (state, props) => ({
-  fields: entityFieldSelector(state, props),
+  fields: props.fields || entityFieldSelector(state, props),
   isPlaysEnabled: isPlaysEnabledSelector(state, props),
 });
 

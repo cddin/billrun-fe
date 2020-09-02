@@ -45,7 +45,7 @@ export const optionsLoaders = {
         dispatch(addToList(collection, success.data[1].data.details));
         return dispatch(apiBillRunSuccessHandler(success));
       } catch (e) {
-        throw new Error("Error retreiving 'Groups' options");
+        throw new Error("Error retrieving 'Groups' options");
       }
     })
     .catch(error => dispatch(apiBillRunErrorHandler(error))),
@@ -56,8 +56,8 @@ export const optionsLoaders = {
     const listName = createRateListNameByArgs(query);
     return dispatch(getList(listName, getProductsKeysQuery({ key: 1, description: 1 }, query)));
   },
-  // Calback for all unsuported oprtion loaders
+  // Callback for all unsupported operation loaders
   unknownCallback: (callbackArgs) => {
-    console.log('unsuported select options callback, data: ', callbackArgs)
+    console.log('unsupported select options callback, data: ', callbackArgs)
   }
 }

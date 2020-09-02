@@ -67,8 +67,8 @@ class UsageTypes extends Component {
     const keys = Array.isArray(fieldNames) ? fieldNames : [fieldNames];
     const values = Array.isArray(fieldValues) ? fieldValues : [fieldValues];
     this.setState({
-      currentItem: currentItem.withMutations((itemwithMutations) => {
-        keys.forEach((key, index) => itemwithMutations.set(key, values[index]));
+      currentItem: currentItem.withMutations((itemWithMutations) => {
+        keys.forEach((key, index) => itemWithMutations.set(key, values[index]));
       }),
     });
   };

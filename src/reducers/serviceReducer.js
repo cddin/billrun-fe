@@ -14,8 +14,9 @@ import {
   CLEAR_SERVICE,
   UPDATE_SERVICE,
   ADD_GROUP_SERVICE,
-  REMOVE_GROUP_SERVICE } from '@/actions/serviceActions';
-
+  REMOVE_GROUP_SERVICE,
+  DELETE_SERVICE_FIELD,
+} from '@/actions/serviceActions';
 import entityProductsReducer from './entityProductsReducer';
 
 const DefaultState = Immutable.fromJS({
@@ -65,6 +66,12 @@ const serviceReducer = (state = DefaultState, action) => {
     case SERVICE_PRODUCTS_RATE_ADD:
     case SERVICE_PRODUCTS_RATE_INIT:
       return entityProductsReducer(state, action);
+
+    case DELETE_SERVICE_FIELD: {
+      const { path } = action;
+      const arrayPath = Array.isArray(path) ? path : [path];
+      return state.deleteIn(arrayPath);
+    }
 
     default:
       return state;

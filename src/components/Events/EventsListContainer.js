@@ -1,8 +1,10 @@
 import { connect } from 'react-redux';
 import Immutable from 'immutable';
+import { noCase } from 'change-case';
 import EventsList from './EventsList';
 import BalanceEvent from './Elements/BalanceEvent';
 import FraudEvent from './Elements/FraudEvent';
+import BalancePrepaidEvent from './Elements/BalancePrepaidEvent';
 import {
   showConfirmModal,
   showFormModal,
@@ -31,6 +33,7 @@ import {
 
 const Components = {
   balance: BalanceEvent,
+  balancePrepaid: BalancePrepaidEvent,
   fraud: FraudEvent,
 };
 
@@ -46,7 +49,25 @@ const defaultNewEvent = {
     lines_overlap: true,
     notify_by_email: Immutable.Map({ notify: false }),
   }),
-
+  balancePrepaid: Immutable.Map({
+    active: false,
+    prepaid: true,
+    conditions: Immutable.List([Immutable.Map({
+      type: '',
+      value: '',
+      unit: '',
+      usaget: '',
+      paths: Immutable.List([Immutable.Map({"path": ''})]),
+    }), Immutable.Map({
+      type: 'is',
+      value: '',
+      paths: Immutable.List([Immutable.Map({path: 'pp_includes_external_id'})]),
+    }), Immutable.Map({
+      type: 'is',
+      value: 'prepaid',
+      paths: Immutable.List([Immutable.Map({"path": "connection_type"})])
+    })]),
+  }),
 };
 
 
@@ -105,7 +126,7 @@ const mapDispatchToProps = (dispatch, props) => ({
       }
       return dispatch(saveEvent(props.eventType, editedItem))
       .then(success => (success.status ? true : Promise.reject()))
-      .then(() => dispatch(showSuccess(`New event ${editedItem.get('event_code', '')} saved successfuly`)))
+      .then(() => dispatch(showSuccess(`New event ${editedItem.get('event_code', '')} saved successfully`)))
       .then(() => dispatch(getEvents(props.eventType)))
       .catch(() => Promise.reject());
     };
@@ -125,12 +146,12 @@ const mapDispatchToProps = (dispatch, props) => ({
       }
       return dispatch(saveEvent(props.eventType, editedItem))
       .then(success => (success.status ? true : Promise.reject()))
-      .then(() => dispatch(showSuccess(`New event ${editedItem.get('event_code', '')} saved successfuly`)))
+      .then(() => dispatch(showSuccess(`New event ${editedItem.get('event_code', '')} saved successfully`)))
       .then(() => dispatch(getEvents(props.eventType)))
       .catch(() => Promise.reject());
     };
     const config = {
-      title: `Create new ${eventType} event`,
+      title: `Create new ${noCase(eventType)} event`,
       onOk,
       mode: 'create',
     };

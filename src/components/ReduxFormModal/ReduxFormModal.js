@@ -29,7 +29,7 @@ const ReduxFormModal = (props) => {
   }
   const {
     title, labelOk = 'Save', onOk, labelCancel = 'Cancel', onCancel, modalSize = 'large',
-    allowSubmitWithError = false, ...configOtherProps
+    allowSubmitWithError = false, showOnOk = true, ...configOtherProps
   } = config.toJS();
   const onOkWithHide = () => {
     if (!allowSubmitWithError) {
@@ -52,6 +52,7 @@ const ReduxFormModal = (props) => {
       labelCancel={labelCancel}
       onHide={closeModal}
       modalSize={modalSize}
+      showOnOk={showOnOk}
     >
       { form(component, {
         item,

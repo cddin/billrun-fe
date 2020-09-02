@@ -48,6 +48,7 @@ const Percentage = ({
 
 
 Percentage.defaultProps = {
+  value: '',
   required: false,
   disabled: false,
   editable: true,

@@ -70,8 +70,8 @@
     "collection": "charges",
     "audited": true,
     "uniqueField": "key",
-    "itemName": "Conditional Charge",
-    "itemsName": "Conditional Charges",
+    "itemName": "conditional charge",
+    "itemsName": "conditional charges",
     "itemType": "charge",
     "itemsType": "charges",
     "settingsKey": "charges"
@@ -143,32 +143,32 @@
   "paymentsTransactionsRequest": {
     "collection": "log",
     "uniqueField": "stamp",
-    "itemName": "Payments transactions request files",
-    "itemsName": "Payments transactions request files",
+    "itemName": "payments transactions request files",
+    "itemsName": "payments transactions request files",
     "itemType": "payment_transactions_request_files",
     "itemsType": "payments_transactions_request_files"
   },
   "paymentsTransactionsResponse": {
     "collection": "log",
     "uniqueField": "stamp",
-    "itemName": "Payments transactions response files",
-    "itemsName": "Payments transactions response files",
+    "itemName": "payments transactions response files",
+    "itemsName": "payments transactions response files",
     "itemType": "payment_transactions_response_files",
     "itemsType": "payments_transactions_response_files"
   },
   "paymentDenials": {
     "collection": "log",
     "uniqueField": "stamp",
-    "itemName": "Payment denials files",
-    "itemsName": "Payment denials files",
+    "itemName": "payment denials files",
+    "itemsName": "payment denials files",
     "itemType": "payment_denials_files",
     "itemsType": "payments_denials_files"
   },
   "paymentsFiles" : {
     "collection": "log",
     "uniqueField": "stamp",
-    "itemName": "Payments files",
-    "itemsName": "Payments files",
+    "itemName": "transactions request file",
+    "itemsName": "transactions request file",
     "itemType": "payment_files",
     "itemsType": "payments_files"
   },

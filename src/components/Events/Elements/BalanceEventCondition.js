@@ -222,12 +222,12 @@ class BalanceEventCondition extends Component {
         this.props.dispatch(showWarning('Condition value must be numeric'));
         return false;
       }
-      const mumericValue = parseFloat(val);
-      if (mumericValue <= 0) {
+      const numericValue = parseFloat(val);
+      if (numericValue <= 0) {
         this.props.dispatch(showWarning('Condition value should be greater than zero'));
         return false
       }
-      if (mumericValue > 100) {
+      if (numericValue > 100) {
         this.props.dispatch(showWarning('Condition value cannot be greater than 100'));
         return false;
       }

@@ -170,7 +170,7 @@ export const getPlan = (id, setSource = false) => (dispatch, getState) => {
       }
       return dispatch(apiBillRunSuccessHandler(response));
     })
-    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retreiving plan')));
+    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retrieving plan')));
 };
 
 export const getPrepaidGroup = id => (dispatch, getState) => {
@@ -185,7 +185,7 @@ export const getPrepaidGroup = id => (dispatch, getState) => {
       dispatch(gotItem(convertedPrepaidGroup));
       return dispatch(apiBillRunSuccessHandler(response));
     })
-    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retreiving prepaid group')));
+    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retrieving prepaid group')));
 };
 
 export const getAllGroup = () => apiBillRun(getAllGroupsQuery());

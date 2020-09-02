@@ -38,18 +38,24 @@ const Actions = ({
   }
   return (
     <div className="actions-buttons">
-      { actions.map((action, idx, list) => {
-        const isLast = idx === (list.length - 1);
-        let isEnable = true;
-        if (typeof action.show !== 'undefined') {
-          isEnable = (typeof action.show === 'function') ? action.show(data) : action.show;
+      { actions
+      .filter((action) => {
+        if (typeof action.show === 'undefined') {
+          return true;
         }
+        if (typeof action.show === 'function') {
+          return action.show(data);
+        }
+        return action.show;
+      })
+      .map((action, idx, list) => {
+        const isLast = idx === (list.length - 1);
         const actionClass = classNames({
-          mr10: !isLast && isEnable,
-          mr0: isLast || !isEnable,
+          mr10: !isLast,
+          mr0: isLast,
         });
         return (
-          <span key={idx} className={actionClass} >
+          <span key={action.type} className={actionClass} >
             <Action {...action} data={data} />
           </span>
         );

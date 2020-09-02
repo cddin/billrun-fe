@@ -43,7 +43,7 @@ const fetchList = (collection, params) => (dispatch) => {
       return dispatch(apiBillRunSuccessHandler(success));
     } catch (e) {
       console.log('fetchList error: ', e);
-      throw new Error('Error retreiving list');
+      throw new Error('Error retrieving list');
     }
   })
   .catch(error => dispatch(apiBillRunErrorHandler(error, 'Network error - please refresh and try again')));
@@ -58,7 +58,7 @@ const fetchToList = (collection, params) => (dispatch) => {
       return dispatch(apiBillRunSuccessHandler(success));
     } catch (e) {
       console.log('fetchToList error: ', e);
-      throw new Error('Error retreiving list');
+      throw new Error('Error retrieving list');
     }
   })
   .catch(error => dispatch(apiBillRunErrorHandler(error, 'Network error - please refresh and try again')));

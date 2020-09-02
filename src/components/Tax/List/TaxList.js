@@ -22,7 +22,7 @@ class TaxList extends Component {
   };
 
   static defaultProps = {
-    defaultListFields: ['key', 'description'],
+    defaultListFields: ['key', 'description', 'rate'],
     fields: null,
     isPlaysEnabled: false,
   };
@@ -54,7 +54,9 @@ class TaxList extends Component {
         switch (fieldname) {
           case 'description':
             return { id: fieldname, title: 'Title', sort: true };
-          case 'key':
+          case 'rate':
+            return { id: fieldname, title: 'Rate', sort: true, type: 'percentage' };
+    	    case 'key':
             return { id: fieldname, title: 'Key', sort: true };
           default: {
             const title = field.get('title', field.get('field_name', ''));

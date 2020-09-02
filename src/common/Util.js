@@ -74,7 +74,7 @@ export const getConfig = (key, defaultValue = null) => {
         break;
       case 'discount': configCache = configCache.set('discount', Immutable.fromJS(discountConfig));
         break;
-      default: console.log(`Config caregory not exists ${path}`);
+      default: console.log(`Config category not exists ${path}`);
     }
   }
   return configCache.getIn(path, defaultValue);
@@ -269,7 +269,7 @@ export const isItemFinite = (item, toField = 'to') => {
   return toTime.isBefore(moment().add(50, 'years'));
 };
 
-export const getItemMode = (item, undefindItemStatus = 'create') => {
+export const getItemMode = (item, undefinedItemStatus = 'create') => {
   if (Immutable.Map.isMap(item)) {
     if (getItemId(item, null) === null) {
       return 'create';
@@ -284,7 +284,7 @@ export const getItemMode = (item, undefindItemStatus = 'create') => {
     }
     return 'closeandnew';
   }
-  return undefindItemStatus;
+  return undefinedItemStatus;
 };
 
 export const getItemMinFromDate = (item, minDate) => {
@@ -591,8 +591,8 @@ export const setFieldTitle = (field, entity, keyProperty = 'field_name') => {
   }
   const entityName = getFieldNameType(!entity && field.has('entity') ? field.get('entity') : entity);
   const key = field.get(keyProperty, '');
-  const defaultLable = sentenceCase(field.get(keyProperty, ''));
-  return field.set('title', getFieldName(key, entityName, defaultLable));
+  const defaultLabel = sentenceCase(field.get(keyProperty, ''));
+  return field.set('title', getFieldName(key, entityName, defaultLabel));
 };
 
 export const addPlayToFieldTitle = (field, plays = Immutable.Map()) => {
@@ -674,10 +674,10 @@ export const getPlayOptions = availablePlays => availablePlays.map(play => ({
 })).toArray();
 
 /**
- * return the property type of that mactches a usage type/s
+ * return the property type of that matches a usage type/s
  * @param  {[List]} propertyTypes [List of property types]
  * @param  {[List]} usageTypes    [List of usage types]
- * @return {[Set]}               [Set of macthing property types]
+ * @return {[Set]}               [Set of matching property types]
  */
 export const inferPropTypeFromUsageType = (propertyTypes, usageTypes) => {
   const uom = Immutable.List().withMutations((listWithMutations) => {
@@ -706,4 +706,14 @@ export const inferPropTypeFromUsageType = (propertyTypes, usageTypes) => {
 
 
 
-export const test = () => {console.log('cool !!');}
+export const formatPluginLabel = (plugin) => {
+  const plugin_key = 'Plugin';
+  if (!Immutable.Map.isMap(plugin)) {
+    return plugin_key;
+  }
+  const name = plugin.get('name', plugin_key);
+  if (name === plugin_key) {
+    return plugin_key;
+  }
+  return titleCase(name.substring(0, name.lastIndexOf(plugin_key)));
+}

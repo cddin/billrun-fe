@@ -11,6 +11,7 @@
 }
 .react-tagsinput-tag {
   color: #6f6f6f!important;
+  vertical-align: bottom;
   background-color: #e7e7e7!important;
   border-color: #dddddd!important;
   border-radius: 0!important;
@@ -30,10 +31,34 @@
 }
 
 /* Overide fied inside tags */
-.Field.field-number.react-tagsinput-input {
+// .Field.react-tagsinput-input {
+//   display: inline-block;
+//   padding: 0;
+//   margin: 0;
+
+//   input {
+//     border: none;
+//     height: 28px;
+//     box-shadow: none;
+//     padding: 4px 2px;
+//     margin-bottom: 5px;
+//   }
+
+//   &:hover,
+//   &:active,
+//   &:focus {
+//     input {
+//       box-shadow: none;
+//     }
+//   }
+// }
+
+.Field.react-tagsinput-input {
   display: inline-block;
   padding: 0;
   margin: 0;
+  // min-width: 120px;
+  vertical-align: middle;
 
   input {
     border: none;
@@ -42,22 +67,6 @@
     padding: 4px 2px;
     margin-bottom: 5px;
   }
-
-  &:hover,
-  &:active,
-  &:focus {
-    input {
-      box-shadow: none;
-    }
-  }
-}
-
-.Field.field-percentage.react-tagsinput-input {
-  display: inline-block;
-  padding: 0;
-  margin: 0;
-  // min-width: 120px;
-  vertical-align: middle;
 
   .input-group-addon {
     display: none;
@@ -81,6 +90,9 @@
   &:hover,
   &:active,
   &:focus {
+    input {
+      box-shadow: none;
+    }
     .input-group-addon {
       display: table-cell;
     }

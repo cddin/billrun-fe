@@ -51,6 +51,7 @@ const Number = (props) => {
 
 
 Number.defaultProps = {
+  value: '',
   required: false,
   disabled: false,
   editable: true,

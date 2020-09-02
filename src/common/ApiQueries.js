@@ -440,6 +440,37 @@ export const searchPlansByKeyQuery = (name, project = {}) => ({
   ],
 });
 
+export const runningPaymentFilesListQuery = (paymentGateway, fileType) => ({
+  action: 'get',
+  entity: 'log',
+  params: [
+    { page: 0 },
+    { size: 9999 },
+    { project: JSON.stringify({ stamp: 1}) },
+    { sort: JSON.stringify({}) },
+    { query: JSON.stringify({
+      source: "custom_payment_files",
+      cpg_name: paymentGateway,
+      cpg_file_type: fileType,
+      start_process_time:{ $exists: true },
+      process_time :{ $exists: false },
+    }) },
+  ],
+});
+
+export const sendGenerateNewFileQuery = (paymentGateway, fileType, data) => {
+  const params = [
+    { payment_gateway: paymentGateway },
+    { file_type: fileType },
+    { parameters: JSON.stringify(data) },
+  ];
+  return {
+    api: 'custompaymentgateway',
+    action: 'generateTransactionsRequestFile',
+    params,
+  };
+}
+
 export const auditTrailListQuery = (query, page, fields, sort, size) => ({
   action: 'get',
   entity: 'audit',
@@ -672,6 +703,16 @@ export const getReportQuery = ({ report, page = 0, size = 10 }) => ({
   api: 'report',
   params: [
     { action: 'generateReport' },
+    { report: JSON.stringify(report) },
+    { page },
+    { size },
+  ],
+});
+
+export const getReportCSV = ({ report, page = 0, size = 10 }) => ({
+  api: 'report',
+  params: [
+    { action: 'exportCSVReport' },
     { report: JSON.stringify(report) },
     { page },
     { size },

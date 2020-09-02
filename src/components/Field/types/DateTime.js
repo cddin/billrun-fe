@@ -18,13 +18,18 @@ const DateTime = (props) => {
     minDate,
     ...otherProps
   } = props;
+  const dateTimeFormat = `${dateFormat} ${timeFormat}`;
   if (!editable) {
     const displayValue = (moment.isMoment(value) && value.isValid())
-      ? value.format(dateFormat)
+      ? value.format(dateTimeFormat)
       : value;
     return (
       <div className="non-editable-field">{ displayValue }</div>
     );
+  }
+  const onDateTimeChange = (newDate) => {
+    const utcDate = moment.isMoment(newDate) && newDate.isValid() ? newDate.utc() : '';
+    onChange(utcDate);
   }
   const placeholderText = (disabled && !value) ? '' : placeholder;
   const selected = (moment.isMoment(value) && value.isValid()) ? value : null;
@@ -37,10 +42,10 @@ const DateTime = (props) => {
       className="form-control DatePickerTime"
       showTimeSelect
       timeIntervals={timeIntervals}
-      dateFormat={dateFormat}
+      dateFormat={dateTimeFormat}
       timeFormat={timeFormat}
       selected={selected}
-      onChange={onChange}
+      onChange={onDateTimeChange}
       disabled={disabled}
       placeholderText={placeholderText}
     >
@@ -55,7 +60,7 @@ DateTime.defaultProps = {
   editable: true,
   placeholder: '',
   message: null,
-  dateFormat: getConfig('datetimeFormat', 'DD/MM/YYYY HH:mm'),
+  dateFormat: getConfig('dateFormat', 'DD/MM/YYYY'),
   timeFormat: getConfig('timeFormat', 'HH:mm'),
   timeIntervals: 15,
   onChange: () => {},

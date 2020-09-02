@@ -1,9 +1,8 @@
 {
   "entities": {
-    "balance": { "title": "balance" },
-
-
-    "fraud": { "title": "fraud" }
+    "balance": { "title": "postpaid balance " },
+    "fraud": { "title": "fraud" },
+    "balancePrepaid": { "title": "prepaid balance" }
   },
   "operators": {
     "fraud": {
@@ -22,8 +21,8 @@
     },
     "balance": {
       "conditions" : [
-        { "id": "in", "title": "In" },
-        { "id": "not_in", "title": "Is Not" },
+        { "id": "in", "title": "In", "type": "tags" },
+        { "id": "not_in", "title": "Is Not In", "type": "tags" },
         { "id": "is", "title": "Is" },
         { "id": "is_not", "title": "Is Not" },
         { "id": "is_less_than", "title": "Is Less Than", "type": "number" },
@@ -35,7 +34,24 @@
         { "id": "has_changed", "title": "Has Changed", "extra_field": false },
         { "id": "has_changed_to", "title": "Has Changed To" },
         { "id": "has_changed_from", "title": "Has Changed From" },
-		    { "id": "reached_percentage", "title": "Reached Percentage", "type": "tags" }
+        { "id": "reached_percentage", "title": "Reached Percentage", "type": "tags" }
+      ]
+    },
+    "balancePrepaid": {
+      "conditions" : [
+        { "id": "in", "title": "In", "type": "tags" },
+        { "id": "not_in", "title": "Is Not In", "type": "tags" },
+        { "id": "is", "title": "Is" },
+        { "id": "is_not", "title": "Is Not" },
+        { "id": "is_less_than", "title": "Is Less Than", "type": "number" },
+        { "id": "is_less_than_or_equal", "title": "Is Less Than Or Equal", "type": "number" },
+        { "id": "is_greater_than", "title": "Is Greater Than", "type": "number" },
+        { "id": "is_greater_than_or_equal", "title": "Is Greater Than Or Equal", "type": "number" },
+        { "id": "reached_constant", "title": "Reached Constant", "type": "tags" },
+        { "id": "reached_constant_recurring", "title": "Reached Constant (Recurring)", "type": "number" },
+        { "id": "has_changed", "title": "Has Changed", "extra_field": false },
+        { "id": "has_changed_to", "title": "Has Changed To" },
+        { "id": "has_changed_from", "title": "Has Changed From" }
       ]
     }
   },

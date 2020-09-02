@@ -126,10 +126,10 @@ class Columns extends Component {
     const { mode, type, fieldsConfig, columns } = this.props;
     const columnsRows = this.renderRows();
     const disableAdd = fieldsConfig.isEmpty();
-    const emptyHelpText = (type === reportTypes.GROPPED)
+    const emptyHelpText = (type === reportTypes.GROPED)
       ? ReportDescription.block_columns_grouped
       : ReportDescription.block_columns_simple;
-    const disableCreateNewtitle = disableAdd ? ReportDescription.add_columns_disabled_no_entity : '';
+    const disableCreateNewTitle = disableAdd ? ReportDescription.add_columns_disabled_no_entity : '';
     return (
       <Row>
         <Col sm={12}>
@@ -159,7 +159,7 @@ class Columns extends Component {
               onClick={this.onAdd}
               label="Add Column"
               disabled={disableAdd}
-              title={disableCreateNewtitle}
+              title={disableCreateNewTitle}
             />
             { type !== reportTypes.SIMPLE && (
               <span style={{ marginLeft: 10 }}>
@@ -167,7 +167,7 @@ class Columns extends Component {
                   onClick={this.onAddCount}
                   label="Add Count Column"
                   disabled={this.isCountColumnExist(columns)}
-                  title="Add Column to gount grpup fields"
+                  title="Add Column to count group fields"
                 />
               </span>
             )}

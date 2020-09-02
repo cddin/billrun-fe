@@ -8,6 +8,7 @@ import { titleCase, paramCase } from 'change-case';
 import isNumber from 'is-number';
 import DiscountServiceValue from './Elements/DiscountServiceValue';
 import DiscountConditions from './Elements/DiscountConditions';
+import DiscountPlanValue from './Elements/DiscountPlanValue';
 import Field from '@/components/Field';
 import { EntityFields, EntityField } from '@/components/Entity';
 import { getFieldName, getConfig } from '@/common/Util';
@@ -228,13 +229,11 @@ class DiscountDetails extends Component {
     }
   }
 
-  onChangePlanDiscountValue = (e) => {
-    const { value, id:planName } = e.target;
-    if (['matched_plans', 'monthly_fees'].includes(planName)) {
-      this.onChangeFiled(['subject', planName], Immutable.Map({ value }));
-    } else {
-      this.onChangeFiled(['subject', 'plan', planName], Immutable.Map({ value }));
-    }
+  onChangePlanDiscount = (planName, newSubject) => {
+    const path = ['matched_plans', 'monthly_fees'].includes(planName)
+      ? ['subject', planName]
+      : ['subject', 'plan', planName];
+    this.onChangeFiled(path, newSubject);
   }
 
   onChangeServiceDiscountValue = (serviceKey, newSubject) => {
@@ -343,7 +342,7 @@ class DiscountDetails extends Component {
       )) !== -1;
   }
 
-  isPercentaget = () => {
+  isPercentage = () => {
     const { discount } = this.props;
     return discount.get('type', '') === 'percentage'
   }
@@ -354,7 +353,7 @@ class DiscountDetails extends Component {
     if (discountSubject.isEmpty()) {
       return null;
     }
-    const isPercentaget = this.isPercentaget();
+    const isPercentage = this.isPercentage();
     return discountSubject.map((service, serviceName) => {
       const label = this.getLabel(availableEntities.get('service', Immutable.List()), serviceName);
       const isQuantitative = this.isServiceQuantitative(serviceName);
@@ -366,7 +365,7 @@ class DiscountDetails extends Component {
           name={serviceName}
           label={label}
           isQuantitative={isQuantitative}
-          isPercentaget={isPercentaget}
+          isPercentage={isPercentage}
           currency={currency}
           onChange={this.onChangeServiceDiscountValue}
         />
@@ -383,28 +382,22 @@ class DiscountDetails extends Component {
       return null;
     }
     const editable = (mode !== 'view');
-    const isPercentaget = this.isPercentaget();
-    const suffix = isPercentaget ? undefined : getSymbolFromCurrency(currency);
+    const isPercentage = this.isPercentage();
     return plans
       .filter(value => (
         editable || (!editable && Immutable.Map.isMap(value) && value.get('value', '') !== '')
       ))
-      .map((value, planName) =>(
-        <FormGroup key={`${paramCase(planName)}-discount-value`}>
-          <Col componentClass={ControlLabel} sm={3} lg={2}>
-            { this.getLabel(availableEntities.get('plan', Immutable.List()), planName) }
-          </Col>
-          <Col sm={8} lg={9}>
-            <Field
-              id={planName}
-              fieldType={isPercentaget ? "percentage" : "number"}
-              value={value.get('value', '')}
-              onChange={this.onChangePlanDiscountValue}
-              editable={editable}
-              suffix={suffix}
-            />
-          </Col>
-        </FormGroup>
+      .map((value, planName) => (
+        <DiscountPlanValue
+          key={`${paramCase(planName)}-discount-value`}
+          name={planName}
+          label={this.getLabel(availableEntities.get('plan', Immutable.List()), planName)}
+          plan={value}
+          isPercentage={isPercentage}
+          mode={mode}
+          currency={currency}
+          onChange={this.onChangePlanDiscount}
+        />
       ))
       .toList()
       .toArray()

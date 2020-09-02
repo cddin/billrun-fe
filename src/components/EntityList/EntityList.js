@@ -67,6 +67,7 @@ class EntityList extends Component {
     router: PropTypes.shape({
       push: PropTypes.func.isRequired,
     }).isRequired,
+    onListRefresh: PropTypes.func,
     dispatch: PropTypes.func.isRequired,
     listActions: PropTypes.arrayOf(PropTypes.object),
     refreshString: PropTypes.string,
@@ -97,6 +98,7 @@ class EntityList extends Component {
     refreshString: '',
     actions: [],
     listActions: null,
+    onListRefresh: null,
   }
 
   state = {
@@ -166,6 +168,9 @@ class EntityList extends Component {
     const { collection } = this.props;
     this.fetchItems(this.props);
     this.props.dispatch(clearRevisions(collection));
+    if (this.props.onListRefresh) {
+      this.props.onListRefresh();
+    }
   }
 
   onClickImport = () => {
@@ -355,8 +360,8 @@ class EntityList extends Component {
   }
 
   renderPanelHeader = () => {
-    const { itemType, itemsType } = this.props;
-    const itemsTypeName = getConfig(['systemItems', itemType, 'itemsName'], noCase(itemsType));
+    const { entityKey, itemsType } = this.props;
+    const itemsTypeName = getConfig(['systemItems', entityKey, 'itemsName'], noCase(itemsType));
     return (
       <div>
         List of all available {itemsTypeName}
@@ -369,6 +374,9 @@ class EntityList extends Component {
 
   renderFilter = () => {
     const { filter, filterFields } = this.props;
+    if (filterFields.length === 0) {
+      return null;
+    }
     return (
       <Filter filter={filter} fields={filterFields} onFilter={this.onFilter}>
         { this.renderStateFilter() }
@@ -455,9 +463,11 @@ class EntityList extends Component {
 const mapStateToProps = (state, props) => {
   let itemType = props.itemType;
   let itemsType = props.itemsType;
+  let entityKey = props.itemType;
   let collection = props.collection || props.itemsType;
   let showRevisionBy = props.showRevisionBy;
   if (typeof props.entityKey !== 'undefined') {
+    entityKey = props.entityKey;
     const config = getConfig(['systemItems', props.entityKey], Immutable.Map());
     itemType = config.get('itemType', itemType);
     itemsType = config.get('itemsType', itemsType);
@@ -471,6 +481,7 @@ const mapStateToProps = (state, props) => {
     collection,
     itemType,
     itemsType,
+    entityKey,
     showRevisionBy,
     items: state.entityList.items.get(itemsType),
     page: state.entityList.page.get(itemsType),

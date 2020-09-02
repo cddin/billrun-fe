@@ -101,7 +101,7 @@ class ConditionValue extends Component {
           break;
         case 'getTaxesOptions': this.props.dispatch(getTaxesOptions());
           break;
-        default: console.log('unsuported select options callback');
+        default: console.log('unsupported select options callback');
           break;
       }
     }

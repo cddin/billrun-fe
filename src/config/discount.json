@@ -26,8 +26,8 @@
       ]
     },
     "valueOptions": [
-      { "id": "@cycle_start_date@", "title": "Cycle Start Date", "include": ["date"], "exclude": [] },
-      { "id": "@cycle_end_date@", "title": "Cycle End Date", "include": ["date"], "exclude": [] },
+      { "id": "@cycle_start_date@", "title": "Billing Cycle Start Date", "include": ["date"], "exclude": [] },
+      { "id": "@cycle_end_date@", "title": "Billing Cycle End Date", "include": ["date"], "exclude": [] },
       { "id": "@plan_activation@", "title": "Plan Activation Date", "include": ["date"], "exclude": ["fieldid:plan_activation"] },
       { "id": "@plan_deactivation@", "title": "Plan Deactivation Date", "include": ["date"], "exclude": ["fieldid:plan_deactivation"] },
       { "id": "@activation_date@", "title": "Activation Date", "include": ["date"], "exclude": ["fieldid:activation_date"] },

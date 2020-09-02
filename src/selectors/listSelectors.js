@@ -223,6 +223,24 @@ export const bucketsNamesSelector = createSelector(
   selectBucketsNames,
 );
 
+export const bucketsSelectOptionsSelector = createSelector(
+  getBucketsOptions,
+  (options = null) => {
+    if (options === null) {
+      return undefined;
+    }
+    return options
+      .map(option => ({
+        label: `${option.get('name', '')} (${option.get('external_id', '')})`,
+        value: option.get('external_id', ''),
+        charging_by: option.get('charging_by', ''),
+        charging_by_usaget: option.get('charging_by_usaget', ''),
+        charging_by_usaget_unit: option.get('charging_by_usaget_unit', ''),
+      }))
+      .toArray();
+  }
+);
+
 export const bucketsExternalIdsSelector = createSelector(
   getBucketsOptions,
   selectBucketsExternalIds,
