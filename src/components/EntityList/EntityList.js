@@ -60,6 +60,7 @@ class EntityList extends Component {
       PropTypes.bool,
       PropTypes.number,
     ]),
+    fetchOnMount: PropTypes.bool,
     filter: PropTypes.instanceOf(Immutable.Map),
     sort: PropTypes.instanceOf(Immutable.Map),
     defaultSort: PropTypes.instanceOf(Immutable.Map),
@@ -86,6 +87,7 @@ class EntityList extends Component {
     showRevisionBy: false,
     inProgress: false,
     forceRefetchItems: false,
+    fetchOnMount: true,
     baseFilter: {},
     tableFields: [],
     filterFields: [],
@@ -106,8 +108,8 @@ class EntityList extends Component {
   }
 
   componentWillMount() {
-    const { forceRefetchItems, items, sort, defaultSort, itemsType } = this.props;
-    if (forceRefetchItems || items == null || items.isEmpty()) {
+    const { forceRefetchItems, items, sort, defaultSort, itemsType, fetchOnMount } = this.props;
+    if ((forceRefetchItems || items == null || items.isEmpty()) && fetchOnMount) {
       this.fetchItems(this.props);
     }
     if (sort.isEmpty() && !defaultSort.isEmpty()) {
@@ -145,7 +147,7 @@ class EntityList extends Component {
     const baseFilterChanged = !Immutable.is(baseFilterMap, baseFilterNextMap);
     const refreshStringChanged = this.props.refreshString !== nextProps.refreshString;
     if (pageChanged || sizeChanged || filterChanged ||
-      sortChanged || stateChanged || baseFilterChanged || refreshStringChanged) {
+      sortChanged || stateChanged || baseFilterChanged || refreshStringChanged) { 
       this.fetchItems(nextProps);
     }
   }

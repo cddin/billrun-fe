@@ -2,7 +2,7 @@ import { List, Map } from 'immutable';
 import { validateMandatoryField } from '@/actions/entityActions';
 import { setFormModalError } from './guiStateActions/pageActions';
 import { getList, clearList } from '@/actions/listActions';
-import { clearList as entityClearList } from '@/actions/entityListActions';
+import { clearItems, setListPage, clearNextPage } from '@/actions/entityListActions';
 import { apiBillRun, apiBillRunErrorHandler, apiBillRunSuccessHandler } from '../common/Api';
 import { runningPaymentFilesListQuery, sendGenerateNewFileQuery } from '@/common/ApiQueries';
 
@@ -32,8 +32,11 @@ export const getRunningPaymentFiles = (paymentGateway, fileType) => (dispatch) =
 export const cleanRunningPaymentFiles = () => (dispatch) => 
   dispatch(clearList('payment_running_files_list'));
 
-export const cleanPaymentFilesTable = () => (dispatch) => 
-  dispatch(entityClearList('payments_files'));
+export const cleanPaymentFilesTable = () => (dispatch) => {
+  dispatch(clearItems('payments_files'));
+  dispatch(setListPage('payments_files', 0));
+  dispatch(clearNextPage('payments_files'));
+}
 
 export const validateGeneratePaymentFile = (paymentFile) => (dispatch) => {
   let isValid = true;

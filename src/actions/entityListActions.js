@@ -15,6 +15,7 @@ export const actions = {
   SET_STATE: 'SET_STATE',
   SET_REVISIONS: 'SET_REVISIONS',
   CLEAR_REVISIONS: 'CLEAR_REVISIONS',
+  CLEAR_NEXT_PAGE: 'CLEAR_NEXT_PAGE',
 };
 
 const gotList = (collection, list) => ({
@@ -27,6 +28,11 @@ const setNextPage = (collection, nextPage) => ({
   type: actions.SET_NEXT_PAGE,
   collection,
   nextPage,
+});
+
+export const clearNextPage = (collection) => ({
+  type: actions.CLEAR_NEXT_PAGE,
+  collection,
 });
 
 export const setListSort = (collection, sort) => ({

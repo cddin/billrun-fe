@@ -440,6 +440,7 @@ class PaymentFiles extends Component {
         {showTable && (
           <Col lg={12}>
             <EntityList
+              fetchOnMount={false}
               entityKey="paymentsFiles"
               api="get"
               showRevisionBy={false}
