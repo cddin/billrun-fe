@@ -18,7 +18,7 @@ export default {
   defaultLogo: 'billRun-cloud-logo.png',
   billrunCloudLogo: 'billRun-cloud-logo.png',
   billrunLogo: 'billRun-logo.png',
-  queue_calculators: ['customer', 'rate', 'pricing'],
+  queue_calculators: ['customer', 'rate', 'pricing', 'tax'],
   logoMaxSize: 2,
   importMaxSize: 8,
   chargingBufferDays: 5,

@@ -179,7 +179,7 @@ class SampleCSV extends Component {
             <label htmlFor="file_type">Name</label>
           </div>
           <div className="col-lg-9">
-            <div className="col-lg-1" style={{marginTop: 8}}>
+            <div className="col-lg-1 mt10">
               <i className="fa fa-long-arrow-right"></i>
             </div>
             <div className={`col-lg-7${(errors.get('name', '').length > 0) ? ' has-error' : ''}`}>
@@ -201,10 +201,10 @@ class SampleCSV extends Component {
               <label htmlFor="file_type">Skip CSV header?</label>
             </div>
             <div className="col-lg-9">
-              <div className="col-lg-1" style={{ marginTop: 8 }}>
+              <div className="col-lg-1 mt10">
                 <i className="fa fa-long-arrow-right" />
               </div>
-              <div className={'col-lg-7'} style={{ marginTop: 8 }}>
+              <div className="col-lg-7 mt10">
                 <Field id="csvHeader" value={settings.get('csv_has_header', false)} onChange={onChangeCsvHeader} fieldType="checkbox" />
               </div>
             </div>
@@ -216,10 +216,10 @@ class SampleCSV extends Component {
               <label htmlFor="file_type">Skip CSV footer?</label>
             </div>
             <div className="col-lg-9">
-              <div className="col-lg-1" style={{ marginTop: 8 }}>
+              <div className="col-lg-1 mt10">
                 <i className="fa fa-long-arrow-right" />
               </div>
-              <div className={'col-lg-7'} style={{ marginTop: 8 }}>
+              <div className="col-lg-7 mt10">
                 <Field id="csvFooter" value={settings.get('csv_has_footer', false)} onChange={onChangeCsvFooter} fieldType="checkbox" />
               </div>
             </div>

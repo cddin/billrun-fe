@@ -32,7 +32,7 @@ export const getSubscription = id => (dispatch) => {
       dispatch(gotEntity('subscription', item));
       return dispatch(apiBillRunSuccessHandler(response));
     })
-    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retreiving subscriber')));
+    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retrieving subscriber')));
 };
 
 export const saveCustomer = (customer, action) => saveEntity('accounts', customer, action);

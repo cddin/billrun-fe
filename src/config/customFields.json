@@ -80,11 +80,11 @@
     },
     "translate": {
       "unixTimeToString" : {
-        "title": "Unixtime To String",
+        "title": "Unix time To string",
         "options": ["Y-m-d H:i:s"]
       },
       "unixTimeToMongoDate" : {
-        "title": "Unixtime To MongoDate"
+        "title": "Unix time to date"
       }
     },
     "conditions": [

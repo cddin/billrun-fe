@@ -60,6 +60,9 @@ const getSubscriberFields = (state, props) => // eslint-disable-line no-unused-v
 const getLinesFields = (state, props) => // eslint-disable-line no-unused-vars
   state.settings.getIn(['lines', 'fields']);
 
+const getBillsFields = (state, props) => // eslint-disable-line no-unused-vars
+  state.settings.getIn(['bills', 'fields']);
+
 const getServiceFields = (state, props) => // eslint-disable-line no-unused-vars
   state.settings.getIn(['services', 'fields']);
 
@@ -424,6 +427,44 @@ export const linesFieldsSelector = createSelector(
   },
 );
 
+export const billsFieldsSelector = createSelector(
+  getBillsFields,
+  (fields = Immutable.List()) => {
+    return fields.map((field) => {
+      if (field.get('title', '') !== '') {
+        return field;
+      }
+      if (field.has('foreign')) {
+        return field.set('title', getFieldName(field.getIn(['foreign', 'field'], ''), getFieldNameType(field.getIn(['foreign', 'entity'], ''))));
+      }
+      return field.set('title', getFieldName(field.get('field_name', ''), 'bills'));
+    });
+  },
+);
+
+export const saveToBillPaymentGatewaySelector = createSelector(
+  getPaymentGateways,
+  (paymentGateways = Immutable.List()) => {
+    return Immutable.List().withMutations((fieldsWithMutations) => {
+      paymentGateways.forEach((paymentGateway) => {
+        paymentGateway.getIn(['transactions_request'], Immutable.List()).forEach((transactionRequest) => {
+          transactionRequest.getIn(['generator', 'data_structure'], Immutable.List()).forEach((field) => {
+            if(field.getIn(['save_to_bill'], false) === true){
+              if (field.get('title', '') !== '') {
+                fieldsWithMutations.push(field.set('payment_gateway', paymentGateway.get('name', '')));
+              } else {
+                fieldsWithMutations.push(field
+                  .set('field_name', getFieldName(field.get('name', ''), 'bills'))
+                  .set('payment_gateway', paymentGateway.get('name', '')));
+              }
+            }
+          });
+        });
+      });
+    })
+  },
+);
+
 export const productFieldsSelector = createSelector(
   getProductFields,
   (fields = Immutable.List()) => fields.map(field => setFieldTitle(field, 'product')),
@@ -618,7 +659,23 @@ export const emailTemplatesSelector = createSelector(
 export const eventsSelector = createSelector(
   getEvents,
   getEventType,
-  (events = Immutable.Map(), type) => events.get(type),
+  (events = Immutable.Map(), type) => {
+    // all balances types, Prepaid and Normal
+    if (type === 'balances') {
+      return events.get('balance');
+    }
+    if (type === 'balance') {
+      return events
+        .get('balance', Immutable.List())
+        .filter(event => !event.get('prepaid', false));
+    }
+    if (type === 'balancePrepaid') {
+      return events
+        .get('balance', Immutable.List())
+        .filter(event => event.get('prepaid', false));
+    }
+    return events.get(type);
+  },
 );
 
 export const taxParamsKeyOptionsSelector = createSelector(

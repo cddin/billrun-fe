@@ -99,7 +99,7 @@ class CustomerSetup extends Component {
   }
 
   componentDidMount() {
-    const { mode, message } = this.props;
+    const { mode, message, allowancesEnabled } = this.props;
     this.props.dispatch(getSettings(['subscribers']));
     if (message) {
       this.props.dispatch(showAlert(message.content, message.type));
@@ -112,8 +112,10 @@ class CustomerSetup extends Component {
       this.props.dispatch(getList('available_plans', getPlansKeysQuery({ name: 1, play: 1, description: 1, 'include.services': 1 })));
       this.props.dispatch(getList('available_services', getServicesKeysWithInfoQuery()));
     }
-    this.props.dispatch(getList('available_subscriptions', getSubscriptionsWithAidQuery()));
-    this.props.dispatch(getList('available_accounts', getAccountsQuery()));
+    if (allowancesEnabled) {
+      this.props.dispatch(getList('available_subscriptions', getSubscriptionsWithAidQuery()));
+      this.props.dispatch(getList('available_accounts', getAccountsQuery()));
+    }
   }
 
   componentWillReceiveProps(nextProps) {

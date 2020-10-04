@@ -42,6 +42,7 @@ const Text = ({
 
 
 Text.defaultProps = {
+  value: '',
   required: false,
   disabled: false,
   editable: true,

@@ -101,8 +101,11 @@ Invoicing.propTypes = {
   data: PropTypes.instanceOf(Immutable.Map),
   chargingDayOptions: PropTypes.arrayOf(
     PropTypes.shape({
-      value: PropTypes.string,
-      label: PropTypes.string,
+      value: PropTypes.number,
+      label: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number,
+      ]),
     }),
   ),
   onChange: PropTypes.func.isRequired,

@@ -1,12 +1,12 @@
 {
-  # "extends": "airbnb",
+  // "extends": "airbnb",
   "extends": "react-app",
   "env": {
     "browser": true,
-    "node": true,
+    "node": true
   },
   "plugins": [
-    "react-hooks",
+    "react-hooks"
   ],
   "rules": {
     "react-hooks/rules-of-hooks": "error", // Checks rules of Hooks
@@ -28,26 +28,26 @@
     "react/destructuring-assignment": "off",
     "react/sort-comp": ["warn", {
       "order": [
-        'static-methods',
-        'lifecycle',
-        '/^init.+$/',
-        'everything-else',
-        'render'
+        "static-methods",
+        "lifecycle",
+        "/^init.+$/",
+        "everything-else",
+        "render"
       ]
     }],
     "radix": ["error", "as-needed"],
-    'max-len': ['warn', 120, 2, {
+    "max-len": ["warn", 120, 2, {
       "ignoreUrls": true,
       "ignoreComments": true,
       "ignoreRegExpLiterals": true,
       "ignoreStrings": true,
       "ignoreTemplateLiterals": true,
-      "ignoreTrailingComments": true,
-    }],
+      "ignoreTrailingComments": true
+    }]
   },
   "parser": "babel-eslint",
   "globals": {
       "CKEDITOR": false,
-      "_PRODUCTION_": false,
+      "_PRODUCTION_": false
     }
 }

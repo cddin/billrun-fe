@@ -17,7 +17,6 @@ class BalanceEvent extends Component {
   static propTypes = {
     item: PropTypes.instanceOf(Immutable.Map),
     updateField: PropTypes.func.isRequired,
-    conditionType: PropTypes.string,
     propertyTypes: PropTypes.instanceOf(Immutable.List),
     usageTypesData: PropTypes.instanceOf(Immutable.List),
     errors: PropTypes.instanceOf(Immutable.Map),
@@ -27,7 +26,6 @@ class BalanceEvent extends Component {
 
   static defaultProps = {
     item: Immutable.Map(),
-    conditionType: 'balance',
     propertyTypes: Immutable.List(),
     usageTypesData: Immutable.List(),
     errors: Immutable.Map(),
@@ -83,20 +81,16 @@ class BalanceEvent extends Component {
   };
 
   renderConditionEditForm = (condition, index) => {
-    const { conditionType, propertyTypes, usageTypesData } = this.props;
-    switch (conditionType) {
-      case 'balance':
-      default:
-        return (
-          <BalanceEventCondition
-            item={condition}
-            index={index}
-            onChangeField={this.props.updateField}
-            propertyTypes={propertyTypes}
-            usageTypesData={usageTypesData}
-          />
-        );
-    }
+    const { propertyTypes, usageTypesData } = this.props;
+    return (
+      <BalanceEventCondition
+        item={condition}
+        index={index}
+        onChangeField={this.props.updateField}
+        propertyTypes={propertyTypes}
+        usageTypesData={usageTypesData}
+      />
+    );
   }
 
   showConditionDetails = (index) => {
@@ -111,16 +105,16 @@ class BalanceEvent extends Component {
   ];
 
   renderCondition = (condition, index) => {
-    const { conditionType, propertyTypes, usageTypesData, currency } = this.props;
+    const { propertyTypes, usageTypesData, currency } = this.props;
     const activityType = 'counter';
     const params = ({ propertyTypes, usageTypesData, currency, activityType });
     return (
       <FormGroup key={index} className="mb0">
         <Col sm={12}>
-          <div style={{ paddingRight: 100, display: 'inline-block' }}>
-            { getConditionDescription(conditionType, condition, params) }
+          <div className="inline pr100">
+            { getConditionDescription(condition, params) }
           </div>
-          <span style={{ marginLeft: -100, paddingRight: 15 }} className="pull-right List row">
+          <span className="pull-right List row pr10 line-actions">
             <Actions actions={this.getConditionActions(index)} />
           </span>
         </Col>
@@ -133,9 +127,9 @@ class BalanceEvent extends Component {
     );
   }
 
-  renderConditions = () => (
-    this.props.item.get('conditions', Immutable.List()).map(this.renderCondition).toArray()
-  );
+  renderConditions = () => this.props.item.get('conditions', Immutable.List())
+    .map(this.renderCondition)
+    .toArray();
 
   render() {
     const { item, errors } = this.props;
@@ -167,7 +161,7 @@ class BalanceEvent extends Component {
             <Col componentClass={ControlLabel} sm={3}>Status</Col>
             <Col sm={7}>
               <span>
-                <span style={{ display: 'inline-block', marginRight: 20 }}>
+                <span className="mr20 inline">
                   <Field
                     fieldType="radio"
                     onChange={this.onChangeActive}
@@ -177,13 +171,13 @@ class BalanceEvent extends Component {
                     checked={item.get('active', true)}
                   />
                 </span>
-                <span style={{ display: 'inline-block' }}>
+                <span className="inline">
                   <Field
                     fieldType="radio"
                     onChange={this.onChangeActive}
                     name="step-active-status"
                     value="no"
-                    label="Not Active"
+                    label="Inactive"
                     checked={!item.get('active', true)}
                   />
                 </span>

@@ -331,7 +331,7 @@ class Product extends Component {
                 entity={product}
                 onChangeField={this.onChangeAdditionalField}
                 onRemoveField={this.onRemoveAdditionalField}
-                highlightPramas={ratingParams}
+                highlightParams={ratingParams}
                 editable={editable}
               />
 
@@ -375,7 +375,7 @@ class Product extends Component {
                       </>
                     )
                     : (
-                      <div className="non-editble-field">
+                      <div className="non-editable-field">
                         { pricingMethod === 'tiered'
                           ? 'Tiered pricing'
                           : 'Volume pricing'

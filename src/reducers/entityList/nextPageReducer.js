@@ -8,6 +8,7 @@ const defaultState = Immutable.Map();
 const nextPageReducer = (state = defaultState, action) => {
   switch (action.type) {
 
+    case actions.CLEAR_NEXT_PAGE:
     case actions.CLEAR_ENTITY_LIST: {
       if (action.collection && action.collection.length > 0) {
         return state.delete(action.collection);

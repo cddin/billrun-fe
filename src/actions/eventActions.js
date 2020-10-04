@@ -20,12 +20,21 @@ import {
 import {
   effectOnEventUsagetFieldsSelector,
 } from '@/selectors/eventSelectors';
-import { apiBillRun, apiBillRunErrorHandler, apiBillRunSuccessHandler } from '../common/Api';
+import {
+  servicesDataSelector,
+} from '@/selectors/listSelectors';
+import { apiBillRun, apiBillRunErrorHandler, apiBillRunSuccessHandler } from '@/common/Api';
 import {
   getProductsByKeysQuery,
   saveSettingsQuery,
-} from '../common/ApiQueries';
+} from '@/common/ApiQueries';
 import { getValueByUnit } from '@/common/Util';
+import {
+	getPathParams,
+  buildBalanceConditionPath,
+  getBalancePrepaidConditionType,
+  getBalanceConditionData,
+} from '@/components/Events/EventsUtil.js';
 
 
 const getEventConvertedConditions = (propertyTypes, usageTypes, item, toBaseUnit = true) => {
@@ -77,6 +86,31 @@ const getEventConvertedThreshold = (propertyTypes, usageTypes, item, toBaseUnit 
     : Immutable.List();
 };
 
+
+const isOldEventStructure = (event) => event
+    .get('conditions', Immutable.List())
+    .reduce((acc, condition, key) => (acc === true ? acc : condition.has('path')), false);
+
+const convertOldEventCondition = (condition, servicesData) => {
+  const { trigger, limitation, activityType, groupNames, overGroup } = getPathParams(Immutable.List([Immutable.Map({'path': condition.get('path', '')})]));
+  const params = { activityType, groupNames, overGroup, servicesData };
+  const paths = buildBalanceConditionPath(trigger, limitation, params); 
+  return condition
+    .set('paths', paths)
+    .set('property_type', condition.get('usaget', ''))
+    .delete('path');
+}
+
+const convertOldEventStructure = (event, servicesData) => {
+  if (!isOldEventStructure(event)) {
+    return event;
+  }
+  return event.update(
+    'conditions', Immutable.List(),
+    conditions => conditions.map(condition => convertOldEventCondition(condition, servicesData))
+  );
+}
+
 const convertFromApiToUi = (event, eventType, params) => event.withMutations((eventWithMutations) => {
   const { propertyTypes, usageTypesData, effectOnUsagetFields } = params;
   const eventUsageTypeFromEvent = Immutable.Map().withMutations((eventUsageTypeWithMutations) => {
@@ -93,7 +127,9 @@ const convertFromApiToUi = (event, eventType, params) => event.withMutations((ev
     eventUsageType: eventUsageTypeFromEvent,
   });
   eventWithMutations.set('conditions', getEventConvertedConditions(propertyTypes, usageTypesData, event, false));
-  eventWithMutations.setIn(['threshold_conditions', 0], getEventConvertedThreshold(propertyTypes, usageTypesData, event, false));
+  if (eventWithMutations.has('threshold_conditions')) {
+    eventWithMutations.setIn(['threshold_conditions', 0], getEventConvertedThreshold(propertyTypes, usageTypesData, event, false));
+  }
   eventWithMutations.set('ui_flags', uiFlags);
 });
 
@@ -107,10 +143,13 @@ const convertFromUiToApi = (event, eventType, params) =>
       eventWithMutations.setIn(['conditions', 0], withoutEmptyConditions);
     }
     eventWithMutations.set('conditions', getEventConvertedConditions(propertyTypes, usageTypesData, eventWithMutations, true));
-    eventWithMutations.setIn(['threshold_conditions', 0], getEventConvertedThreshold(propertyTypes, usageTypesData, eventWithMutations, true));
+    if (eventWithMutations.has('threshold_conditions')) {
+      eventWithMutations.setIn(['threshold_conditions', 0], getEventConvertedThreshold(propertyTypes, usageTypesData, eventWithMutations, true));
+    }
   });
 
-export const getEvents = (eventCategory = '') => (dispatch, getState) => {
+export const getEvents = (eventType = '') => (dispatch, getState) => {
+  const eventCategory = eventType === 'balancePrepaid' ? 'balance' : eventType;
   const settingsPath = (eventCategory === '') ? 'events' : `events.${eventCategory}`;
   return dispatch(getSettings(settingsPath)).then(() => {
     // Add local ID to events
@@ -118,22 +157,26 @@ export const getEvents = (eventCategory = '') => (dispatch, getState) => {
     const usageTypesData = usageTypesDataSelector(state);
     const propertyTypes = propertyTypeSelector(state);
     const effectOnUsagetFields = effectOnEventUsagetFieldsSelector(state, { eventType: 'fraud' });
+    const servicesData = servicesDataSelector(state, {}) || Immutable.Map();
     const params = ({ usageTypesData, propertyTypes, effectOnUsagetFields });
     const settingsEvents = state.settings.get('events', Immutable.List());
     settingsEvents.forEach((events, eventType) => {
       if (!['settings'].includes(eventType) && (eventCategory === '' || eventCategory === eventType)) {
-        const eventsWithId = events.map(event => convertFromApiToUi(event, eventType, params));
+        const eventsWithId = events
+          .map(event => convertFromApiToUi(event, eventType, params))
+          .map(event => convertOldEventStructure(event, servicesData));
         dispatch(updateSetting('events', eventType, eventsWithId));
       }
     });
   });
 };
 
-export const saveEvents = (eventCategory = '') => (dispatch, getState) => {
+export const saveEvents = (eventType = '') => (dispatch, getState) => {
   // remove local ID to events
   const state = getState();
   const usageTypesData = usageTypesDataSelector(state);
   const propertyTypes = propertyTypeSelector(state);
+  const eventCategory = eventType === 'balancePrepaid' ? 'balance' : eventType;
   const settingsEvents = state.settings.get('events', Immutable.List());
   const params = ({ usageTypesData, propertyTypes });
   settingsEvents.forEach((events, eventType) => {
@@ -142,14 +185,15 @@ export const saveEvents = (eventCategory = '') => (dispatch, getState) => {
       dispatch(updateSetting('events', eventType, eventsWithId));
     }
   });
-  const settingsPath = (eventCategory === '') ? 'events' : `events.${eventCategory}`;
+  const settingsPath = (eventType === '') ? 'events' : `events.${eventCategory}`;
   return dispatch(saveSettings([settingsPath]));
 };
 
-export const saveEvent = (eventCategory, event) => (dispatch, getState) => {
+export const saveEvent = (eventType, event) => (dispatch, getState) => {
   const state = getState();
   const usageTypesData = usageTypesDataSelector(state);
   const propertyTypes = propertyTypeSelector(state);
+  const eventCategory = eventType === 'balancePrepaid' ? 'balance' : eventType;
   const params = ({ usageTypesData, propertyTypes });
   const convertedEvent = convertFromUiToApi(event, eventCategory, params);
   const category = `event.${eventCategory}`;
@@ -160,24 +204,29 @@ export const saveEvent = (eventCategory, event) => (dispatch, getState) => {
 };
 
 export const addEvent = (eventType, event) => (dispatch) => {
+  const eventCategory = eventType === 'balancePrepaid' ? 'balance' : eventType;
   const newEvent = event.setIn(['ui_flags', 'id'], uuid.v4());
-  return dispatch(pushToSetting('events', newEvent, eventType));
+  return dispatch(pushToSetting('events', newEvent, eventCategory));
 };
 
 export const updateEvent = (eventType, event) => (dispatch, getState) => {
-  const events = eventsSelector(getState(), { eventType });
+  const eventCategory = ['balancePrepaid', 'balance'].includes(eventType) ? 'balances' : eventType;
+  const events = eventsSelector(getState(), { eventType: eventCategory });
   const index = events.findIndex(e => e.getIn(['ui_flags', 'id'], '') === event.getIn(['ui_flags', 'id'], ''));
   if (index !== -1) {
-    return dispatch(updateSetting('events', [eventType, index], event));
+    const eventMainCategory = eventType === 'balancePrepaid' ? 'balance' : eventType;
+    return dispatch(updateSetting('events', [eventMainCategory, index], event));
   }
   return Promise.reject();
 };
 
 export const removeEvent = (eventType, event) => (dispatch, getState) => {
-  const events = eventsSelector(getState(), { eventType });
+  const eventCategory = ['balancePrepaid', 'balance'].includes(eventType) ? 'balances' : eventType;
+  const events = eventsSelector(getState(), { eventType: eventCategory });
   const index = events.findIndex(e => e.getIn(['ui_flags', 'id'], '') === event.getIn(['ui_flags', 'id'], ''));
   if (index !== -1) {
-    return dispatch(removeSettingField('events', [eventType, index]));
+    const eventMainCategory = eventType === 'balancePrepaid' ? 'balance' : eventType;
+    return dispatch(removeSettingField('events', [eventMainCategory, index]));
   }
   return false;
 };
@@ -225,12 +274,61 @@ export const validateThresholdField = (value = Immutable.Map()) => {
   return true;
 };
 
+export const validateFieldBalancePrepaidOperatorCondition = (condition) => {
+    if (condition.get('type', '') === '') {
+      return 'Field is required';
+    }
+    return true;
+};
+
+export const validateFieldBalancePrepaidValueCondition = (condition) => {
+    if (condition.get('value', '') === '') {
+      const operatorOption = getBalanceConditionData(condition.get('type', ''));
+      if (operatorOption.get('extra_field', true)) {
+        return 'Field is required';
+      }
+    }
+    return true;
+};
+
+export const validateFieldBalancePrepaidBucketCondition = (condition) => {
+  if (condition.get('value', '') === '') {
+    return 'Field is required';
+  }
+  return true;
+};
+
 export const validateEvent = (item, eventType) => (dispatch) => {
   let isValid = true;
   const eventCodeValid = validateFieldEventCode(item.get('event_code', ''));
   if (eventCodeValid !== true) {
     isValid = false;
     dispatch(setFormModalError('event_code', eventCodeValid));
+  }
+  
+  if (eventType === 'balancePrepaid') {
+    const conditions = item.get('conditions', Immutable.List());
+    conditions.forEach(condition => {
+      const type = getBalancePrepaidConditionType(condition);
+      if (type === 'bucket') {
+        const conditionBucketValid = validateFieldBalancePrepaidBucketCondition(condition);
+        if (conditionBucketValid !== true) {
+          isValid = false;
+          dispatch(setFormModalError('bucket', conditionBucketValid));
+        }
+      } else if (type === 'value') {
+        const conditionOperatorValid = validateFieldBalancePrepaidOperatorCondition(condition);
+        if (conditionOperatorValid !== true) {
+          isValid = false;
+          dispatch(setFormModalError('operator', conditionOperatorValid));
+        }
+        const conditionValueValid = validateFieldBalancePrepaidValueCondition(condition);
+        if (conditionValueValid !== true) {
+          isValid = false;
+          dispatch(setFormModalError('value', conditionValueValid));
+        }
+      }
+    });
   }
   if (eventType === 'fraud') {
     const recurrenceValueValid = validateFieldRecurrenceValue(item.getIn(['recurrence', 'value'], ''));

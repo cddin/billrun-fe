@@ -49,7 +49,7 @@ class RateMappings extends Component {
   onAddNewRateCategory = () => {
     const { newCategory } = this.state;
     if (newCategory === undefined || newCategory === '') {
-      this.props.dispatch(showDanger('Please choose rate category'));
+      this.props.dispatch(showDanger('Please choose a tariff category'));
     } else {
       this.props.dispatch(addRateCategory(newCategory));
     }
@@ -74,7 +74,7 @@ class RateMappings extends Component {
     const { newCategory } = this.state;
     return (
       <Row>
-        <Col sm={2} componentClass={ControlLabel}>Add new rate category</Col>
+        <Col sm={2} componentClass={ControlLabel}>Add a new tariff category</Col>
         <Col sm={4}>
           <Field
             fieldType="select"

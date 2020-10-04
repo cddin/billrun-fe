@@ -7,6 +7,7 @@ import Field from '../Field';
 import Help from '../Help';
 import { getConfig, formatSelectOptions } from '@/common/Util';
 
+const checkboxStyle = { height: 29, marginTop: 8 };
 
 class EntityField extends Component {
 
@@ -25,10 +26,13 @@ class EntityField extends Component {
     isFieldBoolean: PropTypes.bool,
     isFieldRanges: PropTypes.bool,
     isFieldDate: PropTypes.bool,
+    isFieldDateTime: PropTypes.bool,
     isFieldDateRange: PropTypes.bool,
+    isFieldJson: PropTypes.bool,
     isRemoveField: PropTypes.bool,
     fieldPath: PropTypes.array,
     onChange: PropTypes.func,
+    onRemove: PropTypes.func,
   };
 
   static defaultProps = {
@@ -42,10 +46,13 @@ class EntityField extends Component {
     isFieldBoolean: false,
     isFieldRanges: false,
     isFieldDate: false,
+    isFieldDateTime: false,
     isFieldDateRange: false,
+    isFieldJson: false,
     fieldPath: [],
     error: '',
     onChange: () => {},
+    onRemove: () => {},
   }
 
   componentDidMount() {
@@ -65,10 +72,13 @@ class EntityField extends Component {
 
   getNoDefaultValueVal = (byConfig = true) => {
     const {
-      field, isFieldBoolean, isFieldTags, isFieldSelect, isFieldRanges, isFieldDateRange,
+      field, isFieldBoolean, isFieldTags, isFieldSelect, isFieldRanges, isFieldDateRange, isFieldJson,
     } = this.props;
     if (isFieldBoolean) {
       return false;
+    }
+    if (isFieldJson) {
+      return undefined;
     }
     if (isFieldRanges || isFieldDateRange) {
       // const defaultRangeValue = Immutable.Map({ from: '', to: '' });
@@ -121,26 +131,48 @@ class EntityField extends Component {
   }
 
   onChangeRange = (val) => {
-    const { fieldPath } = this.props;
-    this.props.onChange(fieldPath, val);
+    this.onChangeValue(val);
   }
 
   onChangeTags = (val) => {
+    this.onChangeValue(val);
+  }
+
+  onChangeValue = (val) => {
     const { fieldPath } = this.props;
     this.props.onChange(fieldPath, val);
   }
 
   getFieldValue = () => {
     const {
-      entity, editable, fieldPath, isFieldTags, isFieldBoolean, isFieldRanges, isFieldDate, isFieldDateRange,
+      entity,
+      fieldPath,
+      isFieldTags,
+      isFieldBoolean,
+      isFieldRanges,
+      isFieldDate,
+      isFieldDateTime,
+      isFieldDateRange,
+      isFieldJson,
     } = this.props;
-    if (isFieldDate) {
+    if (isFieldDate || isFieldDateTime) {
       const value = entity.getIn(fieldPath, '');
       return ([undefined, null, ''].includes(value)) ? undefined : moment(value);
     }
     if (isFieldDateRange) {
       const value = entity.getIn(fieldPath, undefined);
       return ([undefined, null, ''].includes(value)) ? undefined : value;
+    }
+    if (isFieldJson) {
+      const value = entity.getIn(fieldPath, undefined);
+      if (Immutable.Map.isMap(value)
+        || Immutable.List.isList(value)
+        || value instanceof Object
+        || Array.isArray(value)
+      ) {
+        return value
+      }
+      return undefined;
     }
     if (isFieldRanges) {
       return entity.getIn(fieldPath, undefined);
@@ -151,19 +183,15 @@ class EntityField extends Component {
       return (booleanValue === '') ? booleanValue : [true, 1, 'true'].includes(booleanValue);
     }
     const fieldVal = entity.getIn(fieldPath, []);
-    if (isFieldTags && editable) {
+    if (isFieldTags) {
       return Immutable.List.isList(fieldVal) ? fieldVal.toArray() : fieldVal;
     }
     return (Array.isArray(fieldVal) || Immutable.List.isList(fieldVal)) ? fieldVal.join(',') : fieldVal;
   }
 
   onClickRemoveInput = () => {
-    const { entity, fieldPath } = this.props;
-    if (fieldPath.length > 1) {
-      const lastElement = fieldPath.splice(fieldPath.length - 1, 1);
-      const withoutField = entity.getIn(fieldPath).delete(...lastElement);
-      this.props.onChange(fieldPath, withoutField);
-    }
+    const { fieldPath } = this.props;
+    this.props.onRemove(fieldPath);
   }
 
   renderRemovableField = (input) => {
@@ -193,7 +221,9 @@ class EntityField extends Component {
       isFieldBoolean,
       isFieldRanges,
       isFieldDate,
-      isFieldDateRange
+      isFieldDateTime,
+      isFieldDateRange,
+      isFieldJson,
     } = this.props;
     const value = this.getFieldValue();
     if (isFieldRanges) {
@@ -211,7 +241,6 @@ class EntityField extends Component {
       );
     }
     if (isFieldBoolean) {
-      const checkboxStyle = { height: 29, marginTop: 8 };
       return (
         <Field
           fieldType="checkbox"
@@ -240,19 +269,21 @@ class EntityField extends Component {
           />
       );
     }
-    if (isFieldDate) {
+    if (isFieldDate || isFieldDateTime) {
       const mandatory = field.get('mandatory', false);
       return (
         <Field
-          fieldType="date"
+          fieldType={isFieldDate ? "date" : "datetime"}
           value={value}
           onChange={this.onChangeDate}
           editable={editable}
           isClearable={!mandatory}
+          dateFormat={field.get('date_format', undefined)}
+          timeFormat={field.get('time_format', undefined)}
         />
       );
     }
-    if (isFieldSelect && editable) {
+    if (isFieldSelect) {
       const multi = field.get('multiple', false);
       const options = this.getFieldOptios(field);
       return (
@@ -263,10 +294,11 @@ class EntityField extends Component {
           onChange={this.onChangeSelect}
           options={options}
           disabled={disabled}
+          editable={editable}
         />
       );
     }
-    if (isFieldTags && editable) {
+    if (isFieldTags) {
       return (
         <Field
           fieldType="tags"
@@ -274,6 +306,18 @@ class EntityField extends Component {
           onChange={this.onChangeTags}
           addOnPaste
           pasteSplit={this.pasteSplit}
+          disabled={disabled}
+          editable={editable}
+          inputProps={{fieldType: field.get('type', undefined)}}
+        />
+      );
+    }
+    if (isFieldJson) {
+      return (
+        <Field
+          fieldType="json"
+          value={value}
+          onChange={this.onChangeValue}
           disabled={disabled}
         />
       );

@@ -107,5 +107,5 @@ export const getProduct = id => (dispatch, getState) => {
       dispatch(gotItem(convertedProduct));
       return dispatch(apiBillRunSuccessHandler(response));
     })
-    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retreiving product')));
+    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retrieving product')));
 };

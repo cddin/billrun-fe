@@ -74,7 +74,7 @@ export const getConfig = (key, defaultValue = null) => {
         break;
       case 'discount': configCache = configCache.set('discount', Immutable.fromJS(discountConfig));
         break;
-      default: console.log(`Config caregory not exists ${path}`);
+      default: console.log(`Config category not exists ${path}`);
     }
   }
   return configCache.getIn(path, defaultValue);
@@ -269,7 +269,7 @@ export const isItemFinite = (item, toField = 'to') => {
   return toTime.isBefore(moment().add(50, 'years'));
 };
 
-export const getItemMode = (item, undefindItemStatus = 'create') => {
+export const getItemMode = (item, undefinedItemStatus = 'create') => {
   if (Immutable.Map.isMap(item)) {
     if (getItemId(item, null) === null) {
       return 'create';
@@ -284,7 +284,7 @@ export const getItemMode = (item, undefindItemStatus = 'create') => {
     }
     return 'closeandnew';
   }
-  return undefindItemStatus;
+  return undefinedItemStatus;
 };
 
 export const getItemMinFromDate = (item, minDate) => {
@@ -430,11 +430,14 @@ const getItemConvertedRates = (propertyTypes, usageTypes, item, toBaseUnit, type
           const to = rateStep.get('to');
           const convertedTo = (to === 'UNLIMITED' ? 'UNLIMITED' : getValueByUnit(propertyTypes, usageTypes, usaget, rangeUnit, to, toBaseUnit));
           const newTo = isNumber(convertedTo) ? parseFloat(convertedTo) : convertedTo;
+          const price = rateStep.get('price');
+          const convertedPrice = isNumber(price) ? parseFloat(price) : price;
           const convertedInterval = getValueByUnit(propertyTypes, usageTypes, usaget, intervalUnit, rateStep.get('interval'), toBaseUnit);
           const newInterval = isNumber(convertedInterval) ? parseFloat(convertedInterval) : convertedInterval;
           const ratePath = (type === 'product' ? [usaget, plan, 'rate', index] : [plan, usaget, 'rate', index]);
           ratesWithMutations.setIn([...ratePath, 'from'], newFrom);
           ratesWithMutations.setIn([...ratePath, 'to'], newTo);
+          ratesWithMutations.setIn([...ratePath, 'price'], convertedPrice);
           ratesWithMutations.setIn([...ratePath, 'interval'], newInterval);
         });
         const percentage = rate.get('percentage', null);
@@ -591,8 +594,8 @@ export const setFieldTitle = (field, entity, keyProperty = 'field_name') => {
   }
   const entityName = getFieldNameType(!entity && field.has('entity') ? field.get('entity') : entity);
   const key = field.get(keyProperty, '');
-  const defaultLable = sentenceCase(field.get(keyProperty, ''));
-  return field.set('title', getFieldName(key, entityName, defaultLable));
+  const defaultLabel = sentenceCase(field.get(keyProperty, ''));
+  return field.set('title', getFieldName(key, entityName, defaultLabel));
 };
 
 export const addPlayToFieldTitle = (field, plays = Immutable.Map()) => {
@@ -673,5 +676,47 @@ export const getPlayOptions = availablePlays => availablePlays.map(play => ({
   label: play.get('label', play.get('name', '')),
 })).toArray();
 
+/**
+ * return the property type of that matches a usage type/s
+ * @param  {[List]} propertyTypes [List of property types]
+ * @param  {[List]} usageTypes    [List of usage types]
+ * @return {[Set]}               [Set of matching property types]
+ */
+export const inferPropTypeFromUsageType = (propertyTypes, usageTypes) => {
+  const uom = Immutable.List().withMutations((listWithMutations) => {
+    if (usageTypes && !usageTypes.isEmpty()) {
+      usageTypes.forEach(usaget => listWithMutations.push(usaget.get('unit', '')));
+    }
+  });
+  const props = Immutable.List().withMutations((listWithMutations) => {
+    propertyTypes.forEach((p) => {
+      const units = p.get('uom', Immutable.List()).reduce((acc, curr) =>
+        acc.push(curr.get('name', '')), Immutable.List());
+      const t = Immutable.Map({ type: p.get('type', ''), uom: units });
+      listWithMutations.push(t);
+    });
+  });
+  return Immutable.Set().withMutations((listWithMutations) => {
+    props.forEach((prop) => {
+      uom.forEach((unit) => {
+        if (prop.get('uom', Immutable.List()).includes(unit)) {
+          listWithMutations.add(prop.get('type', ''));
+        }
+      });
+    });
+  });
+};
 
-export const test = () => {console.log('cool !!');}
+
+
+export const formatPluginLabel = (plugin) => {
+  const plugin_key = 'Plugin';
+  if (!Immutable.Map.isMap(plugin)) {
+    return plugin_key;
+  }
+  const name = plugin.get('name', plugin_key);
+  if (name === plugin_key) {
+    return plugin_key;
+  }
+  return titleCase(name.substring(0, name.lastIndexOf(plugin_key)));
+}

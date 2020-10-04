@@ -41,11 +41,12 @@ const Action = (props) => {
     renderFunc !== null && typeof renderFunc === 'function'
   ), [renderFunc]);
 
-  const onClickActino = useCallback(() => {
+  const onClickAction = useCallback(() => {
     onClick(data, type);
   }, [onClick, data, type]);
 
   const iconClass = useMemo(() => classNames('fa fa-fw', {
+    'fa-list-alt': type === 'report',
     'fa-eye': type === 'view',
     'fa-pencil': type === 'edit',
     'fa-files-o': type === 'clone',
@@ -75,7 +76,7 @@ const Action = (props) => {
         eventKey={index}
         onKeyDown={onKeyDown}
         onSelect={onSelect}
-        onClick={onClickActino}
+        onClick={onClickAction}
         disabled={!isEnable}
         bsStyle={actionStyle === 'default' ? undefined : actionStyle}
         bsSize={actionSize}
@@ -95,7 +96,7 @@ const Action = (props) => {
         { isCustomRender ? props.renderFunc(props)
           : (
             <Button
-              onClick={onClickActino}
+              onClick={onClickAction}
               bsStyle={actionStyle === 'default' ? undefined : actionStyle}
               bsSize={actionSize}
               className={actionClass}

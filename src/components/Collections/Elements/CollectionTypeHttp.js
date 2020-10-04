@@ -69,7 +69,7 @@ class CollectionTypeHttp extends Component {
         .filter((value, key) => key !== field);
       this.props.onChange(['custom_parameter'], newContent);
     } else {
-      this.props.dispatch(showWarning(`Custom Parameter ${field} not exists`));
+      this.props.dispatch(showWarning(`Custom Parameter ${field} does not exist`));
     }
   }
 

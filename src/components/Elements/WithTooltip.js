@@ -18,7 +18,10 @@ const WithTooltip = ({ helpText, children }) => {
   );
   return (
       <OverlayTrigger overlay={editTooltip} placement="top">
-        { children }
+        {/*https://github.com/react-bootstrap/react-bootstrap/issues/2428#issuecomment-407800236 */}
+        <span className="disabled-elements-hack">
+          { children }
+        </span>
       </OverlayTrigger>
   );
 };

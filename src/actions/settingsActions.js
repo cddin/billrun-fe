@@ -104,7 +104,7 @@ export const fetchFile = (query, path = 'file') => (dispatch) => {
 
 export const saveSettings = (categories = [], messages = {}) => (dispatch, getState) => {
   const {
-    success: successMessage = 'Settings saved successfuly!',
+    success: successMessage = 'Settings saved successfully!',
     error: errorMessage = 'Error saving settings',
   } = messages;
   dispatch(startProgressIndicator());
@@ -167,7 +167,7 @@ export const getCurrencies = () => (dispatch) => {
       localStorage.setItem(cacheKey, JSON.stringify({ time: now, data }));
       return data;
     })
-    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retreiving currencies')));
+    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retrieving currencies')));
 };
 
 export const saveSharedSecret = (secret, mode) => (dispatch) => {

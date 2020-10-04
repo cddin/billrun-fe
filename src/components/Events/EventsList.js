@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Immutable from 'immutable';
-import { Panel, Col } from 'react-bootstrap';
+import { Panel, Col, Label } from 'react-bootstrap';
 import { sentenceCase } from 'change-case';
+import pluralize from 'pluralize';
 import { Actions, StateIcon } from '@/components/Elements';
 import List from '@/components/List';
+import { MiniFilter } from '@/components/EntityList/Filter';
 
 
 class EventsList extends Component {
@@ -25,6 +27,18 @@ class EventsList extends Component {
     items: Immutable.List(),
     thresholdFields: Immutable.List(),
   };
+
+  state = {
+    filter: '',
+  };
+
+  onChangeFilter = (value) => {
+    this.setState(() => ({ filter: value }));
+  }
+
+  onClearFilter = (e) => {
+    this.setState(() => ({ filter: '' }));
+  }
 
   parseShowEnable = item => !item.get('active', true);
 
@@ -75,23 +89,48 @@ class EventsList extends Component {
     onClick: this.props.onNew,
   }];
 
-  renderPanelHeader = () => (
-    <div>
-      &nbsp;
-      <div className="pull-right"><Actions actions={this.getPanelActions()} /></div>
-    </div>
-  );
+  filterItems = () => {
+    const { items } = this.props;
+    const { filter } = this.state;
+    if (!filter) {
+      return items;
+    }
+    return items.filter(item => item.get('event_code', '').includes(filter));
+  }
+
+  renderPanelHeader = (filterDetails) => {
+    const { filter } = this.state;
+    return (
+      <div>&nbsp;
+        <div className="pull-left">
+          <MiniFilter
+            filter={filter}
+            placeholder="Filter by event code..."
+            onChange={this.onChangeFilter}
+            onClear={this.onClearFilter}
+          />
+        </div>
+        { filter !== '' && <Label className="filter-info">{filterDetails}</Label>}
+        <div className="pull-right">
+          <Actions actions={this.getPanelActions()} />
+          </div>
+      </div>
+    );
+  }
 
   render() {
     const { items } = this.props;
+    const filteredItems = this.filterItems();
     const fields = this.getListFields();
     const actions = this.getListActions();
+    const nameEvent = pluralize('event', items.size);
+    const filterDetails = `Showing ${filteredItems.size} of ${items.size} ${nameEvent}`
     return (
       <div>
         <Col sm={12}>
-          <Panel header={this.renderPanelHeader()}>
+          <Panel header={this.renderPanelHeader(filterDetails)}>
             <List
-              items={items}
+              items={filteredItems}
               fields={fields}
               actions={actions}
             />

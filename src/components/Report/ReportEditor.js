@@ -334,8 +334,8 @@ class ReportEditor extends Component {
         const label = column.get('label', '');
         const fieldName = column.get('field_name', '');
         const op = column.get('op', '');
-        const oldOp = (value === reportTypes.GROPPED) ? '' : op;
-        const newOp = (value === reportTypes.GROPPED) ? op : '';
+        const oldOp = (value === reportTypes.GROPED) ? '' : op;
+        const newOp = (value === reportTypes.GROPED) ? op : '';
         const newLabel = this.getColumnNewLabel(label, fieldName, oldOp, fieldName, newOp);
         return column.set('label', newLabel);
       })
@@ -397,11 +397,11 @@ class ReportEditor extends Component {
   }
   /* ~Columns */
 
-  getColumnNewLabel = (label, oldfieldName, oldOp, newfieldName, newOp) => {
+  getColumnNewLabel = (label, oldfieldName, oldOp, newFieldName, newOp) => {
     const { aggregateOperators } = this.props;
     const fieldsConfig = this.getEntityFields();
     const newLabel = createReportColumnLabel(
-      label, fieldsConfig, aggregateOperators, oldfieldName, oldOp, newfieldName, newOp,
+      label, fieldsConfig, aggregateOperators, oldfieldName, oldOp, newFieldName, newOp,
     );
     return newLabel;
   }

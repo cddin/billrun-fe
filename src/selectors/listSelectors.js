@@ -2,7 +2,8 @@ import { createSelector } from 'reselect';
 import Immutable from 'immutable';
 import { sentenceCase } from 'change-case';
 import { getCycleName } from '@/components/Cycle/CycleUtil';
-import { getConfig } from '@/common/Util';
+import { getConfig, inferPropTypeFromUsageType } from '@/common/Util';
+import { propertyTypeSelector } from '@/selectors/settingsSelector';
 import {
   availablePlaysLabelsSelector,
 } from './settingsSelector';
@@ -222,6 +223,24 @@ export const bucketsNamesSelector = createSelector(
   selectBucketsNames,
 );
 
+export const bucketsSelectOptionsSelector = createSelector(
+  getBucketsOptions,
+  (options = null) => {
+    if (options === null) {
+      return undefined;
+    }
+    return options
+      .map(option => ({
+        label: `${option.get('name', '')} (${option.get('external_id', '')})`,
+        value: option.get('external_id', ''),
+        charging_by: option.get('charging_by', ''),
+        charging_by_usaget: option.get('charging_by_usaget', ''),
+        charging_by_usaget_unit: option.get('charging_by_usaget_unit', ''),
+      }))
+      .toArray();
+  }
+);
+
 export const bucketsExternalIdsSelector = createSelector(
   getBucketsOptions,
   selectBucketsExternalIds,
@@ -258,3 +277,57 @@ export const calcNameSelector = createSelector(
       }));
   },
 );
+
+/**
+ * get a list of services and their included groups
+ * @param  {[List]} options [all services in the DB]
+ * @return {[List]}         [List of the service names and their included groups]
+ */
+const selectServicesData = (options) => {
+  if (options === null) {
+    return undefined;
+  }
+  return Immutable.Map().withMutations((groupsWithMutations) => {
+    options.forEach((option) => {
+      groupsWithMutations.set(option.get('name', ''), option.getIn(['include', 'groups'], Immutable.Map()).keySeq().toArray());
+    });
+  });
+};
+
+/**
+ * returns only property types that are being used in the config
+ * @param  {[List]} groupsOptions [List of all the services and their groups]
+ * @param  {[List]} propertyTypes [List of all property Types]
+ * @return {[Set]}                [Set of property Types that are being used by services]
+ */
+const selectUsedPropertyTypes = (groupsOptions, propertyTypes) => {
+  if (groupsOptions) {
+    return Immutable.Set().withMutations((setWithMutations) => {
+      groupsOptions.forEach((group) => {
+        const groupsInService = group.getIn(['include', 'groups']);
+        groupsInService.forEach((groupInService) => {
+          setWithMutations.union(inferPropTypeFromUsageType(propertyTypes, groupInService.get('usage_types', Immutable.Map())));
+        });
+      });
+    });
+  }
+  return Immutable.Set();
+};
+
+/**
+ * returns all services and their groups
+ */
+export const servicesDataSelector = createSelector(
+  getGroupsOptions,
+  selectServicesData,
+);
+
+/**
+ * returns all property types that are being used in the config
+ */
+export const propertyTypesSelector = createSelector(
+  getGroupsOptions,
+  propertyTypeSelector,
+  selectUsedPropertyTypes,
+);
+

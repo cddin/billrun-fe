@@ -31,5 +31,5 @@ export const getPrepaidInclude = id => (dispatch) => {
       dispatch(gotEntity('prepaid_include', item));
       return dispatch(apiBillRunSuccessHandler(response));
     })
-    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retreiving prepaid bucket')));
+    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retrieving prepaid bucket')));
 };

@@ -65,4 +65,16 @@ const mapDispatchToProps = dispatch => ({
   },
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(ReduxFormModal);
+const mergeProps = (stateProps, dispatchProps, ownProps) => {
+  let dispatchPropsOverrides = {};
+  if (stateProps.config && stateProps.config.get('skipConfirmOnClose', false)) {
+    dispatchPropsOverrides.closeModal = dispatchProps.hideModal();
+  }  
+  return ({
+    ...stateProps,
+    ...{...dispatchProps, ...dispatchPropsOverrides},
+    ...ownProps,
+  });
+};
+
+export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(ReduxFormModal);

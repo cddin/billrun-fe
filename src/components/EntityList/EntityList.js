@@ -60,6 +60,7 @@ class EntityList extends Component {
       PropTypes.bool,
       PropTypes.number,
     ]),
+    fetchOnMount: PropTypes.bool,
     filter: PropTypes.instanceOf(Immutable.Map),
     sort: PropTypes.instanceOf(Immutable.Map),
     defaultSort: PropTypes.instanceOf(Immutable.Map),
@@ -67,6 +68,7 @@ class EntityList extends Component {
     router: PropTypes.shape({
       push: PropTypes.func.isRequired,
     }).isRequired,
+    onListRefresh: PropTypes.func,
     dispatch: PropTypes.func.isRequired,
     listActions: PropTypes.arrayOf(PropTypes.object),
     refreshString: PropTypes.string,
@@ -85,6 +87,7 @@ class EntityList extends Component {
     showRevisionBy: false,
     inProgress: false,
     forceRefetchItems: false,
+    fetchOnMount: true,
     baseFilter: {},
     tableFields: [],
     filterFields: [],
@@ -97,6 +100,7 @@ class EntityList extends Component {
     refreshString: '',
     actions: [],
     listActions: null,
+    onListRefresh: null,
   }
 
   state = {
@@ -104,8 +108,8 @@ class EntityList extends Component {
   }
 
   componentWillMount() {
-    const { forceRefetchItems, items, sort, defaultSort, itemsType } = this.props;
-    if (forceRefetchItems || items == null || items.isEmpty()) {
+    const { forceRefetchItems, items, sort, defaultSort, itemsType, fetchOnMount } = this.props;
+    if ((forceRefetchItems || items == null || items.isEmpty()) && fetchOnMount) {
       this.fetchItems(this.props);
     }
     if (sort.isEmpty() && !defaultSort.isEmpty()) {
@@ -143,7 +147,7 @@ class EntityList extends Component {
     const baseFilterChanged = !Immutable.is(baseFilterMap, baseFilterNextMap);
     const refreshStringChanged = this.props.refreshString !== nextProps.refreshString;
     if (pageChanged || sizeChanged || filterChanged ||
-      sortChanged || stateChanged || baseFilterChanged || refreshStringChanged) {
+      sortChanged || stateChanged || baseFilterChanged || refreshStringChanged) { 
       this.fetchItems(nextProps);
     }
   }
@@ -166,6 +170,9 @@ class EntityList extends Component {
     const { collection } = this.props;
     this.fetchItems(this.props);
     this.props.dispatch(clearRevisions(collection));
+    if (this.props.onListRefresh) {
+      this.props.onListRefresh();
+    }
   }
 
   onClickImport = () => {
@@ -355,8 +362,8 @@ class EntityList extends Component {
   }
 
   renderPanelHeader = () => {
-    const { itemType, itemsType } = this.props;
-    const itemsTypeName = getConfig(['systemItems', itemType, 'itemsName'], noCase(itemsType));
+    const { entityKey, itemsType } = this.props;
+    const itemsTypeName = getConfig(['systemItems', entityKey, 'itemsName'], noCase(itemsType));
     return (
       <div>
         List of all available {itemsTypeName}
@@ -369,6 +376,9 @@ class EntityList extends Component {
 
   renderFilter = () => {
     const { filter, filterFields } = this.props;
+    if (filterFields.length === 0) {
+      return null;
+    }
     return (
       <Filter filter={filter} fields={filterFields} onFilter={this.onFilter}>
         { this.renderStateFilter() }
@@ -455,9 +465,11 @@ class EntityList extends Component {
 const mapStateToProps = (state, props) => {
   let itemType = props.itemType;
   let itemsType = props.itemsType;
+  let entityKey = props.itemType;
   let collection = props.collection || props.itemsType;
   let showRevisionBy = props.showRevisionBy;
   if (typeof props.entityKey !== 'undefined') {
+    entityKey = props.entityKey;
     const config = getConfig(['systemItems', props.entityKey], Immutable.Map());
     itemType = config.get('itemType', itemType);
     itemsType = config.get('itemsType', itemsType);
@@ -471,6 +483,7 @@ const mapStateToProps = (state, props) => {
     collection,
     itemType,
     itemsType,
+    entityKey,
     showRevisionBy,
     items: state.entityList.items.get(itemsType),
     page: state.entityList.page.get(itemsType),

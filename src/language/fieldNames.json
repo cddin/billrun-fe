@@ -129,7 +129,7 @@
     "upfront": "Charging Mode"
   },
   "product": {
-    "usage_type_value" : "Usage Type",
+    "usage_type_value": "Usage Type",
     "usage_type_unit": "Usage Type Unit",
     "pricing_method": "Pricing Method",
     "description": "Title",
@@ -170,6 +170,7 @@
     "monthly_fees": "Plans and included services",
     "matched_plans": "Matched Plans",
     "panel_plan_discount": "Plans Discount Values",
+    "sequential": "Sequential",
     "panel_service_discount": "Services Discount Values"
   },
   "charge": {
@@ -196,6 +197,23 @@
     "charge_values": "Charge Values",
     "subject_general": "General",
     "percentage_subject_not_compatible": "is not compatible with  General Charge."
+  },
+  "payment_files": {
+    "creation_time": "Creation Time",
+    "parameters_string": "Parameters",
+    "transactions": "Transactions",
+    "start_process_time": "Generation start time",
+    "process_time": "Generation end time",
+    "file_name": "File name",
+    "created_by": "Created by",
+    "errors": "Errors",
+    "stamp": "File unique id",
+    "payment_gateway": "Payment Gateway",
+    "file_type": "File Type",
+    "status": "Status",
+    "status_failed_files": "Failed files",
+    "status_finished_files": "Finished files",
+    "status_running_files": "Running files"
   },
   "aid": "Customer ID",
   "sid": "Subscriber ID",

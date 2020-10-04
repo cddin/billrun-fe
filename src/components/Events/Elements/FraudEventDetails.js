@@ -227,7 +227,7 @@ const FraudEventDetails = ({ item, eventsSettings, errors, onUpdate, setError })
                 onChange={onChangeActive}
                 name="step-active-status"
                 value="no"
-                label="Not Active"
+                label="Inactive"
                 checked={!item.get('active', true)}
               />
             </span>
