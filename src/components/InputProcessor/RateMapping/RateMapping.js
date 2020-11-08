@@ -7,7 +7,7 @@ import changeCase from 'change-case';
 import ComputedRate from './ComputedRate';
 import Field from '@/components/Field';
 import Help from '../../Help';
-import { getConfig, getAvailableFields } from '@/common/Util';
+import { getConfig, parseConfigSelectOptions } from '@/common/Util';
 import { updateSetting, saveSettings } from '@/actions/settingsActions';
 import { showWarning } from '@/actions/alertsActions';
 import { ModalWrapper } from '@/components/Elements';
@@ -24,6 +24,11 @@ import {
 import {
   customerIdentificationFieldsPlaySelector,
 } from '@/selectors/inputProcessorSelector';
+import {
+  inputProcessorlineKeyOptionsSelector,
+  getFieldsWithPreFunctions,
+  inputProcessorComputedlineKeyOptionsSelector,
+} from '@/selectors/settingsSelector';
 
 
 class RateMapping extends Component {
@@ -32,15 +37,19 @@ class RateMapping extends Component {
     usaget: PropTypes.string.isRequired,
     rateCategory: PropTypes.string.isRequired,
     settings: PropTypes.instanceOf(Immutable.Map),
+    lineKeyOptions: PropTypes.instanceOf(Immutable.List),
     customRatingFields: PropTypes.instanceOf(Immutable.List),
     rateCalculators: PropTypes.instanceOf(Immutable.List),
     plays: PropTypes.instanceOf(Immutable.Set),
+    computedlineKeyOptions: PropTypes.array,
   }
   static defaultProps = {
     settings: Immutable.Map(),
+    lineKeyOptions: Immutable.List(),
     customRatingFields: Immutable.List(),
     rateCalculators: Immutable.List(),
     plays: Immutable.Set(),
+    computedlineKeyOptions: [],
   };
 
   state = {
@@ -83,11 +92,9 @@ class RateMapping extends Component {
       .toJS();
   }
 
-  getRatingTypes = () => ([
-    { value: 'match', label: 'Equals' },
-    { value: 'equalFalse', label: 'Does Not Equal' },
-    { value: 'longestPrefix', label: 'Longest Prefix' },
-  ]);
+  getRatingTypes = () => getConfig(['rates', 'paramsConditions'], Immutable.List())
+    .map(parseConfigSelectOptions)
+    .toArray();
 
   onChangeAdditionalParamRating = (rateCategory, usaget, priority, index, type) => (value) => {
     const eModified = {
@@ -110,11 +117,12 @@ class RateMapping extends Component {
     this.onChangeAdditionalParamRating(rateCategory, usaget, priority, index, type)(value);
   }
 
-  getRateCalculatorFields = () =>
-    getAvailableFields(this.props.settings, [{ value: 'type', label: 'Type' }, { value: 'usaget', label: 'Usage Type' }, { value: 'usagev', label: 'Activity Volume' }, { value: 'file', label: 'File name' }, { value: 'computed', label: 'Computed' }])
-    .map((field, key) => (
+  getRateCalculatorFields = () => {
+    const { lineKeyOptions } = this.props;
+    return lineKeyOptions.map((field, key) => (
       <option value={field.get('value', '')} key={key}>{field.get('label', '')}</option>
     ));
+  }
 
   addNewRatingCustomField = (fieldName, title, type) => {
     const { customRatingFields } = this.props;
@@ -284,6 +292,22 @@ class RateMapping extends Component {
         computedLineKeyWithMutations.deleteIn(['projection', key, 'value']);
         computedLineKeyWithMutations.deleteIn(['projection', key, 'regex']);
       }
+      if (path[2] === 'key') {
+        let preFunctionPath = [...path];
+        preFunctionPath[preFunctionPath.length-1] = 'preFunction';
+        const preFunctionFields = getFieldsWithPreFunctions().find(preFunctionField => (
+          preFunctionField.get('value') === value
+        ), null, false);
+          if (preFunctionFields === false) {
+            computedLineKeyWithMutations.deleteIn(preFunctionPath);
+          } else {
+            let regexPath = [...path];
+            regexPath[regexPath.length-1] = 'regex';
+            computedLineKeyWithMutations.setIn(path, preFunctionFields.get('preFunctionValue'));
+            computedLineKeyWithMutations.setIn(preFunctionPath, preFunctionFields.get('preFunction'));
+            computedLineKeyWithMutations.deleteIn(regexPath);
+          }
+      }
     });
     this.setState({
       computedLineKey: newComputedLineKey,
@@ -300,6 +324,15 @@ class RateMapping extends Component {
         computedLineKeyWithMutations.delete('operator');
         computedLineKeyWithMutations.delete('must_met');
         computedLineKeyWithMutations.delete('projection');
+      } else {
+        const preFunction = getFieldsWithPreFunctions().find(preFunctionField => (
+          preFunctionField.get('preFunction') === computedLineKey.getIn(['line_keys', 0, 'preFunction'], '')
+          && preFunctionField.get('preFunctionValue') === computedLineKey.getIn(['line_keys', 0, 'key'], '')
+        ), null, false);
+        if (preFunction !== false) {
+          computedLineKeyWithMutations.deleteIn(['line_keys', 0, 'key']);
+          computedLineKeyWithMutations.deleteIn(['line_keys', 0, 'preFunction']);
+        }
       }
     });
     this.setState({
@@ -312,6 +345,7 @@ class RateMapping extends Component {
   }
 
   renderComputedLineKeyDesc = (calc, rateCategory, usaget, priority, index) => {
+    const { computedlineKeyOptions } = this.props;
     if (calc.get('line_key', '') !== 'computed') {
       return null;
     }
@@ -319,10 +353,18 @@ class RateMapping extends Component {
     const opLabel = getConfig(['rates', 'conditions'], Immutable.Map())
       .find(cond => cond.get('id', '') === op, null, Immutable.Map())
       .get('title', '');
+    const selectedOptionFirst = computedlineKeyOptions.find(computedlineKeyOption => computedlineKeyOption.value === calc.getIn(['computed', 'line_keys', 0, 'key'], ''))
+    const defaultLabelFirst = (typeof selectedOptionFirst !== 'undefined') ? selectedOptionFirst.label : calc.getIn(['computed', 'line_keys', 0, 'key'], '')
+    const lineKeyLabel_first = getFieldsWithPreFunctions().find(preFunctionField => (
+      preFunctionField.get('preFunction') === calc.getIn(['computed', 'line_keys', 0, 'preFunction'], '')
+      && preFunctionField.get('preFunctionValue') === calc.getIn(['computed', 'line_keys', 0, 'key'], '')
+    ), null, Immutable.Map()).get('label', defaultLabelFirst);
+    const selectedOptionSecond = computedlineKeyOptions.find(computedlineKeyOption => computedlineKeyOption.value === calc.getIn(['computed', 'line_keys', 1, 'key'], ''))
+    const defaultLabelSecond = (typeof selectedOptionSecond !== 'undefined') ? selectedOptionSecond.label : calc.getIn(['computed', 'line_keys', 1, 'key'], '')
     return (
       <h4>
         <small>
-          {`${calc.getIn(['computed', 'line_keys', 0, 'key'], '')} ${opLabel} ${calc.getIn(['computed', 'line_keys', 1, 'key'], '')}`}
+          {`${lineKeyLabel_first} ${opLabel} ${defaultLabelSecond}`}
           <Button onClick={this.onEditComputedLineKey(calc, rateCategory, usaget, priority, index)} bsStyle="link">
             <i className="fa fa-fw fa-pencil" />
           </Button>
@@ -348,6 +390,14 @@ class RateMapping extends Component {
     this.openRateCalculator(rateCalculators.size)();
     this.props.dispatch(addRatingPriorityField(rateCategory, usaget));
   }
+  
+  getLineKeyValue = (calc) => {
+    const preFunctionFields = getFieldsWithPreFunctions().find(preFunctionField => (
+      preFunctionField.get('preFunction') === calc.get('preFunction', '')
+      && preFunctionField.get('preFunctionValue') === calc.get('line_key', '')
+    ), null, Immutable.Map());
+    return preFunctionFields.get('value', calc.get('line_key', ''));
+  }
 
   getRateCalculatorsForPriority = (rateCategory, usaget, priority, calcs) => {
     const availableFields = this.getRateCalculatorFields();
@@ -371,7 +421,7 @@ class RateMapping extends Component {
                   data-usaget={usaget}
                   data-index={calcKey}
                   data-priority={priority}
-                  value={calc.get('line_key', '')}
+                  value={this.getLineKeyValue(calc)}
                 >
                   { availableFields }
                 </select>
@@ -524,7 +574,7 @@ class RateMapping extends Component {
 
   render() {
     const { rateCategory, usaget, rateCalculators } = this.props;
-    const { openRateCalculators } = this.state;
+    const { openRateCalculators } = this.state;  
     const noRemoveStyle = { paddingLeft: 45 };
     return (
       <div>
@@ -564,6 +614,8 @@ class RateMapping extends Component {
 const mapStateToProps = (state, props) => ({
   plays: customerIdentificationFieldsPlaySelector(state, props),
   rateCalculators: props.settings.getIn(['rate_calculators', props.rateCategory, props.usaget]),
+  lineKeyOptions: inputProcessorlineKeyOptionsSelector(state, props),
+  computedlineKeyOptions: inputProcessorComputedlineKeyOptionsSelector(state, props),
 });
 
 export default connect(mapStateToProps)(RateMapping);

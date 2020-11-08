@@ -245,6 +245,9 @@ class InputProcessor extends Component {
 
   onSelectJSON = (e) => {
     const file = e.target.files[0];
+    if (typeof file === 'undefined') {
+      return;
+    }
     const reader = new FileReader();
     reader.onloadend = ((evt) => {
       if (evt.target.readyState === FileReader.DONE) {

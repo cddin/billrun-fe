@@ -1,13 +1,16 @@
 import { createSelector } from 'reselect';
 import Immutable from 'immutable';
 import moment from 'moment';
+import { titleCase } from 'change-case';
 import isNumber from 'is-number';
 import {
+  getConfig,
   getFieldName,
   getFieldNameType,
   setFieldTitle,
   addPlayToFieldTitle,
   parseFieldSelectOptions,
+  formatSelectOptions,
   onlyLineForeignFields,
 } from '@/common/Util';
 
@@ -98,6 +101,9 @@ const getTemplateTokens = (state, props) => // eslint-disable-line no-unused-var
 
 const getPaymentGateways = (state, props) => // eslint-disable-line no-unused-vars
   state.settings.getIn(['payment_gateways']);
+
+const getInputProcessorFields = (state, props) => // eslint-disable-line no-unused-vars
+  props.settings.get('fields', Immutable.List());
 
 const selectFieldNames = (fields) => {
   if (fields) {
@@ -720,5 +726,81 @@ export const taxLineKeyOptionsSelector = createSelector(
     .push({ value: 'usaget', label: 'Usage Type' })
     .push({ value: 'file', label: 'File name' })
     .push({ value: 'computed', label: 'Computed' })
+    .toArray()
+);
+
+export const getFieldsWithPreFunctions = () => getConfig(['rates', 'preFunctions'], Immutable.List())
+  .reduce((acc, preFunction) => {
+    const id_options = preFunction.get('values', Immutable.List()).map(preFunctionValue => Immutable.Map({
+      value: `${preFunctionValue}___${preFunction.get('id', '')}`,
+      label: preFunction.get('title', titleCase(preFunction.get('id', ''))),
+      preFunction: preFunction.get('id', ''),
+      preFunctionValue: preFunctionValue
+    }));
+    return Immutable.List([...acc, ...id_options]);
+  }, Immutable.List());
+
+const getAdditionInputProcessorlineKeyOptions = () => {
+  const options = [
+    { value: 'type', label: 'Type' },
+    { value: 'usaget', label: 'Usage Type' },
+    { value: 'connection_type', label: 'Connection Type' },
+    { value: 'usagev', label: 'Activity Volume' },
+    { value: 'file', label: 'File name' },
+    ...getFieldsWithPreFunctions().map(formatSelectOptions),
+    { value: 'computed', label: 'Computed' },
+  ];
+  return Immutable.List(options);
+}
+
+export const inputProcessorlineKeyOptionsSelector = createSelector(
+  getInputProcessorFields,
+  getAdditionInputProcessorlineKeyOptions,
+  (inputProcessorFields = Immutable.List(), additionlineKeyOptions = Immutable.List()) => inputProcessorFields
+    .map(field => ({ value: field, label: field }))
+    .sortBy(field => field.value)
+    .push(...additionlineKeyOptions)
+    .map(({value, label}) => (Immutable.Map({ value, label })))
+);
+
+const getAdditionInputProcessorComputedlineKeyOptions = (state, props) => {
+  const options = [
+    { value: 'type', label: 'Type' },
+    { value: 'usaget', label: 'Usage Type' },
+    { value: 'connection_type', label: 'Connection Type' },
+    { value: 'file', label: 'File name' },
+  ];
+  if (props.computedLineKey && props.computedLineKey.get('type', 'regex') === 'regex') {
+    options.push(...getFieldsWithPreFunctions().map(formatSelectOptions));
+  }
+  return Immutable.List(options);
+}
+
+
+export const inputProcessorComputedForeignFieldslineKeyOptionsSelector = createSelector(
+  linesFieldsSelector,
+  (lineFields = Immutable.List()) => lineFields
+    .filter(onlyLineForeignFields)
+    .filter(field => field.get('available_from', '') === 'rate')
+    .map((filteredField) => {
+      const fieldName = filteredField.get('field_name', '');
+      const label = filteredField.get('title', titleCase(fieldName));
+      return { value: fieldName, label: `${label} (foreign field)` };
+    })
+);
+
+export const inputProcessorComputedlineKeyOptionsSelector = createSelector(
+  getInputProcessorFields,
+  inputProcessorComputedForeignFieldslineKeyOptionsSelector,
+  getAdditionInputProcessorComputedlineKeyOptions,
+  (
+    inputProcessorFields = Immutable.List(),
+    foreignFields = Immutable.List(),
+    additionLineKeyOptions = Immutable.List(),
+  ) => inputProcessorFields
+    .map(field => ({ value: field, label: field }))
+    .sortBy(field => field.value)
+    .push(...foreignFields)
+    .push(...additionLineKeyOptions)
     .toArray()
 );

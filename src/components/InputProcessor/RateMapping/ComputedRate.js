@@ -3,18 +3,20 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Immutable from 'immutable';
 import { Form, FormGroup, Col, ControlLabel } from 'react-bootstrap';
-import { titleCase } from 'change-case';
-import Help from '../../Help';
+import Help from '@/components/Help';
 import Field from '@/components/Field';
-import { getConfig, formatSelectOptions, getAvailableFields, parseConfigSelectOptions } from '@/common/Util';
+import { getConfig, formatSelectOptions, parseConfigSelectOptions } from '@/common/Util';
 import { getSettings } from '@/actions/settingsActions';
-import { linesFieldsSelector } from '@/selectors/settingsSelector';
+import {
+  inputProcessorComputedlineKeyOptionsSelector,
+  getFieldsWithPreFunctions,
+} from '@/selectors/settingsSelector';
 
 class ComputedRate extends Component {
   static propTypes = {
     computedLineKey: PropTypes.instanceOf(Immutable.Map),
     settings: PropTypes.instanceOf(Immutable.Map),
-    foreignFields: PropTypes.instanceOf(Immutable.List),
+    computedlineKeyOptions: PropTypes.array,
     onChangeComputedLineKeyType: PropTypes.func,
     onChangeComputedLineKey: PropTypes.func,
     onChangeComputedMustMet: PropTypes.func,
@@ -23,7 +25,7 @@ class ComputedRate extends Component {
   static defaultProps = {
     computedLineKey: Immutable.Map(),
     settings: Immutable.Map(),
-    foreignFields: Immutable.List(),
+    computedlineKeyOptions: [],
     onChangeComputedLineKeyType: () => {},
     onChangeComputedLineKey: () => {},
     onChangeComputedMustMet: () => {},
@@ -52,28 +54,21 @@ class ComputedRate extends Component {
   }
 
   render() {
-    const { computedLineKey, settings, foreignFields } = this.props;
+    const { computedLineKey, computedlineKeyOptions } = this.props;
     if (!computedLineKey) {
       return null;
     }
     const regexHelper = 'In case you want to run a regular expression on the computed field before calculating the rate';
     const mustMetHelper = 'This means than in case the condition is not met - a rate will not be found';
-    const additionalFields = foreignFields
-      .filter(field => field.get('available_from', '') === 'rate')
-      .map((filteredField) => {
-        const fieldName = filteredField.get('field_name', '');
-        const label = filteredField.get('title', titleCase(fieldName));
-        return { value: fieldName, label: `${label} (foreign field)` };
-      })
-      .push({ value: 'type', label: 'Type' })
-      .push({ value: 'usaget', label: 'Usage Type' })
-      .push({ value: 'file', label: 'File name' })
-      .toArray();
-    const lineKeyOptions = getAvailableFields(settings, additionalFields).toJS();
     const computedTypeRegex = computedLineKey.get('type', 'regex') === 'regex';
     const operatorExists = computedLineKey.get('operator', '') === '$exists' || computedLineKey.get('operator', '') === '$existsFalse';
+    const preFunction = getFieldsWithPreFunctions().find(preFunctionField => (
+      preFunctionField.get('preFunction') === computedLineKey.getIn(['line_keys', 0, 'preFunction'], '')
+      && preFunctionField.get('preFunctionValue') === computedLineKey.getIn(['line_keys', 0, 'key'], '')
+    ), null, false);
+    const lineKeyValue = preFunction === false ? computedLineKey.getIn(['line_keys', 0, 'key'], '') : preFunction.get('value', computedLineKey.getIn(['line_keys', 0, 'preFunction'], ''));
     const checkboxStyle = { marginTop: 10 };
-    const conditionOption = this.getConditionResultProjectOptions().concat(lineKeyOptions);
+    const conditionOption = this.getConditionResultProjectOptions().concat(computedlineKeyOptions);
     return (
       <Form horizontal>
         <FormGroup>
@@ -114,8 +109,8 @@ class ComputedRate extends Component {
             <Field
               fieldType="select"
               onChange={this.props.onChangeComputedLineKey(['line_keys', 0, 'key'])}
-              value={computedLineKey.getIn(['line_keys', 0, 'key'], '')}
-              options={lineKeyOptions}
+              value={lineKeyValue}
+              options={computedlineKeyOptions}
               allowCreate={true}
             />
           </Col>
@@ -124,7 +119,7 @@ class ComputedRate extends Component {
               value={computedLineKey.getIn(['line_keys', 0, 'regex'], '')}
               disabledValue={''}
               onChange={this.props.onChangeComputedLineKey(['line_keys', 0, 'regex'])}
-              disabled={computedLineKey.getIn(['line_keys', 0, 'key'], '') === '' || operatorExists}
+              disabled={computedLineKey.getIn(['line_keys', 0, 'key'], '') === '' || operatorExists || preFunction !== false}
               label={<span>Regex<Help contents={regexHelper} /></span>}
               fieldType="toggeledInput"
             />
@@ -157,7 +152,7 @@ class ComputedRate extends Component {
                     fieldType="select"
                     onChange={this.props.onChangeComputedLineKey(['line_keys', 1, 'key'])}
                     value={computedLineKey.getIn(['line_keys', 1, 'key'], '')}
-                    options={lineKeyOptions}
+                    options={computedlineKeyOptions}
                     disabled={operatorExists}
                   />
                 )}
@@ -260,7 +255,7 @@ class ComputedRate extends Component {
 }
 
 const mapStateToProps = (state, props) => ({
-  foreignFields: linesFieldsSelector(state, props),
+  computedlineKeyOptions: inputProcessorComputedlineKeyOptionsSelector(state, props),
 });
 
 export default connect(mapStateToProps)(ComputedRate);

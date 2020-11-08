@@ -2,10 +2,11 @@ import Immutable from 'immutable';
 import { actions } from '@/actions/settingsActions';
 import { ADD_USAGET_MAPPING } from '@/actions/inputProcessorActions';
 import { LOGOUT } from '@/actions/userActions';
+import { convertImporterMapperFromDb } from '@/actions/importerActions';
 import { parseGotPlugins } from '@/actions/pluginActions';
-import {
-  getConfig,
- } from '@/common/Util';
+import { getConfig } from '@/common/Util';
+
+
 
 const LogoImg = `${process.env.PUBLIC_URL}/assets/img/${getConfig('defaultLogo', 'billRun-cloud-logo.png')}`;
 const defaultState = Immutable.fromJS({
@@ -58,6 +59,9 @@ export default function (state = defaultState, action) {
           let data = Immutable.fromJS(setting.data.details);
           if (setting.name === 'taxation' && data.get('vat', '') !== '') {
             data = data.set('vat', data.get('vat', '') * 100);
+          }
+          if (setting.name === 'import.mapping' && Immutable.List.isList(data)) {
+            data = data.map(convertImporterMapperFromDb);
           }
           if (setting.name === 'taxation.vat' && data !== '') {
             data *= 100;

@@ -49,6 +49,12 @@ fieldset[disabled] .btn {
 .movable {
     cursor: move;
 }
+.helpable {
+    cursor: help!important;
+}
+.helpable .disabled-elements-hack {
+    cursor: help!important;
+}
 .non-editable-field{
   line-height: 32px;
 }

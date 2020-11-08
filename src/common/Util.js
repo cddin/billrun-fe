@@ -430,11 +430,14 @@ const getItemConvertedRates = (propertyTypes, usageTypes, item, toBaseUnit, type
           const to = rateStep.get('to');
           const convertedTo = (to === 'UNLIMITED' ? 'UNLIMITED' : getValueByUnit(propertyTypes, usageTypes, usaget, rangeUnit, to, toBaseUnit));
           const newTo = isNumber(convertedTo) ? parseFloat(convertedTo) : convertedTo;
+          const price = rateStep.get('price');
+          const convertedPrice = isNumber(price) ? parseFloat(price) : price;
           const convertedInterval = getValueByUnit(propertyTypes, usageTypes, usaget, intervalUnit, rateStep.get('interval'), toBaseUnit);
           const newInterval = isNumber(convertedInterval) ? parseFloat(convertedInterval) : convertedInterval;
           const ratePath = (type === 'product' ? [usaget, plan, 'rate', index] : [plan, usaget, 'rate', index]);
           ratesWithMutations.setIn([...ratePath, 'from'], newFrom);
           ratesWithMutations.setIn([...ratePath, 'to'], newTo);
+          ratesWithMutations.setIn([...ratePath, 'price'], convertedPrice);
           ratesWithMutations.setIn([...ratePath, 'interval'], newInterval);
         });
         const percentage = rate.get('percentage', null);

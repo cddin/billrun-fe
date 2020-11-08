@@ -71,7 +71,7 @@
       "type": "array",
       "title": "Range",
       "exclude": ["select_options", "select_list"],
-      "includeEntity": ["subscription"]
+      "includeEntity": ["subscription", "product"]
     }
   ],
   "foreignFields": {

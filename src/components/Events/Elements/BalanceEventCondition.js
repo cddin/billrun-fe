@@ -6,9 +6,11 @@ import { FormGroup, Col, ControlLabel, InputGroup } from 'react-bootstrap';
 import { upperCaseFirst } from 'change-case';
 import isNumber from 'is-number';
 import Field from '@/components/Field';
+import { WithTooltip } from '@/components/Elements';
 import UsageTypesSelector from '../../UsageTypes/UsageTypesSelector';
 import { getGroupsOptions } from '@/actions/reportsActions';
 import { showWarning } from '@/actions/alertsActions';
+import { EventDescription } from '@/language/FieldDescriptions';
 import {
   groupsOptionsSelector,
   groupsDataSelector,
@@ -433,8 +435,14 @@ class BalanceEventCondition extends Component {
                     value="none"
                     checked={overGroup !== 'over_group'}
                     onChange={this.onChangeOverGroup}
-                    label="All units"
                     enabled={limitation === 'activity_type'}
+                    label={(
+                      <span className="helpable">
+                        <WithTooltip helpText={EventDescription.over_group}>
+                          Per balance
+                        </WithTooltip>
+                      </span>
+                    )}
                   />
                 </span>
                 <span className="inline">

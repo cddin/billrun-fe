@@ -107,9 +107,15 @@ export const saveSettings = (categories = [], messages = {}) => (dispatch, getSt
     success: successMessage = 'Settings saved successfully!',
     error: errorMessage = 'Error saving settings',
   } = messages;
+  const ignoreCategories = ['import.mapping']; // disallow to save categories in this function.
   dispatch(startProgressIndicator());
   const { settings } = getState();
-  const categoriesToSave = Array.isArray(categories) ? categories : [categories];
+  let categoriesToSave = Array.isArray(categories) ? categories : [categories];
+  categoriesToSave = categoriesToSave.filter(category => !ignoreCategories.includes(category));
+  if (categoriesToSave.length === 0) {
+    const warning = {data: [{data: {status: 2, warnings: 'No settings to save'}}]};
+    return dispatch(apiBillRunSuccessHandler(warning));
+  }
   const multipleCategories = categoriesToSave.length > 1;
   const categoryData = categoriesToSave.map((category) => {
     let data = settings.getIn(category.split('.'));
@@ -181,5 +187,5 @@ export const saveSharedSecret = (secret, mode) => (dispatch) => {
       }
       return dispatch(apiBillRunSuccessHandler(success, `The secret key was ${action}`));
     })
-    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error saving Secret')));
+    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error saving secret')));
 };
