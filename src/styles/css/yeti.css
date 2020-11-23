@@ -6144,9 +6144,7 @@ input[type="checkbox"] {
 .dropdown-menu {
     padding: 0;
     margin-top: 0;
-    font-size: 12px;
-    max-height: 200px;
-    overflow-y: scroll;
+    font-size: 12px
 }
 .dropdown-menu>li>a {
     padding: 12px 15px
