@@ -170,6 +170,12 @@ fieldset[disabled] .btn {
 .form-group.has-error .dropdown.input-group-btn > button {
   border-color: red;
 }
+
+.dropdown-menu {
+  max-height: 200px;
+  overflow-y: scroll;
+}
+
 /* ~React-bootstrap */
 
 /* Custom field input */
