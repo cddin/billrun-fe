@@ -144,6 +144,7 @@ export default class GatewayParamsModal extends Component {
                   <div className="col-lg-4">
                     <input type={secretFields.includes(param) ? 'password': 'text'}
                       id={param}
+                      autoComplete="new-password"
                       onChange={this.onChangeParamValue}
                       className="form-control"
                       value={gateway['params'][param]} />
@@ -228,6 +229,7 @@ export default class GatewayParamsModal extends Component {
               <input type={secretFields.includes(param) ? 'password': 'text'}
                 id={param}
                 onChange={this.onChangeParamValue}
+                autoComplete="new-password"
                 className="form-control"
                 value={gateway['params'][param]} />
             </div>
