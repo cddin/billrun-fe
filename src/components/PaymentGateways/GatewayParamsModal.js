@@ -132,7 +132,7 @@ export default class GatewayParamsModal extends Component {
     const denialsReceiverValue = gatewayDenials.receiver !== undefined ? gatewayDenials.receiver : [];
     const denialsConnections = denialsReceiverValue.connections !== undefined ? denialsReceiverValue.connections : [];
     const denialsConnection = denialsConnections[0] !== undefined ? denialsConnections[0] : [];
-
+    const secretFields = settings.get('secret_fields') !== undefined ? settings.get('secret_fields') : [];
     return (
       <Tabs activeKey={activeTab} animation={false} id="PaymentGatewayTab" onSelect={this.handleSelectTab}>
         <Tab title="API Parameters" eventKey={1}>
@@ -142,7 +142,7 @@ export default class GatewayParamsModal extends Component {
                 <div className="form-group" key={paramKey}>
                   <label className="col-lg-3 control-label">{param}</label>
                   <div className="col-lg-4">
-                    <input type="text"
+                    <input type={secretFields.includes(param) ? 'password': 'text'}
                       id={param}
                       onChange={this.onChangeParamValue}
                       className="form-control"
@@ -218,20 +218,21 @@ export default class GatewayParamsModal extends Component {
   renderSingularBody = () => {
     const { settings } = this.props;
     const { gateway } = this.state;
-
+    const secretFields = settings.get('secret_fields') !== undefined ? settings.get('secret_fields') : [];
     return (
       <form className="form-horizontal">
         {settings.get('params').keySeq().map((param, paramKey) => (
           <div className="form-group" key={paramKey}> {/* eslint-disable-line react/no-array-index-key */}
             <label className="col-lg-3 control-label">{param}</label>
             <div className="col-lg-4">
-              <input type="text"
+              <input type={secretFields.includes(param) ? 'password': 'text'}
                 id={param}
                 onChange={this.onChangeParamValue}
                 className="form-control"
                 value={gateway['params'][param]} />
             </div>
           </div>
+         
         ))}
       </form>
     );
