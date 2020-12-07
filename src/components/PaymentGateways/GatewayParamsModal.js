@@ -234,7 +234,6 @@ export default class GatewayParamsModal extends Component {
                 value={gateway['params'][param]} />
             </div>
           </div>
-         
         ))}
       </form>
     );
