@@ -180,7 +180,8 @@ export default {
       { id: 'transactions', title: 'Transactions', type: 'number' },
       { id: 'parameters_string', title: 'Parameter String' },
       { id: 'correlation_value', title: 'Correlation Value' },
-
+      { id: 'cpg_name', title: 'Payment Gateway Name' },
+      { id: 'cpg_file_type', title: 'Payment Gateway File Type' },
     ],
     'paymentsTransactionsResponse': [
       { id: 'fetching_time', type: 'date' },
@@ -210,7 +211,9 @@ export default {
       { id: 'related_request_file', title: 'Related Request File' },
       { id: 'total_denied_amount', title: 'Total Denied Amount In The File' },
       { id: 'total_confirmed_amount', title: 'Total Confirmed Amount In The File' },
-      { id: 'total_rejected_amount', title: 'Total Rejected Amount In The File' }
+      { id: 'total_rejected_amount', title: 'Total Rejected Amount In The File' },
+      { id: 'cpg_name', title: 'Payment Gateway Name' },
+      { id: 'cpg_file_type', title: 'Payment Gateway File Type' },
     ],
     'paymentDenials': [
       { id: 'fetching_time', type: 'date' },
@@ -240,7 +243,9 @@ export default {
       { id: 'related_request_file', title: 'Related Request File' },
       { id: 'total_denied_amount', title: 'Total Denied Amount In The File' },
       { id: 'total_confirmed_amount', title: 'Total Confirmed Amount In The File' },
-      { id: 'total_rejected_amount', title: 'Total Rejected Amount In The File' }
+      { id: 'total_rejected_amount', title: 'Total Rejected Amount In The File' },
+      { id: 'cpg_name', title: 'Payment Gateway Name' },
+      { id: 'cpg_file_type', title: 'Payment Gateway File Type' },
     ],
     'paymentsFiles': [
       { id: 'fetching_time', type: 'date' },
@@ -270,7 +275,9 @@ export default {
       { id: 'related_request_file', title: 'Related Request File' },
       { id: 'total_denied_amount', title: 'Total Denied Amount In The File' },
       { id: 'total_confirmed_amount', title: 'Total Confirmed Amount In The File' },
-      { id: 'total_rejected_amount', title: 'Total Rejected Amount In The File' }
+      { id: 'total_rejected_amount', title: 'Total Rejected Amount In The File' },
+      { id: 'cpg_name', title: 'Payment Gateway Name' },
+      { id: 'cpg_file_type', title: 'Payment Gateway File Type' },
     ],
     queue: [
       // use all usage fields

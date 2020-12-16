@@ -10,6 +10,7 @@ import {
 import {
   subscriberFieldsWithPlaySelector,
   inputProssesorfilteredFieldsSelector,
+  inputProssesorCalculatedFieldsSelector,
   accountFieldsSelector,
   linesFieldsSelector,
   billsFieldsSelector,
@@ -39,6 +40,7 @@ const formatReportFields = (fields) => {
 
 const selectReportLinesFields = (
   customKeys = Immutable.List(),
+  calculatedFields = Immutable.List(),
   billrunFields = Immutable.List(),
   categoryFields = Immutable.List(),
 ) =>
@@ -48,6 +50,12 @@ const selectReportLinesFields = (
       optionsWithMutations.push(Immutable.Map({
         field_name: `uf.${customKey}`,
         title: `${getFieldName(customKey, 'lines', sentenceCase(customKey))} (User field)`,
+      }));
+    });
+    calculatedFields.forEach((calculatedField) => {
+      optionsWithMutations.push(Immutable.Map({
+        field_name: `cf.${calculatedField}`,
+        title: `${getFieldName(calculatedField, 'lines', sentenceCase(calculatedField))} (Calculated field)`,
       }));
     });
     categoryFields.forEach((customKey) => {
@@ -229,6 +237,7 @@ const selectReportFields = (
 
 const reportLinesFieldsSelector = createSelector(
   inputProssesorfilteredFieldsSelector,
+  inputProssesorCalculatedFieldsSelector,
   linesFieldsSelector,
   rateCategoriesSelector,
   selectReportLinesFields,
