@@ -9,7 +9,7 @@ import { Panel } from 'react-bootstrap';
 import Importer from '../Importer';
 import { getSettings } from '@/actions/settingsActions';
 import { setPageTitle } from '@/actions/guiStateActions/pageActions';
-import { clearList } from '@/actions/entityListActions';
+import { clearList, clearRevisions } from '@/actions/entityListActions';
 import { itemSelector, importItemTypeSelector } from '@/selectors/entitySelector';
 import { getConfig } from '@/common/Util';
 
@@ -63,13 +63,7 @@ class ImporterSetup extends Component {
   onCloseImport = () => {
     const { item, importEntity } = this.props;
     if (importEntity) {
-      if (['subscription', 'customer'].includes(item.get('entity', ''))) {
-        this.props.dispatch(clearList('customers'));
-        this.props.dispatch(clearList('subscribers'));
-      } else {
-        const clearlistName = getConfig(['systemItems', item.get('entity', ''), 'itemsType'], '');
-        this.props.dispatch(clearList(clearlistName));
-      }
+      this.clearList(item.get('entity', ''));
       const entity = (['subscription', 'customer'].includes(item.get('entity', ''))) ? 'customer' : item.get('entity', '');
       const listUrl = getConfig(['systemItems', entity, 'itemsType'], '');
       this.props.router.push(`/${listUrl}`);
@@ -77,6 +71,20 @@ class ImporterSetup extends Component {
       this.setState({
         refreshString: moment().format(), //refetch screen import
       });
+    }
+  }
+
+  clearList = (entityName) => {
+    if (entityName !== '') {
+      if (['subscription', 'customer'].includes(entityName)) {
+        this.props.dispatch(clearList('customers'));
+        this.props.dispatch(clearList('subscribers'));
+      } else {
+        const clearlistName = getConfig(['systemItems', entityName, 'itemsType'], '');
+        this.props.dispatch(clearList(clearlistName));
+      }
+      const collection = getConfig(['systemItems', entityName, 'collection'], '');
+      this.props.dispatch(clearRevisions(collection));
     }
   }
 
@@ -119,6 +127,7 @@ class ImporterSetup extends Component {
         <Importer
           entityOptions={importEntities}
           onFinish={this.onCloseImport}
+          onClearItems={this.clearList}
           defaultValues={defaultValues}
           predefinedValues={predefinedValues}
           restartString={refreshString}
