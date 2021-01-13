@@ -217,7 +217,7 @@ const StepMapper = (props) => {
 
   const renderContent = () => {
     if (fileContent.length === 0) {
-      return (<Label bsStyle="default">Please upload file.</Label>);
+      return (<Label bsStyle="default">Please upload a file.</Label>);
     }
     if (headers.length === 0) {
       return (<Label bsStyle="default">No CSV headers was found, please check your file.</Label>);

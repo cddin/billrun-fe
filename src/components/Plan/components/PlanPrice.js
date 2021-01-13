@@ -133,7 +133,7 @@ export default class PlanPrice extends Component {
             { isFirst && (
               <ControlLabel className="mb5">Price</ControlLabel>
             )}
-            <Field onChange={this.onPlanPriceUpdate} value={price} editable={editable} />
+            <Field onChange={this.onPlanPriceUpdate} value={price} editable={editable} fieldType="price"/>
             { priceError.length > 0 && <HelpBlock>{priceError}.</HelpBlock>}
           </FormGroup>
         </Col>
