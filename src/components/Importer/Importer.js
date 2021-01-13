@@ -59,6 +59,7 @@ class Importer extends Component {
     usageTypesData: PropTypes.instanceOf(Immutable.List),
     propertyTypes: PropTypes.instanceOf(Immutable.List),
     onFinish: PropTypes.func,
+    onClearItems: PropTypes.func,
     dispatch: PropTypes.func.isRequired,
   }
 
@@ -92,6 +93,7 @@ class Importer extends Component {
     typeSelectOptions: [],
     showPlay: false,
     onFinish: null,
+    onClearItems: null,
     usageTypesData: Immutable.List(),
     propertyTypes: Immutable.List(),
   };
@@ -177,6 +179,12 @@ class Importer extends Component {
   onFinish = () => {
     if (this.props.onFinish) {
       this.props.onFinish();
+    }
+  }
+
+  onClearItems = (itemName) => {
+    if (this.props.onClearItems) {
+      this.props.onClearItems(itemName);
     }
   }
 
@@ -349,7 +357,7 @@ class Importer extends Component {
   }
 
   alterProductsData = data => Immutable.List().withMutations((fieldsWithMutations) => {
-    const { item } = this.props;
+    const { item, showPlay } = this.props;
     const operation = item.get('operation', 'create');
     const revisionDateField = (operation === 'create') ? 'from' : 'effective_date';
     const productsGrouped = Immutable.fromJS(data)
@@ -367,6 +375,9 @@ class Importer extends Component {
     productsGrouped.forEach((productKey) => {
       productKey.forEach((productKeyRevision) => {
         productKeyRevision.withMutations((productKeyRevisionWithMutations) => {
+          if (showPlay) {
+            productKeyRevisionWithMutations.set('play', item.get('play', ''));
+          }
           // Date field (from/effective_date) is reqired
           if (!productKeyRevision.has(revisionDateField)) {
             productKeyRevisionWithMutations.update('__ERRORS__', Immutable.Map(), erros =>
@@ -556,9 +567,10 @@ class Importer extends Component {
   }
 
   afterImport = (response) => {
+    const { item } = this.props;
     if ([1, 2].includes(response.status)) {
       const responseData = Immutable.fromJS(response.data) || Immutable.Map();
-      const result = responseData.get('imported_entities', Immutable.List());
+      const result = responseData.get('imported_entities', responseData.toList());
       if (responseData.has('created', false)) {
         this.setState({ status: 'finish' });
       } else {
@@ -572,6 +584,7 @@ class Importer extends Component {
       }
       this.onChange('result', responseData);
       this.onNextStep();
+      this.onClearItems(item.get('entity', ''));
     } else {
       this.onDelete('result');
       this.setState({ status: 'create' });
