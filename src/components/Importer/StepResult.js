@@ -14,7 +14,9 @@ const StepResult = (props) => {
   const fileContent = item.get('fileContent', []) || [];
   const fileName = item.get('fileName', 'errors');
   const entity = item.get('entity', '');
-  const result = item.getIn(['result', 'imported_entities'], Immutable.List()) || Immutable.List();
+  const result = item.get('importType', '') === 'manual_mapping'
+    ? item.getIn(['result'], Immutable.Map())
+    : (item.getIn(['result', 'imported_entities'], Immutable.List()) || Immutable.List());
 
   const getErrorCsvHeaders = () => (
     [...fileContent[0], 'import_error_message', 'import_error_row']
@@ -64,7 +66,7 @@ const StepResult = (props) => {
 
   const renderStatus = () => {
     // New format that support Created and updated counters
-    if (item.hasIn(['result','created'])) {
+    if (item.hasIn(['result','created']) || item.hasIn(['result','updated'])) {
       const created = item.getIn(['result', 'created'], 0);
       const updated = item.getIn(['result', 'updated'], 0);
       const itemName = getConfig(['systemItems', entity, 'itemName'], '');
@@ -100,9 +102,11 @@ const StepResult = (props) => {
         </div>
       );
     }
-    
+
+
+    const result = item.getIn(['result'], Immutable.Map());
     // No resolts -> no imports
-    if (result.length === 0) {
+    if (result.size === 0) {
       return (
         <div className="ml10">
           <Label bsStyle="default">No records were imported</Label>
@@ -123,7 +127,7 @@ const StepResult = (props) => {
     if (allFails) {
       return (
         <div className="ml10">
-          <p>No records were imported. please fix the errors and try again.</p>
+          <Label bsStyle="danger">No records were imported. please fix the errors and try again.</Label>
         </div>
       );
     }
@@ -160,6 +164,7 @@ const StepResult = (props) => {
     <div className="StepResult">
       <h4>Import status</h4>
       {renderStatus()}
+      <br />
       <Panel header={<span>Details</span>} collapsible className="collapsible">
         {rendeDetails()}
       </Panel>
