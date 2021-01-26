@@ -22,10 +22,11 @@ export default class PricingMapping extends Component {
     this.props.onSetPricingMapping(id, value, usaget);
   }
 
-  getVolumeOptions = () => this.props.settings.get('fields', Immutable.List()).sortBy(field => field).map(field => ({
-    label: field,
-    value: field,
-  })).toArray();
+  getVolumeOptions = () => this.props.settings
+    .get('fields', Immutable.List())
+    .sortBy(field => field)
+    .map(field => ({ label: field, value: field }))
+    .toArray();
 
   onChangeApriceField = (value) => {
     const e = {

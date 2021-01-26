@@ -7,7 +7,7 @@ class Checkbox extends PureComponent {
 
   static propTypes = {
     id: PropTypes.string,
-    label: PropTypes.string,
+    label: PropTypes.node,
     value: PropTypes.oneOf([true, false, '']),
     editable: PropTypes.bool,
     disabled: PropTypes.bool,
@@ -16,7 +16,7 @@ class Checkbox extends PureComponent {
 
   static defaultProps = {
     id: undefined,
-    label: '',
+    label: null,
     value: false,
     editable: true,
     checked: false,
@@ -44,7 +44,7 @@ class Checkbox extends PureComponent {
       return (<span>{ value ? 'Yes' : 'No' }</span>);
     }
 
-    if (label.length) {
+    if (label !== null) {
       return (
         <label htmlFor={id}>
           <input

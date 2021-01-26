@@ -104,12 +104,18 @@ export const fetchFile = (query, path = 'file') => (dispatch) => {
 
 export const saveSettings = (categories = [], messages = {}) => (dispatch, getState) => {
   const {
-    success: successMessage = 'Settings saved successfuly!',
+    success: successMessage = 'Settings saved successfully!',
     error: errorMessage = 'Error saving settings',
   } = messages;
+  const ignoreCategories = ['import.mapping']; // disallow to save categories in this function.
   dispatch(startProgressIndicator());
   const { settings } = getState();
-  const categoriesToSave = Array.isArray(categories) ? categories : [categories];
+  let categoriesToSave = Array.isArray(categories) ? categories : [categories];
+  categoriesToSave = categoriesToSave.filter(category => !ignoreCategories.includes(category));
+  if (categoriesToSave.length === 0) {
+    const warning = {data: [{data: {status: 2, warnings: 'No settings to save'}}]};
+    return dispatch(apiBillRunSuccessHandler(warning));
+  }
   const multipleCategories = categoriesToSave.length > 1;
   const categoryData = categoriesToSave.map((category) => {
     let data = settings.getIn(category.split('.'));
@@ -127,9 +133,9 @@ export const saveSettings = (categories = [], messages = {}) => (dispatch, getSt
     .catch(error => dispatch(apiBillRunErrorHandler(error, errorMessage)));
 };
 
-export const getSettings = (categories = []) => (dispatch) => {
+export const getSettings = (categories = [], data = {}) => (dispatch) => {
   const categoriesToSave = Array.isArray(categories) ? categories : [categories];
-  const queries = categoriesToSave.map(category => getSettingsQuery(category));
+  const queries = categoriesToSave.map(category => getSettingsQuery(category, data));
   return apiBillRun(queries)
     .then((success) => {
       dispatch(gotSettings(success.data));
@@ -167,7 +173,7 @@ export const getCurrencies = () => (dispatch) => {
       localStorage.setItem(cacheKey, JSON.stringify({ time: now, data }));
       return data;
     })
-    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retreiving currencies')));
+    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retrieving currencies')));
 };
 
 export const saveSharedSecret = (secret, mode) => (dispatch) => {
@@ -181,5 +187,5 @@ export const saveSharedSecret = (secret, mode) => (dispatch) => {
       }
       return dispatch(apiBillRunSuccessHandler(success, `The secret key was ${action}`));
     })
-    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error saving Secret')));
+    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error saving secret')));
 };

@@ -4,10 +4,9 @@ import moment from 'moment';
 import Immutable from 'immutable';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import { Panel, Col, Row, Button } from 'react-bootstrap';
 import List from '@/components/List';
 import { getItemDateValue, getConfig } from '@/common/Util';
-import { StateIcon, ConfirmModal } from '@/components/Elements';
+import { StateIcon, ConfirmModal, CreateButton } from '@/components/Elements';
 import { getSettings, saveSharedSecret } from '@/actions/settingsActions';
 import SecurityForm from './Security/SecurityForm';
 
@@ -89,19 +88,6 @@ class Security extends Component {
     this.setState({ currentItem: Immutable.Map() });
   }
 
-  renderPanelHeader = () => {
-    return (
-      <div>
-        List of all available keys
-        <div className="pull-right">
-          <Button bsSize="xsmall" className="btn-primary" onClick={this.onClickNew}>
-            <i className="fa fa-plus" />&nbsp;Add New
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   renderList = () => {
     const { data } = this.props;
     const fields = this.getListFields();
@@ -115,8 +101,8 @@ class Security extends Component {
     { id: 'state', title: 'Status', parser: this.parserState, cssClass: 'state' },
     { id: 'name', title: 'Name' },
     { id: 'key', title: 'Secret Key' },
-    { id: 'from', title: 'Creation Date', parser: this.parseDate, cssClass: 'short-date' },
-    { id: 'to', title: 'Expiration Date', parser: this.parseDate, cssClass: 'short-date' },
+    { id: 'from', title: 'Creation Date', parser: this.parseDate, cssClass: 'long-date text-center' },
+    { id: 'to', title: 'Expiration Date', parser: this.parseDate, cssClass: 'long-date text-center' },
   ]
 
   getListActions = () => [
@@ -130,17 +116,12 @@ class Security extends Component {
 
     return (
       <div>
-        <ConfirmModal onOk={this.onClickRemoveOk} onCancel={this.onClickRemoveClose} show={showConfirmRemove} message={removeConfirmMessage} labelOk="Yes" />
-        <Row>
-          <Col lg={12}>
-            <Panel header={this.renderPanelHeader()}>
-              { this.renderList() }
-            </Panel>
-          </Col>
-        </Row>
+        { this.renderList() }
+        <CreateButton onClick={this.onClickNew} label="Add New" />
         { currentItem !== null && (
           <SecurityForm item={currentItem} show={true} onSave={this.handleSave} onCancel={this.onCancel} />
         )}
+        <ConfirmModal onOk={this.onClickRemoveOk} onCancel={this.onClickRemoveClose} show={showConfirmRemove} message={removeConfirmMessage} labelOk="Yes" />
       </div>
     );
   }

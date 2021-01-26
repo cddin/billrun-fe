@@ -14,11 +14,7 @@ import {
   getItemId,
   getItemDateValue,
 } from '@/common/Util';
-import {
-  getPlansQuery,
-  getServicesQuery,
-} from '../../common/ApiQueries';
-import { showSuccess, showDanger } from '@/actions/alertsActions';
+import { showSuccess } from '@/actions/alertsActions';
 import { setPageTitle } from '@/actions/guiStateActions/pageActions';
 import {
   saveDiscount,
@@ -29,9 +25,9 @@ import {
   setCloneDiscount,
 } from '@/actions/discountsActions';
 import { clearItems, getRevisions, clearRevisions } from '@/actions/entityListActions';
-import { getList, clearList } from '@/actions/listActions';
+import { validateEntity } from '@/actions/discountsActions';
 import { modeSelector, itemSelector, idSelector, revisionsSelector } from '@/selectors/entitySelector';
-import { currencySelector } from '@/selectors/settingsSelector';
+import { currencySelector, discountFieldsSelector } from '@/selectors/settingsSelector';
 
 
 class DiscountSetup extends Component {
@@ -40,10 +36,9 @@ class DiscountSetup extends Component {
     itemId: PropTypes.string,
     item: PropTypes.instanceOf(Immutable.Map),
     revisions: PropTypes.instanceOf(Immutable.List),
+    fields: PropTypes.instanceOf(Immutable.List),
     mode: PropTypes.string,
     currency: PropTypes.string,
-    availablePlans: PropTypes.instanceOf(Immutable.List),
-    availableServices: PropTypes.instanceOf(Immutable.List),
     router: PropTypes.shape({
       push: PropTypes.func.isRequired,
     }).isRequired,
@@ -54,11 +49,11 @@ class DiscountSetup extends Component {
     item: Immutable.Map(),
     currency: '',
     revisions: Immutable.List(),
-    availablePlans: Immutable.List(),
-    availableServices: Immutable.List(),
+    fields: Immutable.List(),
   }
 
   state = {
+    errors: Immutable.Map(),
     progress: false,
   }
 
@@ -73,8 +68,6 @@ class DiscountSetup extends Component {
       this.props.dispatch(setPageTitle(pageTitle));
     }
     this.initDefaultValues();
-    this.props.dispatch(getList('available_plans', getPlansQuery({ name: 1, description: 1 })));
-    this.props.dispatch(getList('available_services', getServicesQuery({ name: 1, description: 1, quantitative: 1 })));
   }
 
   componentWillReceiveProps(nextProps) {
@@ -91,8 +84,6 @@ class DiscountSetup extends Component {
 
   componentWillUnmount() {
     this.props.dispatch(clearDiscount());
-    this.props.dispatch(clearList('available_plans'));
-    this.props.dispatch(clearList('available_services'));
   }
 
   initDefaultValues = () => {
@@ -101,12 +92,8 @@ class DiscountSetup extends Component {
       const defaultFromValue = moment().add(1, 'days').toISOString();
       this.onChangeFieldValue(['from'], defaultFromValue);
     }
-    if (item.get('discount_type', null) === null) {
-      this.onChangeFieldValue(['discount_type'], 'monetary');
-    }
-
-    if (item.get('prorated', null) === null) {
-      this.onChangeFieldValue(['prorated'], true);
+    if (item.get('type', null) === null) {
+      this.onChangeFieldValue(['type'], 'monetary');
     }
 
     if (mode === 'clone') {
@@ -153,16 +140,10 @@ class DiscountSetup extends Component {
   }
 
   onChangeFieldValue = (path, value) => {
-    const stringPath = Array.isArray(path) ? path.join('.') : path;
-    const deletePathOnEmptyValue = ['limit', 'cycles', 'params.plan'];
-    const deletePathOnNullValue = ['discount_subject.plan', 'discount_subject.service', 'params.service'];
-    if (value === '' && deletePathOnEmptyValue.includes(stringPath)) {
-      this.props.dispatch(deleteDiscountValue(path));
-    } else if (value === null && deletePathOnNullValue.includes(stringPath)) {
-      this.props.dispatch(deleteDiscountValue(path));
-    } else {
-      this.props.dispatch(updateDiscount(path, value));
-    }
+    const { errors } = this.state;
+    const pathString = path.join('.');
+    this.setState(() => ({ errors: errors.delete(pathString) }));
+    this.props.dispatch(updateDiscount(path, value));
   }
 
   afterSave = (response) => {
@@ -197,35 +178,21 @@ class DiscountSetup extends Component {
   }
 
   validate = () => {
-    const { item } = this.props;
-    if (item.getIn(['params', 'service'], Immutable.List()).isEmpty() && item.getIn(['params', 'plan'], '').lenght === 0) {
-      this.props.dispatch(showDanger('Please select discount conditions'));
-      return false;
+    const { item, fields, mode} = this.props;
+    const errors = this.props.dispatch(validateEntity(item, fields, mode));
+    this.setState(() => ({ errors }));
+    if (errors.isEmpty()) {
+      return true;
     }
-
-    const serviceDiscountExist = item
-      .getIn(['discount_subject', 'service'], Immutable.Map())
-      .some(value => (value !== null && value !== ''));
-
-    const planDiscountExist = item
-      .getIn(['discount_subject', 'plan'], Immutable.Map())
-      .some(value => (value !== null && value !== ''));
-
-    if (!serviceDiscountExist && !planDiscountExist) {
-      this.props.dispatch(showDanger('Please set discount value'));
-      return false;
-    }
-
-    return true;
+    return false;
   }
 
   render() {
-    const { progress } = this.state;
-    const { item, mode, revisions, availablePlans, availableServices, currency } = this.props;
+    const { progress, errors } = this.state;
+    const { item, mode, revisions, currency } = this.props;
     if (mode === 'loading') {
       return (<LoadingItemPlaceholder onClick={this.handleBack} />);
     }
-
     const allowEdit = mode !== 'view';
     return (
       <div className="discount-setup">
@@ -250,8 +217,7 @@ class DiscountSetup extends Component {
             currency={currency}
             onFieldUpdate={this.onChangeFieldValue}
             onFieldRemove={this.onRemoveFieldValue}
-            availablePlans={availablePlans}
-            availableServices={availableServices}
+            errors={errors}
           />
         </Panel>
 
@@ -273,9 +239,8 @@ const mapStateToProps = (state, props) => ({
   item: itemSelector(state, props, 'discount'),
   mode: modeSelector(state, props, 'discount'),
   revisions: revisionsSelector(state, props, 'discount'),
-  availablePlans: state.list.get('available_plans') || undefined,
-  availableServices: state.list.get('available_services') || undefined,
   currency: currencySelector(state, props) || undefined,
+  fields: discountFieldsSelector(state, props),
 });
 
 export default withRouter(connect(mapStateToProps)(DiscountSetup));

@@ -10,6 +10,7 @@ import {
   getProductsKeysQuery,
   getAllGroupsQuery,
   getPrepaidIncludesQuery,
+  getEntitesQuery,
  } from '../common/ApiQueries';
 import {
   actions as entityActions,
@@ -41,7 +42,7 @@ import {
 
 export const reportTypes = {
   SIMPLE: 0,
-  GROPPED: 1,
+  GROPED: 1,
 };
 
 export const setCloneReport = () => ({
@@ -85,7 +86,7 @@ export const getReport = id => (dispatch) => {
       dispatch(gotEntitySource('reports', item));
       return dispatch(apiBillRunSuccessHandler(response));
     })
-    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retreiving report')));
+    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retrieving report')));
 };
 
 
@@ -121,6 +122,9 @@ export const getEventCodeOptions = () => dispatch => dispatch(getSettings('event
 
 export const getPlayTypeOptions = () => dispatch => dispatch(getSettings('plays'));
 
+export const getTaxesOptions = () =>
+  getList('available_taxRates', getEntitesQuery('taxes', { key: 1, description: 1 }));
+
 export const getGroupsOptions = () => dispatch => apiBillRun(getAllGroupsQuery())
   .then((success) => {
     try {
@@ -129,7 +133,7 @@ export const getGroupsOptions = () => dispatch => apiBillRun(getAllGroupsQuery()
       dispatch(addToList(collection, success.data[1].data.details));
       return dispatch(apiBillRunSuccessHandler(success));
     } catch (e) {
-      throw new Error('Error retreiving list');
+      throw new Error('Error retrieving list');
     }
   })
   .catch(error => dispatch(apiBillRunErrorHandler(error, 'Network error - please refresh and try again')));

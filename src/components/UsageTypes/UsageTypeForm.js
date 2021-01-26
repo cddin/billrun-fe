@@ -70,7 +70,12 @@ class UsageTypeForm extends Component {
   getAvailableUom = () => {
     const { item } = this.props;
     const uom = this.getUom(item.get('property_type', ''));
-    return uom.map(unit => ({ value: unit.get('name', ''), label: unit.get('label', '') })).toArray();
+    return uom
+      .map(unit => ({
+        value: unit.get('name', ''),
+        label: unit.get('label', '')
+      }))
+      .toArray();
   };
 
   render() {

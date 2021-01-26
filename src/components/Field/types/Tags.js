@@ -1,10 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import TagsInput from 'react-tagsinput';
+import Field from '@/components/Field';
 
 const Tags = (props) => {
   const { editable, value, disabled, placeholder, onChange, inputProps, onlyUnique, ...otherProps } = props;
-
+  const valueArr = Array.isArray(value) ? value : [value];
+  if (!editable) {
+    const displayValue = valueArr.join(', ');
+    return (
+      <div className="non-editable-field">
+        {displayValue}
+      </div>
+    );
+  }
+  const renderCustomInput = ({ addTag, ...other }) => (<Field {...other} />);
   const renderTag = (args) => {
     const { tag, key, disabled: allowRemove, onRemove, classNameRemove, getTagDisplayValue, ...other } = args;
     const remove = () => { onRemove(key); };
@@ -16,23 +26,23 @@ const Tags = (props) => {
       </span>
     );
   };
-
   const placeholderText = (disabled) ? '' : placeholder;
   const defautlInputProps = {
     placeholder: placeholderText,
   };
   const tagInputProps = Object.assign(defautlInputProps, inputProps);
-  const valueArr = Array.isArray(value) ? value : [value];
+  const { fieldType : fieldTypeInputProps, ...otherTagInputProps } = tagInputProps;
   return (
     <TagsInput
       {...otherProps}
       addOnBlur={true}
       value={valueArr}
       onChange={onChange}
-      inputProps={tagInputProps}
+      inputProps={typeof fieldTypeInputProps === 'undefined' ? otherTagInputProps : tagInputProps}
       disabled={disabled}
       renderTag={renderTag}
       onlyUnique={onlyUnique}
+      renderInput={typeof fieldTypeInputProps === 'undefined' ? undefined : renderCustomInput}
     />
   );
 };

@@ -6,23 +6,26 @@ import uuid from 'uuid';
 class Radio extends PureComponent {
 
   static propTypes = {
-    name: PropTypes.string.isRequired,
+    name: PropTypes.string,
     id: PropTypes.string,
     label: PropTypes.node,
     value: PropTypes.string,
     editable: PropTypes.bool,
     checked: PropTypes.bool,
     disabled: PropTypes.bool,
+    labelStyle: PropTypes.object,
     onChange: PropTypes.func,
   };
 
   static defaultProps = {
     id: undefined,
+    name: undefined,
     label: null,
     value: '',
     editable: true,
     checked: false,
     disabled: false,
+    labelStyle: { paddingTop: 10 },
     onChange: () => {},
   };
 
@@ -52,16 +55,28 @@ class Radio extends PureComponent {
 
   render() {
     const { id } = this.state;
-    const { value, editable, label, disabled } = this.props;
+    const { value, editable, label, disabled, labelStyle } = this.props;
+
+    if (!editable && label !== null) {
+      return (
+        <div className="non-editable-field">
+          {label}
+        </div>
+      );
+    }
 
     if (!editable) {
-      return (<span>{ value }</span>);
+      return (
+        <div className="non-editable-field">
+          {value}
+        </div>
+      );
     }
 
     const inputField = this.renderInput();
     if (label !== null) {
       return (
-        <label htmlFor={id} style={{ paddingTop: '10px' }} className={disabled ? 'disabled' : ''}>
+        <label htmlFor={id} style={labelStyle} className={disabled ? 'disabled' : ''}>
           {inputField}
           &nbsp;
           {label}

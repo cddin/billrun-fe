@@ -130,7 +130,7 @@ class Condition extends Component {
         <Col smHidden mdHidden lgHidden>
           <label htmlFor="field_field">Field</label>
         </Col>
-        <Col sm={3}>
+        <Col sm={4} className="pl0">
           <Field
             fieldType="select"
             clearable={false}
@@ -168,9 +168,9 @@ class Condition extends Component {
           />
         </Col>
 
-        <Col sm={2} className="actions">
+        <Col sm={1} className="actions">
           <Button onClick={this.onRemove} bsSize="small" className="pull-left" disabled={disabled}>
-            <i className="fa fa-trash-o danger-red" />&nbsp;Remove
+            <i className="fa fa-trash-o danger-red" />
           </Button>
         </Col>
       </FormGroup>

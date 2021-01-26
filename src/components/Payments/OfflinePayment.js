@@ -38,6 +38,7 @@ class OfflinePayment extends Component {
     }),
     method: '',
     monetaryValue: '',
+    progress: false,
   }
 
   componentDidMount() {
@@ -88,11 +89,13 @@ class OfflinePayment extends Component {
   onPay = () => {
     const { aid, payerName } = this.props;
     const { method, monetaryValue, chequeNum } = this.state;
+    this.setState(() => ({ progress: true }));
     this.props.dispatch(payOffline(method, aid, monetaryValue, payerName, chequeNum))
       .then(this.afterPay);
   }
 
   afterPay = (response) => {
+    this.setState(() => ({ progress: false }));
     if (response.status) {
       this.props.onClose();
     }
@@ -100,7 +103,7 @@ class OfflinePayment extends Component {
 
   render() {
     const { currency } = this.props;
-    const { validationErrors, method, monetaryValue, chequeNum } = this.state;
+    const { validationErrors, method, monetaryValue, chequeNum, progress } = this.state;
     const availableMethods = this.getAvailableMethods();
     return (
       <ModalWrapper
@@ -109,6 +112,7 @@ class OfflinePayment extends Component {
         title="Offline Payment"
         onOk={this.onPay}
         onCancel={this.props.onClose}
+        progress={progress}
       >
         <Form horizontal>
 

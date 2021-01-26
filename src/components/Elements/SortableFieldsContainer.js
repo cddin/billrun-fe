@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import { SortableContainer } from 'react-sortable-hoc';
 import Immutable from 'immutable';
 
@@ -17,4 +16,5 @@ SortableFieldsContainer.propTypes = {
     PropTypes.array,
   ]),
 };
-export default connect()(SortableContainer(SortableFieldsContainer));
+
+export default SortableContainer(SortableFieldsContainer);

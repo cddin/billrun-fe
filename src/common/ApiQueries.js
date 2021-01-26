@@ -11,20 +11,24 @@ export const searchProductsByKeyAndUsagetQuery = (usages, notKeys, plays = '') =
     },
     to: { $gt: moment().toISOString() }, // only active and future
     tariff_category: 'retail', // only retail products
-    $and: [], // for addition conditions
   };
+
+  const additionConditions = []; // for addition conditions in $AND
   if (usagesToQuery[0] !== 'cost') {
-    query.$and.push(
+    additionConditions.push(
       { $or: usagesToQuery.map(usage => ({ [`rates.${usage}`]: { $exists: true } })) },
     );
   }
   if (plays !== '') {
-    query.$and.push(
+    additionConditions.push(
       { $or: [
         { play: { $exists: true, $in: [...plays.split(','), '', null] } },
         { play: { $exists: false } },
       ] },
     );
+  }
+  if (additionConditions.length !== 0) {
+    query.$and = additionConditions;
   }
 
   const formData = new FormData();
@@ -126,12 +130,12 @@ export const saveSettingsQuery = (data, category) => {
   });
 };
 
-export const getSettingsQuery = category => ({
+export const getSettingsQuery = (category, data = {}) => ({
   api: 'settings',
   name: category,
   params: [
     { category },
-    { data: JSON.stringify({}) },
+    { data: JSON.stringify(data) },
   ],
 });
 
@@ -208,27 +212,6 @@ export const postpaidBalancesListQuery = (query, page, sort, size) => ({
   ],
 });
 
-/* Aggregate API */
-export const auditTrailEntityTypesQuery = () => {
-  const revenueQuery = [{
-    $match: { source: 'audit' },
-  }, {
-    $group: { _id: '$collection' },
-  }, {
-    $project: { name: '$_id', _id: 0 },
-  }, {
-    $sort: { name: 1 },
-  }];
-  return {
-    api: 'aggregate',
-    params: [
-      { collection: 'log' },
-      { pipelines: JSON.stringify(revenueQuery) },
-    ],
-  };
-};
-
-
 /* Settings API */
 export const savePaymentGatewayQuery = gateway => ({
   api: 'settings',
@@ -278,6 +261,15 @@ export const apiEntityQuery = (collection, action, body) => ({
   },
 });
 
+export const getEntityCSVQuery = (entity, params) => ({
+  action: 'export',
+  entity,
+  params,
+  options: {
+    method: 'GET',
+  },
+});
+
 
 export const getGroupsQuery = collection => ({
   action: 'uniqueget',
@@ -318,7 +310,7 @@ export const getEntityByIdQuery = (collection, id) => ({
   ],
 });
 
-export const getEntitesQuery = (collection, project = {}, query = {}, sort = null) => {
+export const getEntitesQuery = (collection, project = {}, query = {}, sort = null, options = {}) => {
   let action;
   switch (collection) {
     case 'users':
@@ -327,6 +319,7 @@ export const getEntitesQuery = (collection, project = {}, query = {}, sort = nul
     default:
       action = 'uniqueget';
   }
+  const sortBy = sort !== null ? sort : Immutable.fromJS(project).filter(prop => prop === 1);
   return ({
     action,
     entity: collection,
@@ -335,7 +328,8 @@ export const getEntitesQuery = (collection, project = {}, query = {}, sort = nul
       { size: 9999 },
       { query: JSON.stringify(query) },
       { project: JSON.stringify(project) },
-      { sort: JSON.stringify(sort || project) },
+      { sort: JSON.stringify(sortBy) },
+      { options: JSON.stringify(options) },
     ],
   });
 };
@@ -362,6 +356,10 @@ export const getDeleteLineQuery = id => ({
 
 
 // List
+export const getAccountsQuery = (project = { aid: 1, firstname: 1, lastname: 1 }) =>
+  getEntitesQuery('subscribers', project, {type: 'account'});
+export const getSubscriptionsWithAidQuery = (project = { aid: 1, sid: 1, firstname: 1, lastname: 1 }) =>
+  getEntitesQuery('subscribers', project, {type: 'subscriber'});
 export const getPlansQuery = (project = { name: 1 }) => getEntitesQuery('plans', project);
 export const getServicesQuery = (project = { name: 1 }) => getEntitesQuery('services', project);
 export const getServicesKeysWithInfoQuery = () => getEntitesQuery('services', { name: 1, description: 1, play: 1, quantitative: 1, balance_period: 1 }, {}, { name: 1 	});
@@ -388,12 +386,15 @@ export const getAllGroupsQuery = () => ([
   getGroupsQuery('services'),
 ]);
 export const getBucketGroupsQuery = () => getEntitesQuery('prepaidgroups');
+export const getTaxRatesQuery = getEntitesQuery('taxes', { key: 1, description: 1 });
 // By ID
 export const fetchServiceByIdQuery = id => getEntityByIdQuery('services', id);
 export const fetchProductByIdQuery = id => getEntityByIdQuery('rates', id);
 export const fetchPrepaidIncludeByIdQuery = id => getEntityByIdQuery('prepaidincludes', id);
 export const fetchDiscountByIdQuery = id => getEntityByIdQuery('discounts', id);
+export const fetchChargeByIdQuery = id => getEntityByIdQuery('charges', id);
 export const fetchReportByIdQuery = id => getEntityByIdQuery('reports', id);
+export const fetchtaxeByIdQuery = id => getEntityByIdQuery('taxes', id);
 export const fetchPlanByIdQuery = id => getEntityByIdQuery('plans', id);
 export const fetchPrepaidGroupByIdQuery = id => getEntityByIdQuery('prepaidgroups', id);
 export const fetchUserByIdQuery = id => getEntityByIdQuery('users', id);
@@ -439,9 +440,40 @@ export const searchPlansByKeyQuery = (name, project = {}) => ({
   ],
 });
 
-export const auditTrailListQuery = (query, page, fields, sort, size) => ({
+export const runningPaymentFilesListQuery = (paymentGateway, fileType) => ({
   action: 'get',
   entity: 'log',
+  params: [
+    { page: 0 },
+    { size: 9999 },
+    { project: JSON.stringify({ stamp: 1}) },
+    { sort: JSON.stringify({}) },
+    { query: JSON.stringify({
+      source: "custom_payment_files",
+      cpg_name: paymentGateway,
+      cpg_file_type: fileType,
+      start_process_time:{ $exists: true },
+      process_time :{ $exists: false },
+    }) },
+  ],
+});
+
+export const sendGenerateNewFileQuery = (paymentGateway, fileType, data) => {
+  const params = [
+    { payment_gateway: paymentGateway },
+    { file_type: fileType },
+    { parameters: JSON.stringify(data) },
+  ];
+  return {
+    api: 'custompaymentgateway',
+    action: 'generateTransactionsRequestFile',
+    params,
+  };
+}
+
+export const auditTrailListQuery = (query, page, fields, sort, size) => ({
+  action: 'get',
+  entity: 'audit',
   params: [
     { size },
     { page },
@@ -521,7 +553,7 @@ export const getRebalanceAccountQuery = (aid, billrunKey = '') => {
   };
 };
 
-export const getCyclesQuery = (from, to, newestFirst = true) => {
+export const getCyclesQuery = (from, to, newestFirst = true, timeStatus = false) => {
   const params = {
     api: 'billrun',
     action: 'cycles',
@@ -534,6 +566,7 @@ export const getCyclesQuery = (from, to, newestFirst = true) => {
       params['params'].push({to});
   }
   params['params'].push({newestFirst: newestFirst? 1 : 0});
+  params['params'].push({timeStatus: timeStatus ? 1 : 0 });
   return params;
 };
 
@@ -670,6 +703,16 @@ export const getReportQuery = ({ report, page = 0, size = 10 }) => ({
   api: 'report',
   params: [
     { action: 'generateReport' },
+    { report: JSON.stringify(report) },
+    { page },
+    { size },
+  ],
+});
+
+export const getReportCSV = ({ report, page = 0, size = 10 }) => ({
+  api: 'report',
+  params: [
+    { action: 'exportCSVReport' },
     { report: JSON.stringify(report) },
     { page },
     { size },

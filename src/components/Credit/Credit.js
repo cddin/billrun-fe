@@ -180,13 +180,24 @@ class Credit extends Component {
 
   getAvailableRates = () => {
     const { allRates } = this.props;
-    return allRates.map(rate => ({ value: rate.get('key'), label: rate.get('key') })).toArray();
+    return allRates
+      .map(rate => ({ value: rate.get('key'), label: rate.get('key') }))
+      .toArray();
   }
 
   getSubscribersBySid = () => {
     const { subscribers } = this.props;
-    const sidsArray = subscribers.map(subscriber => ({ value: subscriber.get('sid'), label: subscriber.get('sid').toString() })).toArray();
-    return [{ value: 'account_level', label: 'account level' }, ...sidsArray];
+    const sidsArray = subscribers
+      .map(subscriber => ({
+        value: subscriber.get('sid'),
+        label: subscriber.get('sid').toString()
+      }))
+      .toArray();
+    return [{
+      value: 'account_level',
+      label: 'account level' },
+      ...sidsArray
+    ];
   }
 
   getSelectedRate = rateKey => getRateByKey(this.props.allRates, rateKey);

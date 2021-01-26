@@ -51,3 +51,22 @@
     height: 39px;
   }
 }
+
+.mini-list-filter {
+  width: 200px;
+  input {
+    padding: 2px 10px;
+    margin: 0;
+    line-height: 24px;
+    height: 24px;
+    &::placeholder {
+      font-size: 12px;
+    }
+  }
+  .filter-reset {
+    padding: 0;
+    i {
+      vertical-align: bottom;
+    }
+  }
+}

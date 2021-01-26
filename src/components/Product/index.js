@@ -1,2 +1,3 @@
 import Product from './ProductSetup';
-export default Product
+
+export default Product;

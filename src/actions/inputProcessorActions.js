@@ -148,6 +148,7 @@ const convert = (settings) => {
       usaget_mapping = processor.usaget_mapping.map(usaget => {
 	return {
     src_field: usaget.src_field,
+    stamp_fields: usaget.stamp_fields,
     conditions: (usaget.conditions !== undefined)
       ? getMappingConditions(usaget)
       : [{src_field: usaget.src_field, pattern: usaget.pattern}],
@@ -576,6 +577,7 @@ export function saveInputProcessorSettings(state, parts = []) {
     : {
       usaget_mapping: processor.get('usaget_mapping').map(usaget => ({
         src_field: usaget.get('src_field'),
+        stamp_fields: usaget.get('stamp_fields'),
         conditions: getConditionsToSave(usaget),
         pattern: usaget.get('pattern'),
         usaget: usaget.get('usaget'),
@@ -601,6 +603,9 @@ export function saveInputProcessorSettings(state, parts = []) {
     }
     if (processor.get('timezone_field', false)) {
       settings.processor['timezone_field'] = processor.get('timezone_field');
+    }
+    if (processor.get('calculated_fields', false)) {
+      settings.processor['calculated_fields'] = processor.get('calculated_fields');
     }
   }
   if (customer_identification_fields) {

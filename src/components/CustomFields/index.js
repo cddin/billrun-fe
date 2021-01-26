@@ -1,2 +1,3 @@
-import CustomFields from './CustomFields';
+import CustomFields from './CustomFieldsContainer';
+
 export default CustomFields;

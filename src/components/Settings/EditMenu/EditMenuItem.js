@@ -66,7 +66,7 @@ class EditMenuItem extends Component {
   onSaveAdvencedEdit = () => {
     const { props: { item }, state: { menuItem } } = this;
     const itemId = item.get('id');
-    menuItem.forEach((value, key) => {
+    menuItem.toSeq().forEach((value, key) => {
       if (item.get(key, '') !== value) {
         this.props.onChangeField(itemId, key, value);
       }

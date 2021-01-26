@@ -1,18 +1,27 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { InputGroup } from 'react-bootstrap';
+import isNumber from 'is-number';
 
 
 const Number = (props) => {
   const { onChange, value, editable, disabled, tooltip, suffix, preffix, ...otherProps } = props;
   if (editable) {
+
+    const onChangeNumber = (e) => {
+      const { value:targetValue , id:targetId } = e.target;
+      const convertedVal = isNumber(targetValue) ? parseFloat(targetValue) : targetValue;
+      const convertedEvent = { target: { value:convertedVal, id: targetId} };
+      onChange(convertedEvent);
+    }
+
     const input = (
       <input
         {...otherProps}
         type="number"
         className="form-control"
         value={value}
-        onChange={onChange}
+        onChange={onChangeNumber}
         disabled={disabled}
         title={tooltip}
       />
@@ -33,7 +42,7 @@ const Number = (props) => {
     <div className="non-editable-field">
       <span>
         {(preffix !== null) && preffix}
-        {parseFloat(value)}
+        {value}
         {(suffix !== null) && suffix}
       </span>
     </div>
@@ -42,6 +51,7 @@ const Number = (props) => {
 
 
 Number.defaultProps = {
+  value: '',
   required: false,
   disabled: false,
   editable: true,

@@ -28,8 +28,7 @@ class Csi extends Component {
       || !Immutable.is(this.props.csi, nextProps.csi);
   }
 
-  onChangeProvider = (e) => {
-    const { value } = e.target;
+  onChangeProvider = (value) => {
     const { csi } = this.props;
     const newCSI = csi.set('provider', value);
     this.props.onChange(newCSI);
@@ -47,15 +46,6 @@ class Csi extends Component {
     const { csi } = this.props;
     const newCSI = csi.set('auth_code', value);
     this.props.onChange(newCSI);
-  }
-
-  renderProviderOptions = () => {
-    const { csi } = this.props;
-    return csi
-      .get('available_providers', Immutable.Map())
-      .map((name, key) => (<option key={key} value={key}>{name}</option>))
-      .toList()
-      .toArray();
   }
 
   onChangeTaxationMapping = (fileType, usaget, field, value) => {
@@ -76,6 +66,15 @@ class Csi extends Component {
       return list.setIn([taxationMapIndex, field], value);
     });
     this.props.onChange(newCSI);
+  }
+
+  getProviderOptions = () => {
+    const { csi } = this.props;
+    return csi
+    .get('available_providers', Immutable.Map({a:"A", b:"B"}))
+    .map((name, key) => ({value: key, label:name }))
+    .toList()
+    .toArray();
   }
 
   getMapperFileType = (fileType) => {
@@ -106,42 +105,48 @@ class Csi extends Component {
 
   render() {
     const { csi, disabled } = this.props;
-    const checkboxStyle = { marginTop: 10 };
+    const providerOptions = this.getProviderOptions();
     return (
       <div className="csi">
-
         <FormGroup>
-          <Col componentClass={ControlLabel} md={2}>
+          <Col componentClass={ControlLabel} sm={3} lg={2}>
             Authentication Token
           </Col>
-          <Col sm={6}>
-            <Field value={csi.get('auth_code', '')} onChange={this.onChangeAuthToken} disabled={disabled} />
+          <Col sm={8} lg={9}>
+            <Field
+              value={csi.get('auth_code', '')}
+              onChange={this.onChangeAuthToken}
+              disabled={disabled}
+            />
           </Col>
         </FormGroup>
-
         <FormGroup>
-          <Col componentClass={ControlLabel} md={2}>
+          <Col componentClass={ControlLabel} sm={3} lg={2}>
             Provider
           </Col>
-          <Col sm={6}>
-            <select value={csi.get('provider', '')} className="form-control" onChange={this.onChangeProvider} disabled={disabled}>
-              <option value="">Select...</option>
-              { this.renderProviderOptions() }
-            </select>
+          <Col sm={8} lg={9}>
+            <Field
+              fieldType="select"
+              value={csi.get('provider', '')}
+              onChange={this.onChangeProvider}
+              options={providerOptions}
+              disabled={disabled}
+            />
           </Col>
         </FormGroup>
-
         <FormGroup>
-          <Col componentClass={ControlLabel} md={2}>
-            Apply Optional Charges
-          </Col>
-          <Col sm={6} style={checkboxStyle}>
-            <Field fieldType="checkbox" value={csi.get('apply_optional_charges', '')} onChange={this.onChangeOptionalCharges} disabled={disabled} />
+          <Col componentClass={ControlLabel} sm={3} lg={2}>&nbsp;</Col>
+          <Col sm={8} lg={9}>
+            <Field
+              fieldType="checkbox"
+              value={csi.get('apply_optional_charges', '')}
+              onChange={this.onChangeOptionalCharges}
+              label="Apply Optional Charges"
+              disabled={disabled}
+            />
           </Col>
         </FormGroup>
-
         { this.renderTaxationMapping() }
-
       </div>
     );
   }

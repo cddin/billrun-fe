@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Immutable from 'immutable';
-import { FormGroup, Col, Button } from 'react-bootstrap';
+import { FormGroup, Col } from 'react-bootstrap';
 import Field from '@/components/Field';
 import ConditionValue from '../../Report/Editor/ConditionValue';
+import { Actions } from '@/components/Elements';
 import {
   eventConditionsFilterOptionsSelector,
   eventConditionsOperatorsSelectOptionsSelector,
@@ -36,47 +37,54 @@ const FraudEventCondition = (props) => {
   const disableVal = operator === '' || disableOp;
   const conditionForValue = condition.set('value', condition.get('value', Immutable.List()).join(','));
 
-  const onChangeConditionsField = (fieldId) => {
+  const updateEventUsageType = useCallback((types) => {
+    if (effectOnUsagetField) {
+      setEventUsageType(eventUsageTypes.set(field, types));
+    }
+  }, [effectOnUsagetField, setEventUsageType, eventUsageTypes, field])
+
+  const onChangeConditionsField = useCallback((fieldId) => {
     const resetCondition = Immutable.Map({
       field: fieldId,
       op: '',
       value: Immutable.List(),
     });
-    if (effectOnUsagetField) {
-      setEventUsageType(eventUsageTypes.set(field, Immutable.List()));
-    }
+    updateEventUsageType(Immutable.List());
     onUpdate([index], resetCondition);
-  };
+  }, [index, onUpdate, updateEventUsageType]);
 
-  const onChangeConditionsOperator = (value) => {
+  const onChangeConditionsOperator = useCallback((value) => {
     onUpdate([index, 'op'], value);
-  };
+  }, [index, onUpdate]);
 
-  const onChangeConditionsValue = (value) => {
+  const onChangeConditionsValue = useCallback((value) => {
     const values = Immutable.List((value.length) ? value.split(',') : []);
     onUpdate([index, 'value'], values);
     if (effectOnUsagetField) {
-      setEventUsageType(eventUsageTypes.set(field, values));
+      updateEventUsageType(values);
       if (field === 'arate_key') {
         const newRates = values.filter(val => !eventUsageTypes.get('arate_key', Immutable.List()).includes(val));
         getEventRates(newRates);
       }
     }
-  };
+  }, [index, onUpdate, getEventRates, effectOnUsagetField, updateEventUsageType, field, eventUsageTypes]);
 
-  const onRemoveCondition = () => {
-    if (effectOnUsagetField) {
-      setEventUsageType(eventUsageTypes.set(field, Immutable.List()));
-    }
-    onRemove(index);
-  };
+  const actions = useMemo(() => {
+    const onRemoveCondition = (index) => {
+      updateEventUsageType(Immutable.List());
+      onRemove(index);
+    };
+    return ([{
+      type: 'remove', onClick: onRemoveCondition, actionStyle: 'default', helpText: 'Remove Condition'
+    }])
+  }, [onRemove, updateEventUsageType]);
 
   return (
-    <FormGroup className="form-inner-edit-row" key={`fraud_condition_${index}`}>
+    <FormGroup className="form-inner-edit-row">
       <Col smHidden mdHidden lgHidden>
         <label htmlFor="condition_filter">Filter</label>
       </Col>
-      <Col sm={4}>
+      <Col sm={4} className="pl0">
         <Field
           id="condition_field"
           fieldType="select"
@@ -89,7 +97,7 @@ const FraudEventCondition = (props) => {
       <Col smHidden mdHidden lgHidden>
         <label htmlFor="condition_operator">Operator</label>
       </Col>
-      <Col sm={2}>
+      <Col sm={3}>
         <Field
           id="condition_operator"
           fieldType="select"
@@ -112,10 +120,8 @@ const FraudEventCondition = (props) => {
           onChange={onChangeConditionsValue}
         />
       </Col>
-      <Col sm={2} className="actions">
-        <Button onClick={onRemoveCondition} bsSize="small" className="pull-left">
-          <i className="fa fa-trash-o danger-red" />&nbsp;Remove
-        </Button>
+      <Col sm={1} className="actions">
+        <Actions actions={actions} data={index} />
       </Col>
     </FormGroup>
   );

@@ -115,7 +115,7 @@ export const sendResetMail = email => (dispatch) => {
   dispatch(startProgressIndicator());
   const query = sendResetMailQuery(email);
   return apiBillRun(query)
-    .then(success => dispatch(apiBillRunSuccessHandler(success, 'The email was sent successfuly')))
+    .then(success => dispatch(apiBillRunSuccessHandler(success, 'Success. If the user exists, a password reset email should be received shortly')))
     .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error sending email')));
 };
 

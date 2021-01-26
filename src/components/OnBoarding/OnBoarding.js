@@ -175,7 +175,7 @@ class OnBoarding extends Component {
     text: (
       <span>
         This section appears for every subscription of the customer and shows aggregated
-        amounts in the subscription level.
+        amounts on the subscription level.
       </span>
     ),
     style: { beacon: { offsetY: -25 } },

@@ -3,14 +3,18 @@ import PropTypes from 'prop-types';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import Immutable from 'immutable';
-import { Form, FormGroup, ControlLabel, Col, Panel } from 'react-bootstrap';
+import { Form, FormGroup, ControlLabel, Col, Panel, Table } from 'react-bootstrap';
+import uuid from 'uuid';
 import moment from 'moment';
 import SubscriptionServicesDetails from './SubscriptionServicesDetails';
-import { ActionButtons, Actions } from '@/components/Elements';
+import { ActionButtons, Actions, CreateButton } from '@/components/Elements';
 import Field from '@/components/Field';
-import { EntityRevisionDetails } from '../Entity';
-import EntityFields from '../Entity/EntityFields';
+import { EntityRevisionDetails, EntityFields } from '../Entity';
+import { DiscountPopup } from '@/components/Discount';
 import PlaysSelector from '../Plays/PlaysSelector';
+import { discountFieldsSelector } from '@/selectors/settingsSelector';
+import { showFormModal, setFormModalError, showConfirmModal } from '@/actions/guiStateActions/pageActions';
+import { validateEntity } from '@/actions/discountsActions';
 import {
   getConfig,
   getItemId,
@@ -18,6 +22,7 @@ import {
   getItemDateValue,
   buildPageTitle,
   toImmutableList,
+  getFieldName,
 } from '@/common/Util';
 
 class Subscription extends Component {
@@ -27,6 +32,7 @@ class Subscription extends Component {
     subscription: PropTypes.instanceOf(Immutable.Map),
     revisions: PropTypes.instanceOf(Immutable.List),
     settings: PropTypes.instanceOf(Immutable.List), // Subscriptions Fields
+    discountFields: PropTypes.instanceOf(Immutable.List), // Subscriptions Fields
     allPlans: PropTypes.instanceOf(Immutable.List),
     allServices: PropTypes.instanceOf(Immutable.List),
     mode: PropTypes.string,
@@ -42,6 +48,7 @@ class Subscription extends Component {
     mode: 'create',
     revisions: Immutable.List(),
     settings: Immutable.List(),
+    discountFields: Immutable.List(),
     allPlans: Immutable.List(),
     allServices: Immutable.List(),
   }
@@ -51,6 +58,7 @@ class Subscription extends Component {
     this.state = {
       subscription: props.subscription,
       progress: false,
+      discountsHiddenFields: ['key', 'params.min_subscribers', 'params.max_subscribers']
     };
   }
 
@@ -159,6 +167,88 @@ class Subscription extends Component {
       });
     }
   }
+
+  getDiscountActions = () => {
+    const { mode } = this.props;
+    const allowEdit = mode !== 'view';
+    return ([{
+      type: 'view',
+      helpText: 'view discount',
+      onClick: this.onDiscountEditForm,
+      show: !allowEdit,
+      actionClass: "pl0 pr0"
+    },{
+      type: 'edit',
+      helpText: 'Edit discount',
+      onClick: this.onDiscountEditForm,
+      show: allowEdit,
+      actionClass: "pl0 pr0"
+    }, {
+      type: 'remove',
+      helpText: 'Remove discount',
+      onClick: this.onRemoveDiscount,
+      show: allowEdit,
+      actionClass: "pl0 pr0"
+    }]);
+  }
+
+  onDiscountEditForm = (idx) => {
+    const { dispatch, mode, discountFields } = this.props;
+    const { subscription, discountsHiddenFields } = this.state;
+    const discounts = subscription.get('discounts', Immutable.List()) || Immutable.List();
+    const isCreate = idx === null;
+    const apiDateTimeFormat = getConfig('apiDateTimeFormat', 'YYYY-MM-DD[T]HH:mm:ss.SSS[Z]');
+    const newDiscount = discounts.get(idx, Immutable.Map({
+      key: `SUBSCRIBER_DISCOUNT_${uuid.v4().replace(/-/g, '')}`,
+      type: 'monetary',
+      from: subscription.get('from', moment().format(apiDateTimeFormat)),
+      to: subscription.get('to', moment().add(100, 'years').format(apiDateTimeFormat)),
+    }))
+    const onOk = (newItem) => {
+      this.props.dispatch(setFormModalError());
+      const errors = dispatch(validateEntity(newItem, discountFields, 'saveInSubscriber'));
+      if (!errors.isEmpty()) {
+        errors.forEach((message, fieldId) => {
+          this.props.dispatch(setFormModalError(fieldId, message));
+        })
+        return false;
+      }
+      const newDiscounts = isCreate ? discounts.push(newItem) : discounts.set(idx, newItem);
+      this.updateSubscriptionField(['discounts'], newDiscounts);
+      return true;
+    };
+    const config = {
+      title: isCreate ? 'Create discount' : `Edit ${newDiscount.get('description', 'discount')}`,
+      onOk,
+      mode,
+      hideFields: discountsHiddenFields,
+    };
+    return dispatch(showFormModal(newDiscount, DiscountPopup, config));
+  }
+
+  onRemoveDiscount = (index) => {
+    const { dispatch } = this.props;
+    const { subscription } = this.state;
+
+    const discounts = subscription.get('discounts', Immutable.List()) || Immutable.List();
+    const discount = discounts.get(index, null);
+    if (discount === null) {
+      return false;
+    }
+
+    const onOk = () => {
+      const newDiscounts = discounts.delete(index);
+      this.updateSubscriptionField(['discounts'], newDiscounts);
+    };
+    const confirm = {
+      message: `Are you sure you want to remove discount "${discount.get('description', '')}"?`,
+      onOk,
+      labelOk: 'Delete',
+      type: 'delete',
+    };
+    return dispatch(showConfirmModal(confirm));
+  }
+
 
   filterCustomFields = (field) => {
     const hiddenFields = ['plan', 'services', 'play'];
@@ -331,6 +421,23 @@ class Subscription extends Component {
     services => (services ? services.map(service => service.delete('ui_flags')) : Immutable.List()),
   );
 
+  renderDiscountRow = (discount, idx) => {
+    const dateFormat = getConfig('dateFormat', 'DD/MM/YYYY');
+    return (
+      <tr className="List" key={discount.get('key', idx)}>
+        <td className="td-ellipsis">{discount.get('description', '')}</td>
+        <td className="td-ellipsi text-center">{getItemDateValue(discount, 'from').format(dateFormat)}</td>
+        <td className="td-ellipsis text-center">{getItemDateValue(discount, 'to').format(dateFormat)}</td>
+        <td className="td-ellipsis text-center">{getFieldName(`type_${discount.get('type', 'monetary')}`, 'discount')}</td>
+        <td className="td-ellipsis text-center">{discount.get('cycles', 'Infinite')}</td>
+        <td className="td-ellipsis text-center">{discount.get('priority', '-')}</td>
+        <td className="text-right row pr0 pl0">
+          <Actions actions={this.getDiscountActions()} data={idx} />
+        </td>
+      </tr>
+    );
+  }
+
   renderSystemFields = (editable) => {
     const { subscription } = this.state;
     const { mode } = this.props;
@@ -445,6 +552,42 @@ class Subscription extends Component {
               editable={allowEdit}
             />
           </Form>
+
+          <Panel header={<h3>Discounts</h3>}>
+            {subscription.get('discounts', Immutable.List()).isEmpty() && (
+              <p><small>No Discounts</small></p>
+            )}
+            {!subscription.get('discounts', Immutable.List()).isEmpty() && (
+              <Table style={{ tableLayout: 'fixed' }} className="mb0">
+                <thead>
+                  <tr>
+                    <th>{ getFieldName('description', 'discount')}</th>
+                    <th className="text-center">{ getFieldName('from', 'discount')}</th>
+                    <th className="text-center">{ getFieldName('to', 'discount')}</th>
+                    <th className="text-center">{ getFieldName('type', 'discount')}</th>
+                    <th className="text-center">{ getFieldName('cycles', 'discount')}</th>
+                    <th className="text-center">{ getFieldName('priority', 'discount')}</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  { subscription.get('discounts', Immutable.List())
+                    .map(this.renderDiscountRow)
+                    .toList()
+                    .toArray() }
+                  </tbody>
+                </Table>
+            )}
+            { allowEdit && (
+              <CreateButton
+                buttonStyle={{}}
+                onClick={this.onDiscountEditForm}
+                action="Add"
+                label=""
+                type="Discount"
+              />
+            )}
+          </Panel>
         </Panel>
 
         <ActionButtons
@@ -468,6 +611,7 @@ const mapStateToProps = (state, props) => {
   const revisions = state.entityList.revisions.getIn([collection, key]);
   const mode = (!subscription || !getItemId(subscription, false)) ? 'create' : getItemMode(subscription);
   return ({
+    discountFields: discountFieldsSelector(state, props),
     revisions,
     mode,
   });

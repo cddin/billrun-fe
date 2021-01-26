@@ -7,7 +7,7 @@ import * as serviceWorker from './serviceWorker';
 /* Styles */
 import 'react-bootstrap-multiselect/css/bootstrap-multiselect.css';
 import 'react-tagsinput/react-tagsinput.css'
-import "react-datepicker/dist/react-datepicker.css";
+import 'react-datepicker/dist/react-datepicker.css';
 import 'font-awesome/css/font-awesome.min.css';
 import './styles/css/normalize.css';
 import './styles/css/sb-admin-2.css';

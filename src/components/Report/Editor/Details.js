@@ -67,7 +67,7 @@ class Details extends Component {
   }
 
   onChangeTypeGrouped = () => {
-    this.props.onChangeType(reportTypes.GROPPED);
+    this.props.onChangeType(reportTypes.GROPED);
   }
 
   onChangeTypeSimple = () => {
@@ -78,7 +78,7 @@ class Details extends Component {
     const { title, entity, type, mode } = this.props;
     const disabled = mode === 'view';
     const entityOptions = this.getEntityOptions();
-    const isGrouped = type === reportTypes.GROPPED;
+    const isGrouped = type === reportTypes.GROPED;
     return (
       <div>
         <Col sm={12}>
@@ -139,7 +139,7 @@ class Details extends Component {
                   value="grouped"
                   checked={isGrouped}
                   onChange={this.onChangeTypeGrouped}
-                  label={getFieldName(`report_type_${reportTypes.GROPPED}`, 'report')}
+                  label={getFieldName(`report_type_${reportTypes.GROPED}`, 'report')}
                 />
               </div>
               &nbsp;<Help contents={ReportDescription.method_grouped} />

@@ -19,6 +19,7 @@ class CyclesSelector extends Component {
     from:PropTypes.string,
     to:PropTypes.string,
     newestFirst: PropTypes.bool,
+    timeStatus: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -29,11 +30,12 @@ class CyclesSelector extends Component {
     multi: false,
     from:"",
     to:"",
-    newestFirst: true
+    newestFirst: true,
+    timeStatus: false
   };
 
   componentDidMount() {
-    this.props.dispatch(getList('cycles_list', getCyclesQuery(this.props.from,this.props.to,this.props.newestFirst)));
+    this.props.dispatch(getList('cycles_list', getCyclesQuery(this.props.from,this.props.to,this.props.newestFirst,this.props.timeStatus)));
   }
 
   componentWillUnmount() {
@@ -41,7 +43,16 @@ class CyclesSelector extends Component {
   }
 
   getCyclesSelectOptions = () => {
-    const { cycles, statusesToDisplay } = this.props;
+    const { cycles, statusesToDisplay, timeStatus } = this.props;
+    if (timeStatus === true) {
+      return cycles
+        .filter(cycle => statusesToDisplay.contains(cycle.get('cycle_time_status', '')))
+        .map(cycle => ({
+          value: cycle.get('billrun_key', ''),
+          label: getCycleName(cycle),
+        })).toArray();
+    }
+
     return cycles
       .filter(cycle => statusesToDisplay.contains(cycle.get('cycle_status', '')))
       .map(cycle => ({

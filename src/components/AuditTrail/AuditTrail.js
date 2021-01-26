@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Immutable from 'immutable';
 import moment from 'moment';
-import changeCase from 'change-case';
 import { Col, Row, Panel } from 'react-bootstrap';
 import List from '../List'; //TODO: move to entityList
 import Pager from '../Pager'; //TODO: move to entityListPager
@@ -11,7 +10,6 @@ import { AdvancedFilter } from '../Filter'; //TODO: move to entityListFilter
 import DetailsParser from './DetailsParser';
 import {
   getUserKeysQuery,
-  auditTrailEntityTypesQuery,
   auditTrailListQuery,
 } from '../../common/ApiQueries';
 import { getList, clearList } from '@/actions/listActions';
@@ -47,7 +45,6 @@ class AuditTrail extends Component {
 
   componentDidMount() {
     this.fetchUser();
-    this.fetchEnityTypes();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -57,9 +54,8 @@ class AuditTrail extends Component {
   }
 
   componentWillUnmount() {
-    this.props.dispatch(clearList('log'));
+    this.props.dispatch(clearList('audit'));
     this.props.dispatch(clearList('autocompleteUser'));
-    this.props.dispatch(clearList('autocompleteAuditTrailEntityTypes'));
   }
 
   onSort = (newSort) => {
@@ -72,17 +68,12 @@ class AuditTrail extends Component {
   }
 
   fetchItems = () => {
-    this.props.dispatch(getList('log', this.buildQuery()));
+    this.props.dispatch(getList('audit', this.buildQuery()));
   }
 
   fetchUser = () => {
     const query = getUserKeysQuery();
     this.props.dispatch(getList('autocompleteUser', query));
-  }
-
-  fetchEnityTypes = () => {
-    const query = auditTrailEntityTypesQuery();
-    this.props.dispatch(getList('autocompleteAuditTrailEntityTypes', query));
   }
 
   handlePageClick = (page) => {
@@ -106,9 +97,13 @@ class AuditTrail extends Component {
 
   userParser = item => item.getIn(['user', 'name'], '');
 
-  collectionParser = item => changeCase.sentenceCase(item.get('collection', ''));
+  collectionParser = item => {
+    const {auditTrailEntityTypes} = this.props;
+    const collection = item.get('collection', '');
+    return auditTrailEntityTypes.find(type => type.key === collection, null, {val: collection}).val;
+  }
 
-  keyParser = item => (item.get('type', '') === 'login' ? '' : item.get('key', ''));
+  keyParser = item => (item.get('type', '') === 'login' ? item.get('key', '').split('login_')[1] : item.get('key', ''));
 
   detailsParser = item => <DetailsParser item={item} />
 

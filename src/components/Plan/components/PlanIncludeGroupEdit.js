@@ -74,9 +74,7 @@ export default class PlanIncludeGroupEdit extends Component {
     },
   }
 
-  isMonetaryBased = () => (
-    this.props.usages.get(0, '') === 'cost'
-  );
+  isMonetaryBased = () => this.props.usages.get(0, '') === 'cost';
 
   onChangeInclud = (value) => {
     const { name } = this.props;
@@ -161,8 +159,8 @@ export default class PlanIncludeGroupEdit extends Component {
     const { mode } = this.props;
     const allowEdit = mode !== 'view';
     return ([
-      { type: 'edit', helpText: 'Edit group', onClick: this.toggleBoby, enable: allowEdit },
-      { type: 'remove', helpText: 'Remove Group', onClick: this.onGroupRemoveAsk, enable: allowEdit },
+      { type: 'edit', helpText: 'Edit group', onClick: this.toggleBoby, enable: allowEdit, actionClass: "pl0 pr0" },
+      { type: 'remove', helpText: 'Remove Group', onClick: this.onGroupRemoveAsk, enable: allowEdit, actionClass: "pl0 pr0" },
     ]);
   }
 
@@ -178,14 +176,14 @@ export default class PlanIncludeGroupEdit extends Component {
     } = this.props;
     const { isEditMode, errorInclude, errorUoM } = this.state;
     return (
-      <Modal show={isEditMode}>
+      <Modal show={isEditMode} bsSize="large">
         <Modal.Header closeButton={false}>
           <Modal.Title>Edit {name} <i>{usages.join(', ')}</i></Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form horizontal style={{ marginBottom: 0 }}>
+          <Form horizontal className="mb0">
             <FormGroup validationState={errorInclude.length > 0 || errorUoM.length > 0 ? 'error' : null}>
-              <Col componentClass={ControlLabel} sm={3}>Include</Col>
+              <Col componentClass={ControlLabel} sm={2}>Include</Col>
               <Col sm={5}>
                 {this.isMonetaryBased()
                   ? <Field onChange={this.onChangeIncludeMonetaryBased} value={value} fieldType="text" />
@@ -208,27 +206,27 @@ export default class PlanIncludeGroupEdit extends Component {
             </FormGroup>
 
             <FormGroup>
-              <Col smOffset={3} sm={8}>
+              <Col smOffset={2} sm={9}>
                 <Checkbox checked={shared} onChange={this.onChangeShared}>{"Share with all account's subscribers"}<Help contents={GroupsInclude.shared_desc} /></Checkbox>
               </Col>
             </FormGroup>
 
             <FormGroup>
-              <Col smOffset={3} sm={8}>
+              <Col smOffset={2} sm={9}>
                 <Checkbox disabled={!shared} checked={pooled} onChange={this.onChangePooled}>{'Includes is pooled?'}<Help contents={GroupsInclude.pooled_desc} /></Checkbox>
               </Col>
             </FormGroup>
             {type === 'service' &&
               <FormGroup>
-                <Col smOffset={3} sm={8}>
+                <Col smOffset={2} sm={9}>
                   <Checkbox checked={quantityAffected} onChange={this.onChangeQuantityAffected}>{'Multiply by Service Quantity'}<Help contents={GroupsInclude.quantityAffected_desc} /></Checkbox>
                 </Col>
               </FormGroup>
             }
 
             <FormGroup>
-              <Col componentClass={ControlLabel} sm={3}>Products</Col>
-              <Col sm={8}>
+              <Col componentClass={ControlLabel} sm={2}>Products</Col>
+              <Col sm={9}>
                 <div style={{ marginTop: 10, minWidth: 250, width: '100%', minHeight: 42 }}>
                   <ProductSearchByUsagetype
                     products={products}
@@ -273,7 +271,7 @@ export default class PlanIncludeGroupEdit extends Component {
         <td className="td-ellipsis text-center">{sharedLabel}</td>
         <td className="td-ellipsis text-center">{pooledLabel}</td>
         <td className="td-ellipsis text-center">{quantityAffectedLabel}</td>
-        <td className="text-right row" style={{ paddingRight: 0, paddingLeft: 0 }}>
+        <td className="text-right row pr0 pl0">
           <Actions actions={actions} />
           <ConfirmModal onOk={this.onGroupRemoveOk} onCancel={this.onGroupRemoveCancel} show={showConfirm} message={confirmMessage} labelOk="Yes" />
           {this.renderEdit()}

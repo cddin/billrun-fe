@@ -143,7 +143,7 @@ class Column extends Component {
             <label htmlFor="operator_field">Function</label>
           )}
         </Col>
-        <Col sm={2}>
+        <Col sm={3}>
           {type !== reportTypes.SIMPLE && (
             <Field
               fieldType="select"
@@ -167,9 +167,9 @@ class Column extends Component {
           />
         </Col>
 
-        <Col sm={2} className="actions">
+        <Col sm={1} className="actions">
           <Button onClick={this.onRemove} bsSize="small" className="pull-left" disabled={disabled}>
-            <i className="fa fa-trash-o danger-red" />&nbsp;Remove
+            <i className="fa fa-trash-o danger-red" />
           </Button>
         </Col>
       </FormGroup>

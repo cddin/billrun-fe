@@ -5,6 +5,10 @@ import ProductDescription from './Product';
 import DiscountDescription from './Discount';
 import ReportDescription from './Report';
 import SettingsDescription from './Settings';
+import TaxDescription from './Tax';
+import MappingRulesDescription from './MappingRules';
+import EventDescription from './Event';
+
 
 export {
   PlanDescription,
@@ -14,4 +18,7 @@ export {
   DiscountDescription,
   ReportDescription,
   SettingsDescription,
+  TaxDescription,
+  MappingRulesDescription,
+  EventDescription,
 };

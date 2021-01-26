@@ -82,7 +82,11 @@ export default class ToggeledInput extends Component {
     const { label, disabled, editable, suffix, inputProps, disabledDisplayValue } = this.props;
 
     if (!editable) {
-      return (<div className="non-editable-field">{ off ? disabledDisplayValue : value }</div>);
+      return (
+        <div className="non-editable-field">
+          { off ? disabledDisplayValue : value }
+        </div>
+      );
     }
 
     return (

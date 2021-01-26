@@ -58,6 +58,7 @@ import {
   productFieldsSelector,
   subscriberFieldsWithPlaySelector,
 } from '@/selectors/settingsSelector';
+import { getConfig } from '@/common/Util';
 
 class InputProcessor extends Component {
 
@@ -216,10 +217,13 @@ class InputProcessor extends Component {
   })
 
   onChangeName = (e) => {
-    const { inputProcessorsExitNames } = this.props;
+    const { inputProcessorsExitNames, action } = this.props;
     const { errors } = this.state;
     const { value } = e.target;
-    if (inputProcessorsExitNames.includes(value)) {
+    if ( action === 'new' && !getConfig('keyRegex', '').test(value)) {
+      this.setState({ errors: errors.setIn(['sampleCSV', 'name'], 'Name contains illegal characters, name should contain only alphabets, numbers and underscores (A-Z, a-z, 0-9, _)') });
+    }
+    else if (inputProcessorsExitNames.includes(value)) {
       this.setState({ errors: errors.setIn(['sampleCSV', 'name'], `Name ${value} already exists`) });
     } else {
       this.setState({ errors: errors.deleteIn(['sampleCSV', 'name']) });
@@ -241,6 +245,9 @@ class InputProcessor extends Component {
 
   onSelectJSON = (e) => {
     const file = e.target.files[0];
+    if (typeof file === 'undefined') {
+      return;
+    }
     const reader = new FileReader();
     reader.onloadend = ((evt) => {
       if (evt.target.readyState === FileReader.DONE) {
@@ -551,7 +558,7 @@ class InputProcessor extends Component {
     const { stepIndex, steps } = this.state;
     const ipSteps = steps
       .sortBy((step => step.idx))
-      .map((step, key) => ({title: step.label}))
+      .map(step => ({title: step.label}))
       .toList()
       .toArray();
     return (

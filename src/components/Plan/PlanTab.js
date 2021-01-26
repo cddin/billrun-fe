@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 import Immutable from 'immutable';
 import { sentenceCase } from 'change-case';
 import isNumber from 'is-number';
-import { Form, FormGroup, ControlLabel, FormControl, Col, Row, Panel, HelpBlock } from 'react-bootstrap';
+import { Form, FormGroup, ControlLabel, Col, Row, Panel, HelpBlock } from 'react-bootstrap';
 import { PlanDescription } from '../../language/FieldDescriptions';
 import Help from '../Help';
 import Field from '@/components/Field';
 import { CreateButton } from '@/components/Elements';
 import PlanPrice from './components/PlanPrice';
-import EntityFields from '../Entity/EntityFields';
+import { EntityFields } from '../Entity';
 import PlaysSelector from '../Plays/PlaysSelector';
 import {
   getConfig,
@@ -27,10 +27,20 @@ export default class Plan extends Component {
     onPlanCycleUpdate: PropTypes.func.isRequired,
     onPlanTariffAdd: PropTypes.func.isRequired,
     onPlanTariffRemove: PropTypes.func.isRequired,
+    periodicityOptions: PropTypes.array,
+    chargingModeOptions: PropTypes.array,
     errorMessages: PropTypes.object,
   }
 
   static defaultProps = {
+    periodicityOptions: [
+      { value: 'month', label: 'Monthly' },
+      { value: 'year', label: 'Yearly' }
+    ],
+    chargingModeOptions: [
+      { value: 'true', label: 'Upfront' },
+      { value: 'false', label: 'Arrears' }
+    ],
     errorMessages: {
       name: {
         allowedCharacters: 'Key contains illegal characters, key should contain only alphabets, numbers and underscores (A-Z, 0-9, _)',
@@ -70,8 +80,8 @@ export default class Plan extends Component {
   }
 
   onChangeProrated = (e) => {
-    const { value } = e.target;
-    this.props.onChangeFieldValue(['prorated'], value);
+    const { value, id } = e.target;
+    this.props.onChangeFieldValue([id], value);
   }
 
   onChangePlanDescription = (e) => {
@@ -95,8 +105,7 @@ export default class Plan extends Component {
     this.props.onChangeFieldValue(['recurrence', 'unit'], value);
   }
 
-  onChangePeriodicity = (e) => {
-    const { value } = e.target;
+  onChangePeriodicity = (value) => {
     this.props.onChangeFieldValue(['recurrence', 'periodicity'], value);
   }
 
@@ -105,11 +114,10 @@ export default class Plan extends Component {
     this.props.onChangeFieldValue(['price', index, 'price'], newValue);
   }
 
-  onChangeUpfront = (e) => {
-    let value = e.target.value;
-    if (value === 'true' || value === 'TRUE') {
+  onChangeUpfront = (value) => {
+    if (value.toUpperCase() === 'TRUE') {
       value = true;
-    } else if (value === 'false' || value === 'FALSE') {
+    } else if (value.toUpperCase() === 'FALSE') {
       value = false;
     }
     this.props.onChangeFieldValue(['upfront'], value);
@@ -121,13 +129,6 @@ export default class Plan extends Component {
 
   onRemoveAdditionalField = (field) => {
     this.props.onRemoveField(field);
-  }
-
-  getPeriodicityOptions = () => {
-    const periodicityOptions = { '': 'Select...', month: 'Monthly', year: 'Yearly' };
-    return Object.keys(periodicityOptions).map((key, i) =>
-      <option value={key} key={i}>{periodicityOptions[key]}</option>
-    );
   }
 
   getAddPriceButton = (trial = false) => {
@@ -184,9 +185,9 @@ export default class Plan extends Component {
 
   render() {
     const { errors } = this.state;
-    const { plan, mode } = this.props;
+    const { plan, mode, periodicityOptions, chargingModeOptions } = this.props;
     const periodicity = plan.getIn(['recurrence', 'periodicity']) || '';
-    const upfront = typeof plan.get('upfront') !== 'boolean' ? '' : plan.get('upfront');
+    const upfront = typeof plan.get('upfront') !== 'boolean' ? '' : plan.get('upfront', '').toString();
     const editable = (mode !== 'view');
 
     return (
@@ -205,6 +206,7 @@ export default class Plan extends Component {
               <FormGroup>
                 <Col componentClass={ControlLabel} sm={3} lg={2}>
                   { getFieldName('description', getFieldNameType('service'), sentenceCase('title'))}
+                  <span className="danger-red"> *</span>
                   <Help contents={PlanDescription.description} />
                 </Col>
                 <Col sm={8} lg={9}>
@@ -215,7 +217,9 @@ export default class Plan extends Component {
               {['clone', 'create'].includes(mode) &&
                 <FormGroup validationState={errors.name.length > 0 ? 'error' : null} >
                   <Col componentClass={ControlLabel} sm={3} lg={2}>
-                    { getFieldName('name', getFieldNameType('service'), sentenceCase('key'))} <Help contents={PlanDescription.name} />
+                    { getFieldName('name', getFieldNameType('service'), sentenceCase('key'))}
+                    <span className="danger-red"> *</span>
+                    <Help contents={PlanDescription.name} />
                   </Col>
                   <Col sm={8} lg={9}>
                     <Field id="PlanName" onChange={this.onChangePlanName} value={plan.get('name', '')} required={true} editable={editable} />
@@ -225,40 +229,67 @@ export default class Plan extends Component {
               }
 
               <FormGroup>
-                <Col componentClass={ControlLabel} sm={3} lg={2}>Billing Frequency</Col>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  Billing Frequency
+                  <span className="danger-red"> *</span>
+                </Col>
                 <Col sm={4}>
-                  { editable
-                    ? (
-                      <FormControl componentClass="select" placeholder="select" value={periodicity} onChange={this.onChangePeriodicity} >
-                        { this.getPeriodicityOptions() }
-                      </FormControl>
-                    )
-                  : <div className="non-editable-field">{ periodicity }</div>
-                  }
+                  <Field
+                    fieldType="select"
+                    options={periodicityOptions}
+                    onChange={this.onChangePeriodicity}
+                    value={periodicity}
+                    editable={editable}
+                  />
                 </Col>
               </FormGroup>
 
               <FormGroup>
-                <Col componentClass={ControlLabel} sm={3} lg={2}>Charging Mode</Col>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  Charging Mode
+                  <span className="danger-red"> *</span>
+                </Col>
                 <Col sm={4}>
-                  { editable
-                    ? (
-                      <FormControl componentClass="select" placeholder="select" value={upfront} onChange={this.onChangeUpfront}>
-                        <option value="">Select...</option>
-                        <option value={true}>Upfront</option>
-                        <option value={false}>Arrears</option>
-                      </FormControl>
-                    )
-                    : <div className="non-editable-field">{ upfront ? 'Upfront' : 'Arrears'}</div>
-                  }
-
+                  <Field
+                    fieldType="select"
+                    options={chargingModeOptions}
+                    onChange={this.onChangeUpfront}
+                    value={upfront}
+                    editable={editable}
+                  />
                 </Col>
               </FormGroup>
 
               <FormGroup>
-                <Col componentClass={ControlLabel} sm={3} lg={2}>Prorated?</Col>
-                <Col sm={4} style={editable ? { padding: '10px 15px' } : { paddingTop: 5 }}>
-                  <Field value={plan.get('prorated', '')} onChange={this.onChangeProrated} fieldType="checkbox" editable={editable} />
+                <Col componentClass={ControlLabel} sm={3} lg={2}>Proration‎</Col>
+                <Col sm={8} lg={9} className="pt5">
+                  <Field
+                    fieldType="checkbox"
+                    value={plan.get('prorated_start', '')}
+                    onChange={this.onChangeProrated}
+                    className="mr10 inline"
+                    label="Prorated start"
+                    editable={editable}
+                    id="prorated_start"
+                  />
+                  <Field
+                    fieldType="checkbox"
+                    value={plan.get('prorated_end', '')}
+                    onChange={this.onChangeProrated}
+                    className="mr10 inline"
+                    label="Prorate old plan charge on plan change"
+                    editable={editable}
+                    id="prorated_end"
+                  />
+                  <Field
+                    fieldType="checkbox"
+                    value={plan.get('prorated_termination', '')}
+                    onChange={this.onChangeProrated}
+                    className="inline"
+                    label="Prorate charge on termination"
+                    editable={editable}
+                    id="prorated_termination"
+                  />
                 </Col>
               </FormGroup>
 

@@ -8,6 +8,7 @@ import { Panel } from 'react-bootstrap';
 import { ActionButtons, LoadingItemPlaceholder } from '@/components/Elements';
 import { EntityRevisionDetails } from '../Entity';
 import Product from './Product';
+import { EntityTaxDetails } from '@/components/Tax';
 import {
   onRateAdd,
   onRateRemove,
@@ -73,6 +74,8 @@ class ProductSetup extends Component {
     activeTab: 1,
   };
 
+  static entityName = 'product';
+
   state = {
     activeTab: parseInt(this.props.activeTab),
   }
@@ -85,7 +88,7 @@ class ProductSetup extends Component {
     const { mode } = this.props;
     this.props.dispatch(getSettings(['usage_types', 'file_types', 'property_types', 'subscribers.subscriber.fields', 'rates.fields']));
     if (['clone', 'create'].includes(mode)) {
-      const pageTitle = buildPageTitle(mode, 'product');
+      const pageTitle = buildPageTitle(mode, ProductSetup.entityName);
       this.props.dispatch(setPageTitle(pageTitle));
     }
     this.initDefaultValues();
@@ -95,7 +98,7 @@ class ProductSetup extends Component {
     const { item, mode, itemId } = nextProps;
     const { item: oldItem, itemId: oldItemId, mode: oldMode } = this.props;
     if (mode !== oldMode || getItemId(item) !== getItemId(oldItem)) {
-      const pageTitle = buildPageTitle(mode, 'product', item);
+      const pageTitle = buildPageTitle(mode, ProductSetup.entityName, item);
       this.props.dispatch(setPageTitle(pageTitle));
     }
     if (itemId !== oldItemId || (mode !== oldMode && mode === 'clone')) {
@@ -205,7 +208,7 @@ class ProductSetup extends Component {
     if (itemWasChanged) {
       this.clearItemsList(); // refetch items list because item was (changed in / added to) list
     }
-    const listUrl = getConfig(['systemItems', 'product', 'itemsType'], '');
+    const listUrl = getConfig(['systemItems', ProductSetup.entityName, 'itemsType'], '');
     this.props.router.push(`/${listUrl}`);
   }
 
@@ -248,6 +251,17 @@ class ProductSetup extends Component {
             usaget={usaget}
             ratingParams={ratingParams}
           />
+          { item.get('tariff_category', '') === 'retail' && (
+            <Panel header="Tax">
+              <EntityTaxDetails
+                tax={item.get('tax')}
+                mode={mode}
+                itemName={ProductSetup.entityName}
+                onFieldUpdate={this.onFieldUpdate}
+                onFieldRemove={this.onFieldRemove}
+                />
+            </Panel>
+          )}
         </Panel>
 
         <ActionButtons
@@ -262,11 +276,11 @@ class ProductSetup extends Component {
 }
 
 const mapStateToProps = (state, props) => ({
-  itemId: idSelector(state, props, 'product'),
-  item: itemSelector(state, props, 'product'),
-  mode: modeSelector(state, props, 'product'),
-  activeTab: tabSelector(state, props, 'product'),
-  revisions: revisionsSelector(state, props, 'product'),
+  itemId: idSelector(state, props, ProductSetup.entityName),
+  item: itemSelector(state, props, ProductSetup.entityName),
+  mode: modeSelector(state, props, ProductSetup.entityName),
+  activeTab: tabSelector(state, props, ProductSetup.entityName),
+  revisions: revisionsSelector(state, props, ProductSetup.entityName),
   ratingParams: inputProssesorRatingParamsSelector(state, props),
 });
 

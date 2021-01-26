@@ -29,6 +29,15 @@
   #top-nav.collapse-sizebar + #page-wrapper {
     margin-left: 0!important;
   }
+  .col-xs-pr5 { padding-right: 5px !important; }
+
+}
+
+.form-horizontal .radio,
+.form-horizontal .checkbox,
+.form-horizontal .radio-inline,
+.form-horizontal .checkbox-inline {
+  padding-top: 0;
 }
 
 // $baseZIndex: 2000;

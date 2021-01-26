@@ -18,6 +18,9 @@ import ToggeledInput from './types/ToggeledInput';
 import TextEditor from './types/TextEditor';
 import Ranges from './types/Ranges';
 import Range from './types/Range';
+import Percentage from './types/Percentage';
+import Json from './types/Json';
+import Password from './types/Password';
 
 
 class Field extends PureComponent {
@@ -54,6 +57,8 @@ class Field extends PureComponent {
     const { fieldType, style, className, ...inputProps } = this.props;
     switch (fieldType) {
       case 'number':
+      case 'integer':
+      case 'decimal':
         return (<Number {...inputProps} />);
       case 'price':
         return (<Price {...inputProps} />);
@@ -85,15 +90,21 @@ class Field extends PureComponent {
         return (<Ranges {...inputProps} />);
       case 'range':
         return (<Range {...inputProps} />);
+      case 'percentage':
+        return (<Percentage {...inputProps} />);
+      case 'json':
+        return (<Json {...inputProps} />);
+      case 'password':
+        return (<Password {...inputProps} />);
       default:
         return (<Text {...inputProps} />);
     }
   }
 
   render() {
-    const { style, className } = this.props;
+    const { style, className, fieldType } = this.props;
     return (
-      <div className={classNames('Field', className)} style={style}>
+      <div className={classNames('Field', `field-${fieldType}`, className)} style={style}>
         { this.createInput() }
       </div>
     );

@@ -15,6 +15,7 @@ export const actions = {
   SET_STATE: 'SET_STATE',
   SET_REVISIONS: 'SET_REVISIONS',
   CLEAR_REVISIONS: 'CLEAR_REVISIONS',
+  CLEAR_NEXT_PAGE: 'CLEAR_NEXT_PAGE',
 };
 
 const gotList = (collection, list) => ({
@@ -27,6 +28,11 @@ const setNextPage = (collection, nextPage) => ({
   type: actions.SET_NEXT_PAGE,
   collection,
   nextPage,
+});
+
+export const clearNextPage = (collection) => ({
+  type: actions.CLEAR_NEXT_PAGE,
+  collection,
 });
 
 export const setListSort = (collection, sort) => ({
@@ -92,7 +98,7 @@ export const getList = (collection, params) => (dispatch) => {
         return dispatch(apiBillRunSuccessHandler(success));
       } catch (e) {
         console.log('fetchList error: ', e);
-        throw new Error('Error retreiving list');
+        throw new Error('Error retrieving list');
       }
     })
     .catch(error => dispatch(apiBillRunErrorHandler(error, 'Network error - please refresh and try again')));

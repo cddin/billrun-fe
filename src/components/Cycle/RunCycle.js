@@ -53,6 +53,7 @@ class RunCycle extends Component {
     showRefreshButton: false,
     ChargedAllClicked: false,
     generatePdf: null,
+    hideChargeButtton: true
   }
 
   componentDidMount() {
@@ -162,7 +163,9 @@ class RunCycle extends Component {
   runCycle = (rerun = false) => {
     this.props.dispatch(clearItems('billruns'));
     const { selectedCycle, generatePdf } = this.state;
-    this.props.dispatch(runBillingCycle(selectedCycle.get('billrun_key', ''), rerun, generatePdf))
+    const { cycleAdditionalData } = this.props;
+    const isGeneratePdf = (generatePdf !== null) ? generatePdf : cycleAdditionalData.get('generate_pdf', true);
+    this.props.dispatch(runBillingCycle(selectedCycle.get('billrun_key', ''), rerun, isGeneratePdf))
       .then((response) => {
         if (response.status) {
           this.refreshAfterRun = setTimeout(this.reloadCycleData, 1000);
@@ -255,8 +258,9 @@ class RunCycle extends Component {
     return (
       <CyclesSelector
         onChange={this.onChangeSelectedCycle}
-        statusesToDisplay={List(['running', 'to_run', 'finished', 'confirmed', 'to_rerun'])}
+        statusesToDisplay={List(['past'])}
         selectedCycles={selectedCycleName}
+        timeStatus={true}
       />
     );
   };
@@ -394,9 +398,8 @@ class RunCycle extends Component {
       disabled = true;
       title = 'Processing...';
     } else if (chargeStatus.get('status', false)) {
-      const hasAmountTocharge = chargeStatus.get('owed_amount', 0) !== 0;
-      disabled = !hasAmountTocharge;
-      title = hasAmountTocharge ? 'Charge All' : 'Nothing to charge';
+      disabled = false;
+      title = 'Charge All';
     } else {
       disabled = true;
       title = 'Charge is running...';
@@ -474,7 +477,7 @@ class RunCycle extends Component {
   }
 
   render() {
-    const { selectedCycle } = this.state;
+    const { selectedCycle, hideChargeButtton } = this.state;
     const { cycleAdditionalData } = this.props;
     const billrunKey = selectedCycle.get('billrun_key', '');
     const shouldDisplayBillrunData = List(['running', 'finished', 'confirmed', 'to_rerun']).contains(this.getSelectedCycleStatus());
@@ -489,7 +492,7 @@ class RunCycle extends Component {
         <Row>
           <Col lg={12}>
             <div className="pull-right" style={{ paddingBottom: 10 }}>
-              {this.renderChargeAllButton()}
+              {!hideChargeButtton ? this.renderChargeAllButton(): false}
             </div>
           </Col>
         </Row>

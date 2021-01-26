@@ -1,8 +1,9 @@
 import moment from 'moment';
 import Immutable from 'immutable';
+import isNumber from 'is-number';
 import { upperCaseFirst } from 'change-case';
-import { apiBillRun, apiBillRunErrorHandler, apiBillRunSuccessHandler } from '../common/Api';
-import { getEntityByIdQuery, apiEntityQuery } from '../common/ApiQueries';
+import { apiBillRun, apiBillRunErrorHandler, apiBillRunSuccessHandler, buildRequestUrl } from '../common/Api';
+import { getEntityByIdQuery, apiEntityQuery, getEntityCSVQuery, getEntitesQuery } from '../common/ApiQueries';
 import { getItemDateValue, getConfig, getItemId } from '@/common/Util';
 import { startProgressIndicator } from './progressIndicatorActions';
 
@@ -86,8 +87,8 @@ const buildRequestData = (item, action) => {
     case 'create': {
       const formData = new FormData();
       const newFrom = getItemDateValue(item, 'from').format(apiDateFormat);
-      const update = item.withMutations((itemwithMutations) => {
-        itemwithMutations
+      const update = item.withMutations((itemWithMutations) => {
+        itemWithMutations
           .set('from', newFrom)
           .delete('originalValue');
       });
@@ -97,15 +98,26 @@ const buildRequestData = (item, action) => {
 
     case 'import': {
       const formData = new FormData();
-      formData.append('update', JSON.stringify(item));
+      if (item.has('files')) {
+        item.get('files', []).forEach((file, i) => {
+          formData.append(`files[${i}]`, file, file.name)
+        });
+      }
+      formData.append('update', JSON.stringify(item.delete('files')));
       return formData;
+    }
+
+    case 'export': {
+      return item
+        .reduce((acc, data, key) => acc.push({[key]: JSON.stringify(data)}), Immutable.List())
+        .toArray()
     }
 
     case 'update': {
       const formData = new FormData();
       const query = { _id: item.getIn(['_id', '$id'], 'undefined') };
-      const update = item.withMutations((itemwithMutations) => {
-        itemwithMutations
+      const update = item.withMutations((itemWithMutations) => {
+        itemWithMutations
           .delete('_id')
           .delete('originalValue');
       });
@@ -116,14 +128,14 @@ const buildRequestData = (item, action) => {
 
     case 'closeandnew': {
       const formData = new FormData();
-      const update = item.withMutations((itemwithMutations) => {
+      const update = item.withMutations((itemWithMutations) => {
         const originalFrom = getItemDateValue(item, 'originalValue', null);
         if (originalFrom !== null) {
           if (originalFrom.isSame(getItemDateValue(item, 'from', moment(0)), 'days')) {
-            itemwithMutations.delete('from');
+            itemWithMutations.delete('from');
           }
         }
-        itemwithMutations
+        itemWithMutations
           .delete('_id')
           .delete('originalValue');
       });
@@ -174,13 +186,23 @@ export const saveEntity = (collection, item, action) => (dispatch) => {
     .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error saving Entity')));
 };
 
-export const importEntities = (collection, items) => (dispatch) => {
+export const importEntities = (collection, items, operation) => (dispatch) => {
   dispatch(startProgressIndicator());
   const body = requestDataBuilder(collection, items, 'import');
+  body.append('operation', operation);
   const query = apiEntityQuery(collection, 'import', body);
   return apiBillRun(query, { timeOutMessage: apiTimeOutMessage })
     .then(success => dispatch(apiBillRunSuccessHandler(success)))
-    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error saving Entities')));
+    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error importing Entities')));
+};
+
+export const exportEntities = (entityType, params) => (dispatch) => {
+  const collection = getConfig(['systemItems', entityType, 'collection'], entityType);
+  const data = requestDataBuilder(collection, params, 'export');
+  const apiQuery = getEntityCSVQuery(collection, data);
+  const url = buildRequestUrl(apiQuery);
+  window.open(url)
+  return true;
 };
 
 const fetchEntity = (collection, query) => (dispatch) => {
@@ -190,7 +212,7 @@ const fetchEntity = (collection, query) => (dispatch) => {
       dispatch(gotEntity(collection, success.data[0].data.details[0]));
       return dispatch(apiBillRunSuccessHandler(success));
     })
-    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retreiving Entity')));
+    .catch(error => dispatch(apiBillRunErrorHandler(error, 'Error retrieving Entity')));
 };
 
 export const getEntity = (collection, query) => dispatch =>
@@ -226,3 +248,67 @@ export const reopenEntity = (collection, item, from) => (dispatch) => {
   });
   return dispatch(saveEntity(collection, itemToReopen, 'reopen'));
 };
+
+export const validateMandatoryField = (value, fieldConfig) => {
+  if (fieldConfig.get('mandatory', false)) {
+    switch (fieldConfig.get('type', false)) {
+      default: {
+        if (['', null, undefined].includes(value)) {
+          return `${fieldConfig.get('title', fieldConfig.get('field_name', ''))} field is required.`;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+export const entitySearchByQuery = (collection, query, project, sort, options) => dispatch => {
+  const searchQuery = getEntitesQuery(collection, project, query, sort, options);
+  return apiBillRun(searchQuery, { timeOutMessage: apiTimeOutMessage })
+    .then((success) => {
+      if (success && success.data && success.data[0] && success.data[0].data && success.data[0].data.details) {
+        return success.data[0].data.details;
+      }
+      throw new Error();
+    })
+    .catch(error => false);
+}
+
+/**
+ * Validate value by field configuration and return if value has error.
+ * Supported for multi values
+ * 
+ * @param {any} value value to validate
+ * @param {Immutable.Map()} config with field configuration
+ * @return (boolean|string)
+ *    TRUE or string with error message if error
+ *    FALSE if no error or value is empty
+ */
+export const validateFieldByType = (value, config) => {
+  const isMulti = config.get('multiple', false);
+  if (value === '' || (isMulti && ( (Array.isArray(value) && value.length === 0) || Immutable.is(value, Immutable.List())))) {
+    return false;
+  }
+
+  if (isMulti && (Array.isArray(value) || Immutable.Iterable.isIterable(value))) {
+    const notMultiConfig = config.set('multiple', false);
+    return value.reduce((acc, val) => {
+      if (acc !== false) {
+        return acc;
+      }
+      return validateFieldByType(val, notMultiConfig);
+    }, false);
+  }
+ 
+  switch (config.get('type', '')) {
+    case 'number':
+    case 'decimal':
+      return isNumber(value) ? false : 'Value must be numeric';
+    case 'integer':
+      return isNumber(value) && `${parseInt(value)}` === `${value}` ? false : 'Value must be integer';
+    case 'json':
+      return value === false; // no need for the message, current json field display message in the editbox
+    default:
+      return false;
+  }
+}

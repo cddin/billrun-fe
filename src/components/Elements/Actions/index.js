@@ -1,2 +1,7 @@
 import Actions from './Actions';
-export default Actions;
+import Action from './Action';
+
+export {
+  Actions as default,
+  Action,
+};

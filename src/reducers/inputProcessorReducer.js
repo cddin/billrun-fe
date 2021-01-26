@@ -1,5 +1,6 @@
 import Immutable from 'immutable';
 
+import { getFieldsWithPreFunctions } from '@/selectors/settingsSelector'
 import { SET_NAME,
          SET_PARSER_SETTING,
          SET_PROCESSOR_TYPE,
@@ -233,17 +234,12 @@ export default function (state = defaultState, action) {
     }
 
     case SET_RATING_FIELD: {
-      var { rate_key, value, rateCategory, usaget } = action;
-      let new_rating = Immutable.fromJS({
-        type: value,
-        rate_key,
-        line_key: state.getIn(['rate_calculators', rateCategory, usaget, priority, index, 'line_key']),
-      });
-      const computed = state.getIn(['rate_calculators', rateCategory, usaget, priority, index, 'computed']);
-      if (computed && !computed.isEmpty()) {
-        new_rating = new_rating.set('computed', computed);
-      }
-      return state.setIn(['rate_calculators', rateCategory, usaget, priority, index], new_rating);
+      const { rate_key, value, rateCategory, usaget } = action;
+      const new_priority = state
+        .getIn(['rate_calculators', rateCategory, usaget, priority, index])
+        .set('type', value)
+        .set('rate_key', rate_key);
+      return state.setIn(['rate_calculators', rateCategory, usaget, priority, index], new_priority);
     }
 
     case ADD_RATING_FIELD: {
@@ -287,7 +283,17 @@ export default function (state = defaultState, action) {
 
     case SET_LINE_KEY: {
       const { value, rateCategory, usaget } = action;
-      return state.setIn(['rate_calculators', rateCategory, usaget, priority, index, 'line_key'], value);
+      const preFunctionFields = getFieldsWithPreFunctions().find(preFunctionField => preFunctionField.get('value') === value, null, false);
+      if (preFunctionFields !== false) {
+        const lineKey = preFunctionFields.get('preFunctionValue', '');
+        const preFunction = preFunctionFields.get('preFunction', '');
+        return state
+          .setIn(['rate_calculators', rateCategory, usaget, priority, index, 'line_key'], lineKey)
+          .setIn(['rate_calculators', rateCategory, usaget, priority, index, 'preFunction'], preFunction);
+      }
+      return state
+        .setIn(['rate_calculators', rateCategory, usaget, priority, index, 'line_key'], value)
+        .deleteIn(['rate_calculators', rateCategory, usaget, priority, index, 'preFunction']);
     }
 
     case SET_COMPUTED_LINE_KEY:

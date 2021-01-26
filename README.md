@@ -8,6 +8,11 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 `@/actions/...`<br>
 `@/common/...`<br>
 
+### BE debuging
+To enbale BE (Netbeans) xdebug, set global varibale serverApiDebug value to `true` to enable or `false` to disable in chrome console log.<br>
+`window.serverApiDebug = true`<br>
+
+
 # Configuration
 
 ## Requirements

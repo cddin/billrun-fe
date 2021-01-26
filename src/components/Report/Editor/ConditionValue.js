@@ -11,7 +11,7 @@ import {
 } from '@/common/Util';
 import {
   selectOptionSelector,
-} from '@/selectors/reportSelectors';
+} from '@/selectors/conditionSelectors';
 import {
   getCyclesOptions,
   getProductsOptions,
@@ -23,6 +23,7 @@ import {
   getFileTypesOptions,
   getEventCodeOptions,
   getPlayTypeOptions,
+  getTaxesOptions,
 } from '@/actions/reportsActions';
 
 
@@ -98,7 +99,9 @@ class ConditionValue extends Component {
           break;
         case 'getEventCodeOptions': this.props.dispatch(getEventCodeOptions());
           break;
-        default: console.log('unsuported select options callback');
+        case 'getTaxesOptions': this.props.dispatch(getTaxesOptions());
+          break;
+        default: console.log('unsupported select options callback');
           break;
       }
     }
@@ -380,7 +383,7 @@ class ConditionValue extends Component {
     }
 
     // 'Date'
-    if ([config.get('type', ''), operator.get('type', '')].includes('date')) {
+    if ([config.get('type', ''), operator.get('type', '')].includes('date') || [config.get('type', ''), operator.get('type', '')].includes('daterange')) {
       return this.renderInputDate();
     }
 

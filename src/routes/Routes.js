@@ -15,6 +15,8 @@ import PlansList from '@/components/PlansList';
 import Plan from '@/components/Plan';
 import DiscountsList from '@/components/DiscountsList';
 import Discount from '@/components/Discount';
+import ChargesList from '@/components/ChargesList';
+import Charge from '@/components/Charge';
 import ServicesList from '@/components/ServicesList';
 import Service from '@/components/Service';
 import InputProcessorsList from '@/components/InputProcessorsList';
@@ -44,6 +46,10 @@ import AutoRenewsList from '@/components/AutoRenew/AutoRenewsList';
 import AutoRenewSetup from '@/components/AutoRenew/AutoRenewSetup';
 import CustomFields from '@/components/CustomFields';
 import Events from '@/components/Events';
+import PaymentFiles from '@/components/PaymentFiles/PaymentFiles';
+import { ImporterSetup } from '../components/Importer';
+import { ExporterSetup } from '../components/Exporter';
+import { TaxList, TaxSetup, TaxMapping } from '@/components/Tax';
 
 
 const routes = () => (
@@ -74,6 +80,12 @@ const routes = () => (
           <IndexRoute component={Authentication(DiscountsList)} title="Discounts" />
           <Route path="discount/:itemId" component={Authentication(Discount)} />
           <Route path="discount" component={Authentication(Discount)} />
+        </Route>
+
+        <Route path="charges" >
+          <IndexRoute component={Authentication(ChargesList)} title="Conditional Charges" />
+          <Route path="charge/:itemId" component={Authentication(Charge)} />
+          <Route path="charge" component={Authentication(Charge)} />
         </Route>
 
         <Route path="products" >
@@ -112,7 +124,13 @@ const routes = () => (
           <Route path="customer" component={Authentication(CustomerSetup)} />
         </Route>
 
-
+        <Route path="taxes" >
+          <IndexRoute component={Authentication(TaxList)} title="Tax Rates" />
+          <Route path="tax/:itemId" component={Authentication(TaxSetup)} />
+          <Route path="tax" component={Authentication(TaxSetup)} />
+          <Route path="tax" component={Authentication(TaxSetup)} />
+          <Route path="mapping-rules" component={Authentication(TaxMapping)} />
+        </Route>
 
         <Route path="reports" >
           <IndexRoute component={Authentication(ReportsList)} title="Reports" />
@@ -128,6 +146,7 @@ const routes = () => (
         <Route path="/run_cycle" component={Authentication(RunCycle)} title="Billing Cycle" />
         <Route path="/queue" component={Authentication(QueueList)} title="Queue" />
         <Route path="/invoices" component={Authentication(InvoicesList)} title="Invoices" />
+        <Route path="/custom-payment-files" component={Authentication(PaymentFiles)} title="Custom Transactions Request File" />
         <Route path="/settings" component={Authentication(Settings)} title="General Settings" />
         <Route path="/payment_gateways" component={Authentication(PaymentGateways)} title="Payment Gateways" />
         <Route path="/select_input_processor_template" component={Authentication(SelectTemplate)} title="Create New Input Processor" />
@@ -141,6 +160,8 @@ const routes = () => (
         <Route path="/login" component={LoginPage} title="Login" />
         <Route path="/about" component={About} title="About" />
         <Route path="/changepassword(/:itemId)" component={ChangePassword} title="Change Password" />
+        <Route path="/import(/:itemType)" component={Authentication(ImporterSetup)} />
+        <Route path="/export(/:itemType)" component={Authentication(ExporterSetup)} />
         <Route path="*" component={PageNotFound404} title=" " />
       </Route>
     </Router>

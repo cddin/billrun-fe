@@ -11,14 +11,14 @@ const ModalWrapper = props => (
     <Modal.Body>
       { props.children }
     </Modal.Body>
-    { (props.onCancel || props.onOk) &&
+    { (props.onCancel || (props.onOk && props.showOnOk)) &&
       <Modal.Footer>
         { props.onCancel && (
           <Button bsSize="small" style={{ minWidth: 90 }} onClick={props.onCancel} bsStyle={props.styleCancel}>
             { props.labelCancel }
           </Button>
         ) }
-        { props.onOk && (
+        { props.onOk && props.showOnOk && (
           <Button bsSize="small" style={{ minWidth: 90 }} onClick={props.onOk} bsStyle={props.styleOk} disabled={props.progress}>
             { props.progress && (<span><i className="fa fa-spinner fa-pulse" />&nbsp;&nbsp;</span>) }
             { (props.progress && props.labelProgress !== null)
@@ -43,6 +43,7 @@ ModalWrapper.defaultProps = {
   modalSize: undefined,
   onHide: null,
   onOk: null,
+  showOnOk: true,
   onCancel: null,
   styleOk: 'primary',
   styleCancel: undefined,
@@ -53,6 +54,7 @@ ModalWrapper.propTypes = {
   labelOk: PropTypes.string,
   labelCancel: PropTypes.string,
   onOk: PropTypes.func,
+  showOnOk: PropTypes.bool,
   onCancel: PropTypes.func,
   show: PropTypes.bool.isRequired,
   progress: PropTypes.bool,
