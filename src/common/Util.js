@@ -583,7 +583,7 @@ export const getAvailableFields = (settings, additionalFields = []) => {
   const computedFields = settings
     .getIn(['processor', 'calculated_fields'], Immutable.List())
     .map(field => field.get('target_field', ''))
-    .map(field => (Immutable.Map({ value: field, label: field })))
+    .map(field => (Immutable.Map({ value: field, label: `${field} (Computed)`})))
     .sortBy(field => field.get('value', ''));
   return Immutable.List([...fields, ...computedFields, ...Immutable.fromJS(additionalFields)])
 };
