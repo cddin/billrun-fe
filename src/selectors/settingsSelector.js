@@ -107,7 +107,7 @@ const getInputProcessorFields = (state, props) => // eslint-disable-line no-unus
 
 const getInputProcessorCalculatedFields = (state, props) => {// eslint-disable-line no-unused-vars
   return props.settings.getIn(['processor', 'calculated_fields'], Immutable.List())
-    .map(field => field.get('target_field', '')).map(field =>({ value: field, label: field }))
+    .map(field => field.get('target_field', '')).map(field =>({ value: field, label: `${field} (Computed)` }))
     .sortBy(field => field.value);
 }
 
