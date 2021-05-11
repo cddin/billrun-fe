@@ -13,7 +13,9 @@ import importConfig from '../config/import.json';
 import exportConfig from '../config/export.json';
 import collectionsConfig from '../config/collections.json';
 import customFieldsConfig from '../config/customFields.json';
+import inputProcessorConfig from '../config/InputProcessor.json';
 import discountConfig from '../config/discount.json';
+
 
 /**
  * Get data from config files
@@ -72,6 +74,8 @@ export const getConfig = (key, defaultValue = null) => {
         break;
       case 'customFields': configCache = configCache.set('customFields', Immutable.fromJS(customFieldsConfig));
         break;
+      case 'inputProcessor': configCache = configCache.set('inputProcessor', Immutable.fromJS(inputProcessorConfig));
+        break;
       case 'discount': configCache = configCache.set('discount', Immutable.fromJS(discountConfig));
         break;
       default: console.log(`Config category not exists ${path}`);
@@ -95,7 +99,7 @@ export const getFieldName = (field, category, defaultValue = null) => {
   return field;
 };
 
-/*  Map entity different names to fieldNames.json names */
+
 export const getFieldNameType = (type) => {
   switch (type.toLocaleLowerCase()) {
     case 'account':
