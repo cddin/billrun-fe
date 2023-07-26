@@ -1,26 +1,28 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
-import Immutable from 'immutable';
-import { Col, Row, PageHeader } from 'react-bootstrap';
-import { ProgressIndicator } from '@/components/Elements';
-import ReduxConfirmModal from '../ReduxConfirmModal';
-import ReduxFormModal from '../ReduxFormModal';
-import Navigator from '../Navigator';
-import Alerts from '../Alerts';
-import { Tour, ExampleInvoice } from '../OnBoarding';
-import { Footer } from '../StaticPages';
-import { userCheckLogin } from '@/actions/userActions';
-import { setPageTitle, systemRequirementsLoadingComplete } from '@/actions/guiStateActions/pageActions';
-import { initMainMenu } from '@/actions/guiStateActions/menuActions';
-import { getSettings, fetchFile } from '@/actions/settingsActions';
-import { onBoardingIsRunnigSelector } from '@/selectors/guiSelectors';
-import { taxationTypeSelector } from '@/selectors/settingsSelector';
+import React, { Component } from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { withRouter } from "react-router";
+import Immutable from "immutable";
+import { Col, Row, PageHeader } from "react-bootstrap";
+import { ProgressIndicator } from "@/components/Elements";
+import ReduxConfirmModal from "../ReduxConfirmModal";
+import ReduxFormModal from "../ReduxFormModal";
+import Navigator from "../Navigator";
+import Alerts from "../Alerts";
+import { Tour, ExampleInvoice } from "../OnBoarding";
+import { Footer } from "../StaticPages";
+import { userCheckLogin } from "@/actions/userActions";
+import {
+  setPageTitle,
+  systemRequirementsLoadingComplete,
+} from "@/actions/guiStateActions/pageActions";
+import { initMainMenu } from "@/actions/guiStateActions/menuActions";
+import { getSettings, fetchFile } from "@/actions/settingsActions";
+import { onBoardingIsRunnigSelector } from "@/selectors/guiSelectors";
+import { taxationTypeSelector } from "@/selectors/settingsSelector";
 
 class App extends Component {
-
-  static displayName = 'App';
+  static displayName = "App";
 
   static propTypes = {
     auth: PropTypes.bool,
@@ -34,18 +36,16 @@ class App extends Component {
     mainMenuOverrides: PropTypes.oneOfType([
       PropTypes.instanceOf(Immutable.Iterable),
     ]),
-    logoName: PropTypes.oneOfType([
-      PropTypes.string,
-    ]),
+    logoName: PropTypes.oneOfType([PropTypes.string]),
     dispatch: PropTypes.func.isRequired,
   };
 
   static defaultProps = {
     mainMenuOverrides: null,
     auth: null,
-    title: '',
-    logoName: '',
-    taxType: '',
+    title: "",
+    logoName: "",
+    taxType: "",
     systemRequirementsLoad: false,
     isTourRunnig: false,
   };
@@ -70,16 +70,31 @@ class App extends Component {
       this.props.dispatch(initMainMenu(nextProps.mainMenuOverrides));
     }
     const nextTitle = nextProps.routes[nextProps.routes.length - 1].title;
-    if (typeof nextTitle !== 'undefined' && nextTitle !== title) {
+    if (typeof nextTitle !== "undefined" && nextTitle !== title) {
       this.props.dispatch(setPageTitle(nextTitle));
     }
-    if (auth !== true && nextProps.auth === true) { // user did success login
+    if (auth !== true && nextProps.auth === true) {
+      // user did success login
       // get global system settings
-      this.props.dispatch(getSettings(['pricing', 'tenant', 'menu', 'billrun', 'usage_types', 'property_types', 'plays', 'taxation']))
-        .then(responce => ((responce) ? this.props.logoName : ''))
+      this.props
+        .dispatch(
+          getSettings([
+            "pricing",
+            "tenant",
+            "menu",
+            "billrun",
+            "usage_types",
+            "property_types",
+            "plays",
+            "taxation",
+          ])
+        )
+        .then((responce) => (responce ? this.props.logoName : ""))
         .then((logoFileName) => {
           if (logoFileName && logoFileName.length > 0) {
-            return this.props.dispatch(fetchFile({ filename: logoFileName }, 'logo'));
+            return this.props.dispatch(
+              fetchFile({ filename: logoFileName }, "logo")
+            );
           }
           return true;
         })
@@ -91,22 +106,22 @@ class App extends Component {
 
   getView = () => {
     const { auth, systemRequirementsLoad } = this.props;
-    let appState = 'waiting';
+    let appState = "waiting";
     if (auth === false) {
-      appState = 'noLogin';
+      appState = "noLogin";
     } else if (systemRequirementsLoad && auth === true) {
-      appState = 'ready';
+      appState = "ready";
     }
 
     switch (appState) {
-      case 'ready':
+      case "ready":
         return this.renderWithLayout();
-      case 'noLogin':
+      case "noLogin":
         return this.renderWithoutLayout();
       default: // 'waiting'
         return this.renderAppLoading();
     }
-  }
+  };
 
   renderAppLoading = () => {
     const { logo } = this.props;
@@ -116,7 +131,7 @@ class App extends Component {
         <Alerts />
         <div className="container">
           <Col md={4} mdOffset={4}>
-            <div style={{ marginTop: '33%', textAlign: 'center' }}>
+            <div style={{ marginTop: "33%", textAlign: "center" }}>
               <img alt="logo" src={logo} style={{ height: 50 }} />
               <br />
               <br />
@@ -127,21 +142,19 @@ class App extends Component {
         </div>
       </div>
     );
-  }
+  };
 
   renderWithoutLayout = () => (
     <div>
       <ProgressIndicator />
       <Alerts />
-      <div className="container">
-        { this.props.children }
-      </div>
+      <div className="container">{this.props.children}</div>
     </div>
   );
 
   renderWithLayout = () => {
     const { title, children, routes, isTourRunnig, taxType } = this.props;
-    const hiddenMenuItems = (taxType === 'CSI') ? ['tax'] : [];
+    const hiddenMenuItems = taxType === "CSI" ? ["tax"] : [];
     return (
       <div id="wrapper">
         <ProgressIndicator />
@@ -149,11 +162,11 @@ class App extends Component {
         <ReduxFormModal />
         <Alerts />
         <Tour />
-        <Navigator routes={routes} hiddenItems={hiddenMenuItems}/>
+        <Navigator routes={routes} hiddenItems={hiddenMenuItems} />
         <div id="page-wrapper" className="page-wrapper">
-          { isTourRunnig && <ExampleInvoice />}
+          {isTourRunnig && <ExampleInvoice />}
           <Row>
-            <Col lg={12}>{title && <PageHeader>{title}</PageHeader> }</Col>
+            <Col lg={12}>{title && <PageHeader>{title}</PageHeader>}</Col>
           </Row>
           <div>{children}</div>
           <div id="footer-push" />
@@ -161,25 +174,20 @@ class App extends Component {
         <Footer />
       </div>
     );
-  }
+  };
 
   render() {
-    return (
-      <div>
-        { this.getView() }
-      </div>
-    );
+    return <div>{this.getView()}</div>;
   }
 }
 
-
-const mapStateToProps = state => ({
-  auth: state.user.get('auth'),
-  title: state.guiState.page.get('title'),
-  systemRequirementsLoad: state.guiState.page.get('systemRequirementsLoad'),
-  mainMenuOverrides: state.settings.getIn(['menu', 'main']),
-  logo: state.settings.getIn(['files', 'logo']),
-  logoName: state.settings.getIn(['tenant', 'logo']),
+const mapStateToProps = (state) => ({
+  auth: state.user.get("auth"),
+  title: state.guiState.page.get("title"),
+  systemRequirementsLoad: state.guiState.page.get("systemRequirementsLoad"),
+  mainMenuOverrides: state.settings.getIn(["menu", "main"]),
+  logo: state.settings.getIn(["files", "logo"]),
+  logoName: state.settings.getIn(["tenant", "logo"]),
   isTourRunnig: onBoardingIsRunnigSelector(state),
   taxType: taxationTypeSelector(state),
 });
