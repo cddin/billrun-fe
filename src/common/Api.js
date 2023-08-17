@@ -256,6 +256,8 @@ const sendHttpRequest = (query, apiParams = {}) => {
   console.log("=============");
   console.log(url);
   console.log(requestOptions);
+  console.log(query);
+  console.log(apiParams);
   return promiseTimeout(
     timeout,
     fetch(url, requestOptions),

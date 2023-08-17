@@ -126,7 +126,7 @@ class LoginForm extends Component {
               </FormGroup>
               <Button
                 type="submit"
-                bsStyle="success"
+                bsStyle="primary"
                 bsSize="large"
                 block
                 onClick={this.clickLogin}

@@ -1,16 +1,16 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import ReactStepper from 'react-stepper-horizontal';
+import React from "react";
+import PropTypes from "prop-types";
+import ReactStepper from "react-stepper-horizontal";
 
 /**
  * Important !
  * The font size changed from 24, remember to update style file that fix bug
  * src/styles/scss/overrides/react-stepper-horizontal.scss
-   * https://github.com/mu29/react-stepper/issues/21
+ * https://github.com/mu29/react-stepper/issues/21
  */
 
-const Stepper = ({steps, activeIndex}) => (
-  <div className='stepper-container'>
+const Stepper = ({ steps, activeIndex }) => (
+  <div className="stepper-container">
     <ReactStepper
       titleTop={5}
       lineMarginOffset={10}
@@ -23,13 +23,13 @@ const Stepper = ({steps, activeIndex}) => (
       defaultBorderColor="#cccccc"
       defaultBorderStyle="solid"
       defaultBorderWidth={1}
-      activeColor="#008cba"
+      activeColor="#625EE5"
       activeBorderColor="#004b63"
       activeBorderStyle="solid"
       activeBorderWidth={1}
-      completeColor="#008cba"
+      completeColor="#625EE5"
       completeTitleColor="#757575"
-      completeBorderColor="#008cba"
+      completeBorderColor="#625EE5"
       completeBorderStyle="solid"
       completeBorderWidth={1}
     />

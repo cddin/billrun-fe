@@ -5,7 +5,7 @@
     "route": "products",
     "show": true,
     "roles": [],
-    "order":1,
+    "order": 1,
     "parent": "root"
   },
   "prepaid": {
@@ -14,7 +14,7 @@
     "route": "",
     "show": true,
     "roles": [],
-    "order":2,
+    "order": 2,
     "parent": "root"
   },
   "prepaid_plans": {
@@ -23,8 +23,8 @@
     "route": "prepaid_plans",
     "show": true,
     "roles": [],
-    "order":0,
-    "parent":"prepaid"
+    "order": 0,
+    "parent": "prepaid"
   },
   "prepaid_includes": {
     "title": "Buckets",
@@ -33,7 +33,7 @@
     "show": true,
     "roles": [],
     "order": 1,
-    "parent":"prepaid"
+    "parent": "prepaid"
   },
   "charging": {
     "title": "Buckets Groups",
@@ -42,7 +42,7 @@
     "show": true,
     "roles": [],
     "order": 2,
-    "parent":"prepaid"
+    "parent": "prepaid"
   },
   "recurring": {
     "title": "Recurring Charges",
@@ -51,7 +51,7 @@
     "show": true,
     "roles": [],
     "order": 3,
-    "parent":"prepaid"
+    "parent": "prepaid"
   },
   "postpaid": {
     "title": "Postpaid",
@@ -123,7 +123,7 @@
     "route": "",
     "show": true,
     "roles": [],
-    "order":6,
+    "order": 6,
     "parent": "root"
   },
   "run_cycle": {
@@ -132,8 +132,8 @@
     "route": "run_cycle",
     "show": true,
     "roles": [],
-    "order":0,
-    "parent":"cycle"
+    "order": 0,
+    "parent": "cycle"
   },
   "account_receivables": {
     "title": "Account Receivables",
@@ -195,7 +195,7 @@
     "route": "",
     "show": true,
     "roles": [],
-    "order":7.3,
+    "order": 7.3,
     "parent": "root"
   },
   "invoice_template": {
@@ -204,8 +204,8 @@
     "route": "invoice-template",
     "show": true,
     "roles": ["admin"],
-    "order":0,
-    "parent":"templates"
+    "order": 0,
+    "parent": "templates"
   },
   "email_templates": {
     "title": "Email Templates",
@@ -213,8 +213,8 @@
     "route": "email_templates",
     "show": true,
     "roles": ["admin"],
-    "order":1,
-    "parent":"templates"
+    "order": 1,
+    "parent": "templates"
   },
   "reports": {
     "title": "Reports",

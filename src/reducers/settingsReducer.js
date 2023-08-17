@@ -1,14 +1,15 @@
-import Immutable from 'immutable';
-import { actions } from '@/actions/settingsActions';
-import { ADD_USAGET_MAPPING } from '@/actions/inputProcessorActions';
-import { LOGOUT } from '@/actions/userActions';
-import { convertImporterMapperFromDb } from '@/actions/importerActions';
-import { parseGotPlugins } from '@/actions/pluginActions';
-import { getConfig } from '@/common/Util';
+import Immutable from "immutable";
+import { actions } from "@/actions/settingsActions";
+import { ADD_USAGET_MAPPING } from "@/actions/inputProcessorActions";
+import { LOGOUT } from "@/actions/userActions";
+import { convertImporterMapperFromDb } from "@/actions/importerActions";
+import { parseGotPlugins } from "@/actions/pluginActions";
+import { getConfig } from "@/common/Util";
 
-
-
-const LogoImg = `${process.env.PUBLIC_URL}/assets/img/${getConfig('defaultLogo', 'billRun-cloud-logo.png')}`;
+const LogoImg = `${process.env.PUBLIC_URL}/assets/img/${getConfig(
+  "defaultLogo",
+  "logo2.svg"
+)}`;
 const defaultState = Immutable.fromJS({
   subscribers: {
     account: {
@@ -47,46 +48,62 @@ export default function (state = defaultState, action) {
       } else {
         path = [category, action.path];
       }
-      return state.updateIn(path, Immutable.List(), list => list.push(action.value));
+      return state.updateIn(path, Immutable.List(), (list) =>
+        list.push(action.value)
+      );
     }
 
     case ADD_USAGET_MAPPING:
-      return state.update('usage_types', list => list.push(action.usaget));
+      return state.update("usage_types", (list) => list.push(action.usaget));
 
     case actions.GOT_SETTINGS:
       return state.withMutations((stateWithMutations) => {
         settings.forEach((setting) => {
           let data = Immutable.fromJS(setting.data.details);
-          if (setting.name === 'taxation' && data.get('vat', '') !== '') {
-            data = data.set('vat', data.get('vat', '') * 100);
+          if (setting.name === "taxation" && data.get("vat", "") !== "") {
+            data = data.set("vat", data.get("vat", "") * 100);
           }
-          if (setting.name === 'import.mapping' && Immutable.List.isList(data)) {
+          if (
+            setting.name === "import.mapping" &&
+            Immutable.List.isList(data)
+          ) {
             data = data.map(convertImporterMapperFromDb);
           }
-          if (setting.name === 'taxation.vat' && data !== '') {
+          if (setting.name === "taxation.vat" && data !== "") {
             data *= 100;
           }
-          if (setting.name === 'plugins' && Immutable.List.isList(data)) {
+          if (setting.name === "plugins" && Immutable.List.isList(data)) {
             data = parseGotPlugins(data);
           }
-          stateWithMutations.setIn(setting.name.split('.'), data);
+          stateWithMutations.setIn(setting.name.split("."), data);
         });
       });
 
     case actions.ADD_PAYMENT_GATEWAY: {
-      const added = state.get('payment_gateways').filterNot(pg => pg.get('name') === gateway.name).push(Immutable.fromJS(gateway));
-      return state.set('payment_gateways', added);
+      const added = state
+        .get("payment_gateways")
+        .filterNot((pg) => pg.get("name") === gateway.name)
+        .push(Immutable.fromJS(gateway));
+      return state.set("payment_gateways", added);
     }
 
     case actions.REMOVE_PAYMENT_GATEWAY: {
-      const removed = state.get('payment_gateways').filterNot(pg => pg.get('name') === gateway);
-      return state.set('payment_gateways', removed);
+      const removed = state
+        .get("payment_gateways")
+        .filterNot((pg) => pg.get("name") === gateway);
+      return state.set("payment_gateways", removed);
     }
 
     case actions.UPDATE_PAYMENT_GATEWAY: {
-      const paymentgateway = state.get('payment_gateways').find(pg => pg.get('name') === gateway.name).set('params', gateway.params);
-      const paymentgateways = state.get('payment_gateways').filterNot(pg => pg.get('name') === gateway.name).push(paymentgateway);
-      return state.set('payment_gateways', paymentgateways);
+      const paymentgateway = state
+        .get("payment_gateways")
+        .find((pg) => pg.get("name") === gateway.name)
+        .set("params", gateway.params);
+      const paymentgateways = state
+        .get("payment_gateways")
+        .filterNot((pg) => pg.get("name") === gateway.name)
+        .push(paymentgateway);
+      return state.set("payment_gateways", paymentgateways);
     }
 
     case actions.REMOVE_SETTING_FIELD: {
@@ -98,8 +115,8 @@ export default function (state = defaultState, action) {
 
     case actions.SET_FIELD_POSITION: {
       const curr = state.getIn([...action.path, action.oldIndex]);
-      return state.updateIn(action.path, Immutable.List(), list =>
-        list.delete(action.oldIndex).insert(action.newIndex, curr),
+      return state.updateIn(action.path, Immutable.List(), (list) =>
+        list.delete(action.oldIndex).insert(action.newIndex, curr)
       );
     }
 
