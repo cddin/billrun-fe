@@ -1,4 +1,13 @@
 {
+  "dashboard": {
+    "title": "Dashboard",
+    "icon": "fa fa-dashboard",
+    "route": "dashboard",
+    "show": true,
+    "roles": [],
+    "order": 0,
+    "parent": "root"
+  },
   "products": {
     "title": "Products",
     "icon": "fa-book",

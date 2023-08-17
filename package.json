@@ -80,6 +80,7 @@
     "react-stylable-diff": "^2.0.0",
     "react-tagsinput": "^3.19.0",
     "react-transition-group": "^4.2.1",
+    "recharts": "^2.7.3",
     "redux": "^4.0.4",
     "redux-localstorage": "^0.4.1",
     "redux-thunk": "^2.3.0",
