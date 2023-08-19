@@ -15,6 +15,7 @@ import CustomerSetup from "@/components/CustomerSetup";
 import ProductsList from "@/components/ProductsList";
 import Product from "@/components/Product";
 import Dashboard from "@/components/Dashboard";
+import Payu from "@/components/Payu";
 import ReportsList from "@/components/ReportsList";
 import Report from "@/components/Report";
 import PlansList from "@/components/PlansList";
@@ -114,6 +115,10 @@ const routes = () => (
         <Route path="dashboard">
           <IndexRoute component={Authentication(Dashboard)} title="Dashboard" />
           {/* <Route path="dashboard" component={Authentication(Dashboard)} /> */}
+        </Route>
+
+        <Route path="payu">
+          <IndexRoute component={Authentication(Payu)} title="Payu" />
         </Route>
 
         <Route path="prepaid_plans">

@@ -8,6 +8,15 @@
     "order": 0,
     "parent": "root"
   },
+  "payu": {
+    "title": "Payu",
+    "icon": "fa fa-list-alt",
+    "route": "payu",
+    "show": true,
+    "roles": [],
+    "order": 0,
+    "parent": "root"
+  },
   "products": {
     "title": "Products",
     "icon": "fa-book",
