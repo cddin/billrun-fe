@@ -17,6 +17,9 @@ export const PayuComp = () => {
   const [perc2, setPerc2] = useState(0);
 
   const [days, setDays] = useState(30);
+  const [fraction, setFraction] = useState(0);
+  const [price, setPrice] = useState(1000);
+  const [fixPrice1, setFixPrice1] = useState(0);
 
   const unit = " Mbit/s";
 
@@ -31,7 +34,8 @@ export const PayuComp = () => {
     if (data) {
       const rows = data.slice(1);
       const rowData1 = rows.map((rowData) => {
-        const test = Number(rowData[1].split(unit)[0]);
+        const cleanSpace = rowData[1].trim();
+        const test = Number(cleanSpace.split(unit)[0]);
         return isNaN(test) ? 0 : test;
       });
 
@@ -42,7 +46,8 @@ export const PayuComp = () => {
       setMax1(maxValue1);
 
       const rowData2 = rows.map((rowData) => {
-        const test = Number(rowData[2].split(unit)[0]);
+        const cleanSpace = rowData[2].trim();
+        const test = Number(cleanSpace.split(unit)[0]);
         return isNaN(test) ? 0 : test;
       });
 
@@ -59,6 +64,11 @@ export const PayuComp = () => {
       setPerc2(perc95_2);
     }
   }, [data]);
+
+  useEffect(() => {
+    setFraction((1 / 365) * days);
+    setFixPrice1(price * fraction);
+  }, [days, price, fraction]);
 
   // const headers = data[0];
   // const rows = data.slice(1);
@@ -93,6 +103,10 @@ export const PayuComp = () => {
 
   const onDaysChange = (e) => {
     setDays(e.target.value);
+  };
+
+  const onPriceChange = (e) => {
+    setPrice(e.target.value);
   };
 
   return (
@@ -199,7 +213,23 @@ export const PayuComp = () => {
                   Fraction
                 </Col>
                 <Col sm={8} lg={9}>
-                  <Field value={(1 / 365) * days} disabled />
+                  <Field value={fraction} disabled />
+                </Col>
+              </FormGroup>
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  Price (RM)
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field value={price} onChange={onPriceChange} />
+                </Col>
+              </FormGroup>
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  FIXED CHARGES RM (Recurring Price)
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field value={fixPrice1} disabled />
                 </Col>
               </FormGroup>
               TODO: others field
