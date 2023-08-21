@@ -2,12 +2,39 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router";
 import { Panel } from "react-bootstrap";
-import { LoadingItemPlaceholder } from "@/components/Elements";
+import { PayuComp } from "./PayuComp";
+import {
+  Form,
+  FormGroup,
+  ControlLabel,
+  Col,
+  Row,
+  HelpBlock,
+} from "react-bootstrap";
+import Field from "@/components/Field";
+import { ActionButtons, LoadingItemPlaceholder } from "@/components/Elements";
 
 class Payu extends Component {
   static entityName = "Payu";
 
   componentWillReceiveProps(nextProps) {}
+
+  onUserNameChange = (e) => {
+    const { value } = e.target;
+    // this.props.onUpdateValue('username', value);
+  };
+
+  onFileChange = (e) => {
+    // setFile(e.target.files[0]);
+  };
+
+  onBack = () => {
+    this.props.router.push("/users");
+  };
+
+  onSave = () => {
+    const { item, mode } = this.props;
+  };
 
   render() {
     const { mode } = this.props;
@@ -15,11 +42,7 @@ class Payu extends Component {
       return <LoadingItemPlaceholder />;
     }
 
-    return (
-      <div className="ProductSetup">
-        <Panel>Payu test</Panel>
-      </div>
-    );
+    return <PayuComp />;
   }
 }
 
