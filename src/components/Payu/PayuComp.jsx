@@ -32,6 +32,7 @@ export const PayuComp = () => {
   const [total, setTotal] = useState(0);
   const [tax, setTax] = useState(0);
   const [grandTotal, setGrandTotal] = useState(0);
+  const [rowData1test, setRowData1] = useState([]);
 
   const taxRate = 0.06;
 
@@ -53,6 +54,9 @@ export const PayuComp = () => {
         return isNaN(test) ? 0 : test;
       });
 
+      // TEST
+      setRowData1(rowData1);
+
       let minValue1 = Math.min(...rowData1);
       let maxValue1 = Math.max(...rowData1);
       setAvg1(mean(rowData1));
@@ -71,8 +75,8 @@ export const PayuComp = () => {
       setMin2(minValue2);
       setMax2(maxValue2);
 
-      const perc95_1 = percentile(rowData1, 95);
-      const perc95_2 = percentile(rowData2, 95);
+      const perc95_1 = percentile3(rowData1, 0.95);
+      const perc95_2 = percentile3(rowData2, 0.95);
 
       setPerc1(perc95_1);
       setPerc2(perc95_2);
@@ -86,7 +90,13 @@ export const PayuComp = () => {
     setPayuPrice(payuPriceMbps * perc1);
     setPayuLink2(payuLink2Price * fraction);
     setPayuRental(rental + payuPrice + payuLink2);
-    setPayuCharge(payuRental < fixPrice1 ? payuRental : fixPrice1);
+    setPayuCharge(
+      fixPrice1 === 0
+        ? payuRental
+        : payuRental < fixPrice1
+        ? payuRental
+        : fixPrice1
+    );
     setTotal(Number(payuCharge) + otc);
     setTax(taxRate * total);
     setGrandTotal(total + tax);
@@ -409,20 +419,11 @@ export const PayuComp = () => {
       )}
 
       {/* <table>
-        <thead>
-          <tr>
-            {headers?.map((header, i) => (
-              <th key={i}>{header}</th>
-            ))}
-          </tr>
-        </thead>
         <tbody>
-          {rows?.map((rowData, i) => {
+          {rowData1test?.map((rowData, i) => {
             return (
               <tr key={i}>
-                {rowData?.map((data, i) => {
-                  return <td key={i}>{data}</td>;
-                })}
+                <td>{rowData}</td>;
               </tr>
             );
           })}
@@ -446,3 +447,14 @@ const percentile = (arr, p) => {
   if (upper >= arr.length) return arr[lower];
   return arr[lower] * (1 - weight) + arr[upper] * weight;
 };
+
+const percentile2 = (arr, num) =>
+  (arr.filter((item) => item <= num).length / arr.length) * 100;
+
+const percentile3 = (arr, val) =>
+  (100 *
+    arr.reduce(
+      (acc, v) => acc + (v < val ? 1 : 0) + (v === val ? 0.5 : 0),
+      0
+    )) /
+  arr.length;
