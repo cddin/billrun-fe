@@ -17,9 +17,23 @@ export const PayuComp = () => {
   const [perc2, setPerc2] = useState(0);
 
   const [days, setDays] = useState(30);
+  const [otc, setOtc] = useState(1000);
   const [fraction, setFraction] = useState(0);
-  const [price, setPrice] = useState(1000);
+  const [price, setPrice] = useState(40000);
   const [fixPrice1, setFixPrice1] = useState(0);
+  const [priceRental, setPriceRental] = useState(10000);
+  const [rental, setRental] = useState(0);
+  const [payuPriceMbps, setPayuPriceMbps] = useState(350);
+  const [payuPrice, setPayuPrice] = useState(0);
+  const [payuLink2Price, setPayuLink2Price] = useState(10000);
+  const [payuLink2, setPayuLink2] = useState(0);
+  const [payuRental, setPayuRental] = useState(0);
+  const [payuCharge, setPayuCharge] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [tax, setTax] = useState(0);
+  const [grandTotal, setGrandTotal] = useState(0);
+
+  const taxRate = 0.06;
 
   const unit = " Mbit/s";
 
@@ -68,7 +82,31 @@ export const PayuComp = () => {
   useEffect(() => {
     setFraction((1 / 365) * days);
     setFixPrice1(price * fraction);
-  }, [days, price, fraction]);
+    setRental(priceRental * fraction);
+    setPayuPrice(payuPriceMbps * perc1);
+    setPayuLink2(payuLink2Price * fraction);
+    setPayuRental(rental + payuPrice + payuLink2);
+    setPayuCharge(payuRental < fixPrice1 ? payuRental : fixPrice1);
+    setTotal(Number(payuCharge) + otc);
+    setTax(taxRate * total);
+    setGrandTotal(total + tax);
+  }, [
+    days,
+    price,
+    fraction,
+    priceRental,
+    payuPriceMbps,
+    perc1,
+    payuLink2Price,
+    payuPrice,
+    payuRental,
+    fixPrice1,
+    payuCharge,
+    payuLink2,
+    rental,
+    tax,
+    total,
+  ]);
 
   // const headers = data[0];
   // const rows = data.slice(1);
@@ -102,11 +140,31 @@ export const PayuComp = () => {
   };
 
   const onDaysChange = (e) => {
-    setDays(e.target.value);
+    setDays(Number(e.target.value));
   };
 
   const onPriceChange = (e) => {
-    setPrice(e.target.value);
+    setPrice(Number(e.target.value));
+  };
+
+  const onPriceRentalChange = (e) => {
+    setPriceRental(Number(e.target.value));
+  };
+
+  const onPayuPriceMbpsChange = (e) => {
+    setPayuPriceMbps(Number(e.target.value));
+  };
+
+  const onPayuLink2Price = (e) => {
+    setPayuLink2Price(Number(e.target.value));
+  };
+
+  const onOtcChange = (e) => {
+    setOtc(Number(e.target.value));
+  };
+
+  const onPerc1Change = (e) => {
+    setPerc1(Number(e.target.value));
   };
 
   return (
@@ -202,10 +260,26 @@ export const PayuComp = () => {
             <Form horizontal>
               <FormGroup>
                 <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  95th (testing purpose: can manual change)
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field value={perc1} onChange={onPerc1Change} />
+                </Col>
+              </FormGroup>
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
                   Days
                 </Col>
                 <Col sm={8} lg={9}>
                   <Field value={days} onChange={onDaysChange} />
+                </Col>
+              </FormGroup>
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  OTC RM
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field value={otc} onChange={onOtcChange} />
                 </Col>
               </FormGroup>
               <FormGroup>
@@ -218,7 +292,7 @@ export const PayuComp = () => {
               </FormGroup>
               <FormGroup>
                 <Col componentClass={ControlLabel} sm={3} lg={2}>
-                  Price (RM)
+                  Price RM (Recurring Price)
                 </Col>
                 <Col sm={8} lg={9}>
                   <Field value={price} onChange={onPriceChange} />
@@ -226,13 +300,109 @@ export const PayuComp = () => {
               </FormGroup>
               <FormGroup>
                 <Col componentClass={ControlLabel} sm={3} lg={2}>
-                  FIXED CHARGES RM (Recurring Price)
+                  FIXED CHARGES RM
                 </Col>
                 <Col sm={8} lg={9}>
                   <Field value={fixPrice1} disabled />
                 </Col>
               </FormGroup>
-              TODO: others field
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  PRICE RENTAL RM (Fixed Rental)
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field value={priceRental} onChange={onPriceRentalChange} />
+                </Col>
+              </FormGroup>
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  RENTAL (RM)
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field value={rental} disabled />
+                </Col>
+              </FormGroup>
+              {/*  */}
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  PAYU/Mbps RM
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field
+                    value={payuPriceMbps}
+                    onChange={onPayuPriceMbpsChange}
+                  />
+                </Col>
+              </FormGroup>
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  PAYU (RM)
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field value={payuPrice} disabled />
+                </Col>
+              </FormGroup>
+              {/* onPayuLink2Price */}
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  PRICE PAYU LINK 2 RM
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field value={payuLink2Price} onChange={onPayuLink2Price} />
+                </Col>
+              </FormGroup>
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  PAYU LINK 2 RM
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field value={payuLink2} disabled />
+                </Col>
+              </FormGroup>
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  PAYU ACTUAL RM
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field value={payuRental} disabled />
+                </Col>
+              </FormGroup>
+              {/* "PAYU CHARGE RM" */}
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  PAYU CHARGE RM
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field value={payuCharge} disabled />
+                </Col>
+              </FormGroup>
+              {/* "TOTAL RM" */}
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  TOTAL RM
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field value={total} disabled />
+                </Col>
+              </FormGroup>
+              {/* "TAX 6%" */}
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  TAX 6%
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field value={taxRate} disabled />
+                </Col>
+              </FormGroup>
+              {/* GRAND TOTAL RM */}
+              <FormGroup>
+                <Col componentClass={ControlLabel} sm={3} lg={2}>
+                  GRAND TOTAL RM
+                </Col>
+                <Col sm={8} lg={9}>
+                  <Field value={grandTotal} disabled />
+                </Col>
+              </FormGroup>
             </Form>
           </Panel>
         </>
