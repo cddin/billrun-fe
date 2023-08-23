@@ -15,6 +15,7 @@ import {
 import { Conflict409 } from "../StaticPages";
 import { userDoLogin, sendResetMail } from "@/actions/userActions";
 import ResetPassword from "./ResetPassword";
+import { GoogleForm } from "./GoogleForm";
 
 class LoginForm extends Component {
   static propTypes = {
@@ -52,6 +53,14 @@ class LoginForm extends Component {
     this.setState({ progress: true });
     e.preventDefault();
     this.props.dispatch(userDoLogin(username, password)).then(() => {
+      if (this.unmounted !== true) {
+        this.setState({ progress: false });
+      }
+    });
+  };
+
+  onGoogleLogin = (email) => {
+    this.props.dispatch(userDoLogin(email, "xxgooglexx")).then(() => {
       if (this.unmounted !== true) {
         this.setState({ progress: false });
       }
@@ -165,6 +174,10 @@ class LoginForm extends Component {
             onResetPass={this.onResetPass}
           />
         )}
+
+        <Panel header="Google Login">
+          <GoogleForm onLogin={this.onGoogleLogin} />
+        </Panel>
       </Col>
     );
   };

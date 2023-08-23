@@ -9,7 +9,9 @@
   ],
   "dependencies": {
     "@babel/core": "7.5.5",
+    "@react-oauth/google": "^0.11.1",
     "@svgr/webpack": "4.3.2",
+    "axios": "^1.4.0",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "10.0.2",
     "babel-jest": "24.8.0",
