@@ -3,6 +3,7 @@ import { Form, FormGroup, ControlLabel, Col, Row } from "react-bootstrap";
 import { Panel } from "react-bootstrap";
 import Field from "@/components/Field";
 import { Button } from "react-bootstrap";
+import { CSVLink } from "react-csv";
 
 export const PayuComp = () => {
   const [data, setData] = useState([]);
@@ -264,6 +265,34 @@ export const PayuComp = () => {
         </>
       )}
 
+      {avg1 && (
+        <CSVLink
+          data={`${perc1}, ${days}, ${otc},${fraction},${price}, ${fixPrice1},${priceRental}, ${rental}, ${payuPriceMbps}, ${payuPrice}, ${payuLink2Price}, ${payuLink2}, ${payuRental}, ${payuCharge}, ${total}, ${taxRate}, ${grandTotal}`}
+          headers={[
+            "95th",
+            "Days",
+            "OTC RM",
+            "Fraction",
+            "Price RM (Recurring Price)",
+            "FIXED CHARGES RM",
+            "PRICE RENTAL RM (Fixed Rental)",
+            "RENTAL (RM)",
+            "PAYU/Mbps RM",
+            "PAYU (RM)",
+            "PRICE PAYU LINK 2 RM",
+            "PAYU LINK 2 RM",
+            "PAYU ACTUAL RM",
+            "PAYU CHARGE RM",
+            "TOTAL RM",
+            "TAX 6%",
+            "GRAND TOTAL RM",
+          ]}
+          separator={","}
+          filename={`Payu`}
+        >
+          Click here to download CSV
+        </CSVLink>
+      )}
       {avg1 && (
         <>
           <Panel>
