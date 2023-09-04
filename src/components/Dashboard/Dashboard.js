@@ -42,7 +42,7 @@ class Dashboard extends Component {
     }
 
     return (
-      <div>
+      <div className="maindiv">
         {/* <Panel>
           <RenderLineChart />
         </Panel>
