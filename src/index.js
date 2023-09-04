@@ -15,6 +15,7 @@ import "./styles/css/sb-admin-2.css";
 import "./styles/css/yeti.css";
 import "./styles/scss/index.scss";
 import "./styles/css/index.css";
+import "./styles/css/Dashboard.css";
 
 const DevTools = lazy(() => import("./components/DevTools"));
 
