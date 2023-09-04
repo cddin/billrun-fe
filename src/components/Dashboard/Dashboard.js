@@ -57,7 +57,7 @@ class Dashboard extends Component {
           height="450"
           src="https://lookerstudio.google.com/embed/reporting/43f28cff-8cfd-4e39-bd28-cbf98d2612bb/page/GNJaD"
           frameborder="0"
-          // style="border:0"
+          style="border:0"
           // allowfullscreen
         ></iframe>
         {/* <iframe src="https://www.youtube.com/embed/uXWycyeTeCs"></iframe> */}
