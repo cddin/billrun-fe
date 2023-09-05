@@ -37,6 +37,13 @@ export const PayuComp = () => {
 
   const taxRate = 0.06;
 
+  // const test = [
+  //   21, 22, 30, 33, 43, 45, 120, 48, 48, 50, 50, 55, 56, 57, 58, 59, 61, 61, 62,
+  //   62, 63, 66, 68, 68, 72, 73,
+  // ];
+
+  // console.log("95th: ", percentile(test, 0.95));
+
   const unit = " Mbit/s";
 
   useEffect(() => {
@@ -76,8 +83,8 @@ export const PayuComp = () => {
       setMin2(minValue2);
       setMax2(maxValue2);
 
-      const perc95_1 = percentile3(rowData1, 0.95);
-      const perc95_2 = percentile3(rowData2, 0.95);
+      const perc95_1 = percentile(rowData1, 0.95);
+      const perc95_2 = percentile(rowData2, 0.95);
 
       setPerc1(perc95_1);
       setPerc2(perc95_2);
@@ -463,6 +470,7 @@ export const PayuComp = () => {
 };
 
 const percentile = (arr, p) => {
+  arrSort(arr);
   if (arr.length === 0) return 0;
   if (typeof p !== "number") throw new TypeError("p must be a number");
   if (p <= 0) return arr[0];
@@ -477,13 +485,19 @@ const percentile = (arr, p) => {
   return arr[lower] * (1 - weight) + arr[upper] * weight;
 };
 
-const percentile2 = (arr, num) =>
-  (arr.filter((item) => item <= num).length / arr.length) * 100;
+// const percentile2 = (arr, num) =>
+//   (arr.filter((item) => item <= num).length / arr.length) * 100;
 
-const percentile3 = (arr, val) =>
-  (100 *
-    arr.reduce(
-      (acc, v) => acc + (v < val ? 1 : 0) + (v === val ? 0.5 : 0),
-      0
-    )) /
-  arr.length;
+// const percentile3 = (arr, val) =>
+//   (100 *
+//     arr.reduce(
+//       (acc, v) => acc + (v < val ? 1 : 0) + (v === val ? 0.5 : 0),
+//       0
+//     )) /
+//   arr.length;
+
+function arrSort(arr) {
+  arr.sort((a, b) => b - a);
+  arr.reverse();
+  return arr;
+}
