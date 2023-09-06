@@ -55,7 +55,7 @@ class Dashboard extends Component {
         <iframe
           width="100%"
           height="100%"
-          src="https://lookerstudio.google.com/embed/reporting/43f28cff-8cfd-4e39-bd28-cbf98d2612bb/page/GNJaD"
+          src="https://lookerstudio.google.com/embed/reporting/db916f73-5597-4bb8-bba5-e10a0341af5c/page/p_c5rgu0zk9c"
           frameborder="0"
         ></iframe>
       </div>
