@@ -161,32 +161,31 @@ export const PayuComp = () => {
   };
 
   const onDaysChange = (e) => {
-    setDays(Number(e.target.value));
+    setDays(e.target.value);
   };
 
   const onPriceChange = (e) => {
-    setPrice(Number(e.target.value));
+    setPrice(e.target.value);
   };
 
   const onPriceRentalChange = (e) => {
-    setPriceRental(Number(e.target.value));
+    setPriceRental(e.target.value);
   };
 
   const onPayuPriceMbpsChange = (e) => {
-    setPayuPriceMbps(Number(e.target.value));
+    setPayuPriceMbps(e.target.value);
   };
 
   const onPayuLink2Price = (e) => {
-    setPayuLink2Price(Number(e.target.value));
+    setPayuLink2Price(e.target.value);
   };
 
   const onOtcChange = (e) => {
-    setOtc(Number(e.target.value));
+    setOtc(e.target.value);
   };
 
   const onPerc1Change = (e) => {
-    // setPerc1(Number(e.target.value));
-    setPerc95(Number(e.target.value));
+    setPerc95(e.target.value);
   };
 
   return (
@@ -313,7 +312,11 @@ export const PayuComp = () => {
                   95th (testing purpose: can manual change)
                 </Col>
                 <Col sm={8} lg={9}>
-                  <Field value={perc95} onChange={onPerc1Change} />
+                  <Field
+                    value={perc95}
+                    onChange={onPerc1Change}
+                    onblur={() => console.log("=======")}
+                  />
                 </Col>
               </FormGroup>
               <FormGroup>
