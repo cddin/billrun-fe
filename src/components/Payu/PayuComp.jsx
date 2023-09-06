@@ -16,6 +16,7 @@ export const PayuComp = () => {
 
   const [perc1, setPerc1] = useState(0);
   const [perc2, setPerc2] = useState(0);
+  const [perc95, setPerc95] = useState(0);
 
   const [days, setDays] = useState(30);
   const [otc, setOtc] = useState(1000);
@@ -88,6 +89,7 @@ export const PayuComp = () => {
 
       setPerc1(perc95_1);
       setPerc2(perc95_2);
+      setPerc95(perc95_1);
     }
   }, [data]);
 
@@ -95,7 +97,7 @@ export const PayuComp = () => {
     setFraction((1 / 365) * days);
     setFixPrice1(price * fraction);
     setRental(priceRental * fraction);
-    setPayuPrice(payuPriceMbps * perc1);
+    setPayuPrice(payuPriceMbps * perc95);
     setPayuLink2(payuLink2Price * fraction);
     setPayuRental(rental + payuPrice + payuLink2);
     setPayuCharge(
@@ -115,6 +117,7 @@ export const PayuComp = () => {
     priceRental,
     payuPriceMbps,
     perc1,
+    perc95,
     payuLink2Price,
     payuPrice,
     payuRental,
@@ -182,7 +185,8 @@ export const PayuComp = () => {
   };
 
   const onPerc1Change = (e) => {
-    setPerc1(Number(e.target.value));
+    // setPerc1(Number(e.target.value));
+    setPerc95(Number(e.target.value));
   };
 
   return (
@@ -274,7 +278,7 @@ export const PayuComp = () => {
 
       {avg1 && (
         <CSVLink
-          data={`${perc1}, ${days}, ${otc},${fraction},${price}, ${fixPrice1},${priceRental}, ${rental}, ${payuPriceMbps}, ${payuPrice}, ${payuLink2Price}, ${payuLink2}, ${payuRental}, ${payuCharge}, ${total}, ${taxRate}, ${grandTotal}`}
+          data={`${perc95}, ${days}, ${otc},${fraction},${price}, ${fixPrice1},${priceRental}, ${rental}, ${payuPriceMbps}, ${payuPrice}, ${payuLink2Price}, ${payuLink2}, ${payuRental}, ${payuCharge}, ${total}, ${taxRate}, ${grandTotal}`}
           headers={[
             "95th",
             "Days",
@@ -309,7 +313,7 @@ export const PayuComp = () => {
                   95th (testing purpose: can manual change)
                 </Col>
                 <Col sm={8} lg={9}>
-                  <Field value={perc1} onChange={onPerc1Change} />
+                  <Field value={perc95} onChange={onPerc1Change} />
                 </Col>
               </FormGroup>
               <FormGroup>
