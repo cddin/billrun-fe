@@ -361,7 +361,7 @@ export const PayuComp = () => {
           separator={","}
           filename={`Payu`}
         >
-          Click here to download CSV
+          CSV
         </CSVLink>
       )}
 
