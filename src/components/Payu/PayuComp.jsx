@@ -208,7 +208,7 @@ export const PayuComp = () => {
           "OTC RM",
           "Fraction",
           "Price",
-          "FIXED CHARGe",
+          "FIXED CHARGE",
           "PRICE RENTAL",
           "RENTAL (RM)",
           "PAYU/Mbps RM",
