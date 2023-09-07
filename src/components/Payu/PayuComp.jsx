@@ -4,6 +4,8 @@ import { Panel } from "react-bootstrap";
 import Field from "@/components/Field";
 import { Button } from "react-bootstrap";
 import { CSVLink } from "react-csv";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export const PayuComp = () => {
   const [data, setData] = useState([]);
@@ -188,6 +190,65 @@ export const PayuComp = () => {
     setPerc95(e.target.value);
   };
 
+  const downloadPDF = () => {
+    const doc = new jsPDF({
+      orientation: "l",
+    });
+
+    doc.setFontSize(6);
+    autoTable(doc, {
+      styles: {
+        cellPadding: 0.5,
+        fontSize: 6,
+      },
+      head: [
+        [
+          "95th",
+          "Days",
+          "OTC RM",
+          "Fraction",
+          "Price",
+          "FIXED CHARGe",
+          "PRICE RENTAL",
+          "RENTAL (RM)",
+          "PAYU/Mbps RM",
+          "PAYU (RM)",
+          "PRICE PAYU LINK",
+          "PAYU LINK 2",
+          "PAYU ACTUAL",
+          "PAYU CHARGE",
+          "TOTAL",
+          "TAX 6%",
+          "GRAND TOTAL",
+        ],
+      ],
+      body: [
+        [
+          perc95.toFixed(2),
+          days.toFixed(2),
+          otc.toFixed(2),
+          fraction.toFixed(2),
+          price.toFixed(2),
+          fixPrice1.toFixed(2),
+          priceRental.toFixed(2),
+          rental.toFixed(2),
+          payuPriceMbps.toFixed(2),
+          payuPrice.toFixed(2),
+          payuLink2Price.toFixed(2),
+          payuLink2.toFixed(2),
+          payuRental.toFixed(2),
+          payuCharge.toFixed(2),
+          total.toFixed(2),
+          taxRate.toFixed(2),
+          grandTotal.toFixed(2),
+        ],
+        // ...
+      ],
+    });
+
+    doc.save("Payu.pdf");
+  };
+
   return (
     <Col>
       <Panel>
@@ -302,6 +363,12 @@ export const PayuComp = () => {
         >
           Click here to download CSV
         </CSVLink>
+      )}
+
+      {avg1 && (
+        <button style={{ marginLeft: "10px" }} onClick={downloadPDF}>
+          pdf
+        </button>
       )}
       {avg1 && (
         <>
