@@ -366,7 +366,7 @@ export const PayuComp = () => {
       )}
 
       {avg1 && (
-        <a href="#" style={{ marginLeft: "10px" }} onClick={downloadPDF}>
+        <a style={{ marginLeft: "10px" }} onClick={downloadPDF}>
           PDF
         </a>
       )}
